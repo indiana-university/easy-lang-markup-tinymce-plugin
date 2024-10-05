@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-
 /* global alert, confirm, tinyMCE */
 tinyMCE.PluginManager.add("languageSelect", function (editor) {
   "use strict";
@@ -35,141 +34,207 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
   let langMenuItems = [];
   let myButtonTextPtr = null;
 
+  /**
+   * Takes the first token in the string and returns it as a well-formatted lang attribute:
+   * - "en" becomes "en"
+   * - "en-us" becomes "en-US"
+   * - "en_us" becomes "en-US"
+   * - "en enu" becomes "en"
+   *
+   * @param {string} lang - The input language attribute string.
+   * @returns {string} - The cleaned and formatted language attribute.
+   */
   function cleanLangAttr(lang) {
-    if (lang != null) {
-      lang = lang.trim();
-      const tokenList = lang.split(/\s/);
-      if (tokenList.length > 1) {
-        lang = tokenList[0];
-      }
-      const matches = lang.match(/^(\w+)[_-](\w+)$/);
-      if (matches) {
-        lang = matches[1].toLowerCase() + "-" + matches[2].toUpperCase();
-      }
+    if (!lang) return lang;
+
+    // Trim whitespace and split by spaces, taking only the first token
+    const [firstToken] = lang.trim().split(/\s+/);
+
+    // Match the token against the pattern and format it accordingly
+    const matches = firstToken.match(/^(\w+)[_-](\w+)$/);
+    if (matches) {
+      // Convert to the correct format: "en-us" or "en_us" -> "en-US"
+      return `${matches[1].toLowerCase()}-${matches[2].toUpperCase()}`;
     }
-    return lang;
+
+    // Return the first token as lowercase (e.g., "EN" -> "en")
+    return firstToken.toLowerCase();
   }
 
+  /**
+   * Extracts the base language code from the given language string.
+   * For example:
+   * - "en-US" -> "en"
+   * - "en_us" -> "en"
+   * - "en us" -> "en"
+   * - " en "  -> "en"
+   * - null or empty -> ""
+   *
+   * @param {string} lang - The input language string.
+   * @returns {string} - The base language code, or an empty string if input is null/undefined.
+   */
   function baseLanguage(lang) {
-    return lang ? lang.trim().replace(/[-_\s].*$/, "") : "";
+    if (!lang) return "";
+
+    // Trim whitespace and remove any characters following a dash, underscore, or space
+    return lang.trim().replace(/[-_\s].*$/, "");
   }
 
+  /**
+   * Detects the default human text language of the document holding the editor.
+   * It checks in the following order:
+   * 1. If `editor.settings.language` is defined.
+   * 2. If the `document.body` element has a single child with a `lang` attribute.
+   * 3. If the `document.body` element has a `lang` attribute.
+   * 4. If the `document.documentElement` (HTML) element has a `lang` attribute.
+   * 5. If none of the above, it uses the browser's language settings or defaults to 'en'.
+   *
+   * @returns {string} - The detected default language code.
+   */
   function detectDefaultLangOfPageHoldingEditor() {
-    defaultLangOfPageHoldingEditor = "";
-    const topDoc = window.top.document;
-    const docDoc = editor.getDoc();
+    const topDocument = window.top.document;
+    const editorDocument = editor.getDoc();
+
+    let defaultLang = "";
+
+    // 1. Check if editor has a configured language setting
     if (editor.settings && editor.settings.language) {
-      defaultLangOfPageHoldingEditor = cleanLangAttr(editor.settings.language);
+      defaultLang = cleanLangAttr(editor.settings.language);
     }
+
+    // 2. Check if the document body has one child with a lang attribute
     if (
-      !regexValidLangValue.test(defaultLangOfPageHoldingEditor) &&
-      docDoc.body.childElementCount === 1 &&
-      docDoc.body.children[0].hasAttribute("lang")
+      !regexValidLangValue.test(defaultLang) &&
+      editorDocument.body.childElementCount === 1 &&
+      editorDocument.body.children[0].hasAttribute("lang")
     ) {
-      defaultLangOfPageHoldingEditor = cleanLangAttr(
-        docDoc.body.children[0].getAttribute("lang")
+      defaultLang = cleanLangAttr(
+        editorDocument.body.children[0].getAttribute("lang")
       );
     }
+
+    // 3. Check if the document body has a lang attribute
     if (
-      !regexValidLangValue.test(defaultLangOfPageHoldingEditor) &&
-      topDoc.body.hasAttribute("lang")
+      !regexValidLangValue.test(defaultLang) &&
+      editorDocument.body.hasAttribute("lang")
     ) {
-      defaultLangOfPageHoldingEditor = cleanLangAttr(
-        topDoc.body.getAttribute("lang")
+      defaultLang = cleanLangAttr(editorDocument.body.getAttribute("lang"));
+    }
+
+    // 4. Check if the document root (HTML element) has a lang attribute
+    if (
+      !regexValidLangValue.test(defaultLang) &&
+      topDocument.documentElement.hasAttribute("lang")
+    ) {
+      defaultLang = cleanLangAttr(
+        topDocument.documentElement.getAttribute("lang")
       );
     }
-    if (
-      !regexValidLangValue.test(defaultLangOfPageHoldingEditor) &&
-      topDoc.body.parentElement.hasAttribute("lang")
-    ) {
-      defaultLangOfPageHoldingEditor = cleanLangAttr(
-        topDoc.body.parentElement.getAttribute("lang")
-      );
+
+    // 5. Fallback: Use browser language or default to 'en'
+    if (!regexValidLangValue.test(defaultLang)) {
+      defaultLang =
+        baseLanguage(
+          window.navigator.language || window.navigator.userLanguage
+        ) || "en";
     }
-    if (!regexValidLangValue.test(defaultLangOfPageHoldingEditor))
-      defaultLangOfPageHoldingEditor =
-        baseLanguage(window.navigator.userLanguage) ||
-        baseLanguage(window.navigator.language) ||
-        "en";
-    if (!regexValidLangValue.test(defaultLangOfPageHoldingEditor))
-      defaultLangOfPageHoldingEditor = "en";
+
+    // Return the detected language or 'en' as a final fallback
+    return regexValidLangValue.test(defaultLang) ? defaultLang : "en";
   }
 
+  /**
+   * Analyzes the usage of language attributes in the editor's document.
+   * It returns a sorted array of detected language codes based on their frequency of use.
+   *
+   * @returns {string[]} - An array of language codes sorted by frequency of occurrence.
+   */
   function analyzeEditorDocumentLangUsage() {
-    detectDefaultLangOfPageHoldingEditor();
-    const topDoc = window.top.document;
-    const docDoc = editor.getDoc();
-    let docContainer;
-    if (docDoc && docDoc.body) {
-      docContainer = docDoc.body;
+    defaultLangOfPageHoldingEditor = detectDefaultLangOfPageHoldingEditor();
+    const topDocument = window.top.document;
+    const editorDocument = editor.getDoc();
+    const regexValidLangValue = /^[^\s-]{2,5}(-[^\s-]{2,6})*$/; // Assuming this is defined elsewhere
+
+    let docContainer = null;
+
+    // Determine the document container to analyze
+    if (editorDocument && editorDocument.body) {
+      docContainer = editorDocument.body;
     } else if (editor && editor.settings && editor.settings.selector) {
       docContainer = document.querySelector(editor.settings.selector);
     } else {
-      docContainer = topDoc.body;
+      docContainer = topDocument.body;
     }
-    langsUsedInEditorDocument = {};
-    const langsFound = docContainer.querySelectorAll("*[lang]");
-    langsFound.forEach((el) => {
-      if (el && el.getAttribute) {
-        const foundLang = cleanLangAttr(el.getAttribute("lang"));
-        if (regexValidLangValue.test(foundLang)) {
-          if (
-            Object.prototype.hasOwnProperty.call(
-              langsUsedInEditorDocument,
-              foundLang
-            )
-          ) {
-            langsUsedInEditorDocument[foundLang] += 1;
-          } else {
-            langsUsedInEditorDocument[foundLang] = 1;
-          }
-        }
+
+    // Track the usage of languages in the document
+    const langsUsed = {};
+
+    // Include the default language if it is valid
+    if (regexValidLangValue.test(defaultLangOfPageHoldingEditor)) {
+      langsUsed[defaultLangOfPageHoldingEditor] = 1;
+    }
+
+    // Find all elements with a lang attribute
+    const langElements = docContainer.querySelectorAll("[lang]");
+
+    langElements.forEach((el) => {
+      const foundLang = cleanLangAttr(el.getAttribute("lang"));
+      if (regexValidLangValue.test(foundLang)) {
+        langsUsed[foundLang] = (langsUsed[foundLang] || 0) + 1;
       }
     });
-    if (Object.entries(langsUsedInEditorDocument).length < 1) {
+
+    // Check the document's inner HTML for any lang attributes if we didn't find any
+    if (Object.keys(langsUsed).length === 0) {
       const langMatches = [
         ...docContainer.innerHTML.matchAll(/\slang="(.+?)"/g),
       ];
-      langMatches.forEach((m) => {
-        const foundLang = cleanLangAttr(m[1]);
+      langMatches.forEach((match) => {
+        const foundLang = cleanLangAttr(match[1]);
         if (regexValidLangValue.test(foundLang)) {
-          if (
-            Object.prototype.hasOwnProperty.call(
-              langsUsedInEditorDocument,
-              foundLang
-            )
-          ) {
-            langsUsedInEditorDocument[foundLang] += 1;
-          } else {
-            langsUsedInEditorDocument[foundLang] = 1;
-          }
+          langsUsed[foundLang] = (langsUsed[foundLang] || 0) + 1;
         }
       });
     }
-    const sortedArrayOfLangs = [];
-    Object.entries(langsUsedInEditorDocument)
-      .sort((a, b) => {
-        return b[1] - a[1];
-      })
-      .forEach(([langCode, count]) => {
-        sortedArrayOfLangs.push(langCode);
-      });
-    return sortedArrayOfLangs;
+
+    // Sort languages by frequency of occurrence and return them
+    return Object.entries(langsUsed)
+      .sort((a, b) => b[1] - a[1])
+      .map(([langCode]) => langCode);
   }
 
+  /**
+   * Retrieves the language attribute from the given element or its ancestors.
+   * Traverses up the DOM tree until it finds an element with a `lang` attribute.
+   *
+   * TODO: Make sure this function's language is default detection makes sense. Seems flawed!
+   *
+   * @param {Element} el - The starting element to check for language attributes.
+   * @returns {[string, boolean]} - A tuple containing the cleaned language attribute and a boolean
+   *                                indicating if the language is set directly under the BODY element.
+   */
   function getDocumentElementLang(el) {
+    if (!el || !el.hasAttribute) return ["", false];
+
     let elLang = "";
-    if (el != null && el.hasAttribute) {
-      while (el && !elLang && el.nodeName !== "BODY") {
-        if (el.hasAttribute("lang")) {
-          elLang = cleanLangAttr(el.getAttribute("lang"));
-        }
-        el = el.parentElement;
+    let currentLangIsDefault = false;
+
+    // Traverse up the DOM tree to find the first ancestor with a `lang` attribute
+    while (el && !elLang && el.nodeName !== "BODY") {
+      if (el.hasAttribute("lang")) {
+        elLang = cleanLangAttr(el.getAttribute("lang"));
+        currentLangIsDefault = el.parentElement.nodeName === "BODY";
       }
+      el = el.parentElement;
     }
-    return elLang;
+
+    return [elLang, currentLangIsDefault];
   }
 
+  /**
+   * Keep language keys in langAtts all lower case for string comparison purposes.
+   * The key will get correctly cased when used as an attribute value.
+   */
   const langAtts = {
     af: "Afrikaans",
     ak: "Akan",
@@ -264,55 +329,67 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     "zh-hant": "Chinese, Traditional (繁體中文)",
     zu: "Zulu",
   };
-
+  /**
+   * Opens a dialog for selecting or entering a default language for the document.
+   *
+   * @param {string} currentLang - The current language code of the document (e.g., "en-US").
+   * @param {Function} callBack - A callback function that is invoked with the new language code selected by the user.
+   */
   const openChooseDefaultLangDialog = (currentLang = "", callBack) => {
-    let currentTab = "ListTab1";
+    // Keep track of the currently active tab
+    let currentTab = "listTab1";
+
+    // Initialize an array to hold language options
     const languages = [];
+
+    // Populate the languages array with sorted entries from langAtts (assumed to be a predefined object).
     Object.entries(langAtts)
-      .sort(function (a, b) {
-        const x = a[1].toLowerCase();
-        const y = b[1].toLowerCase();
-        return x < y ? -1 : x > y ? 1 : 0;
+      .sort(([codeA, descA], [codeB, descB]) => {
+        // Compare language descriptions alphabetically, case-insensitive
+        return descA.toLowerCase().localeCompare(descB.toLowerCase());
       })
       .forEach(([langCode, langDesc]) => {
+        // Only add valid language attributes (though Object.entries ensures all are valid).
         if (Object.prototype.hasOwnProperty.call(langAtts, langCode)) {
           languages.push({
             value: langCode,
-            text: `${langDesc} - (${cleanLangAttr(langCode)})`,
+            text: `${langDesc} - (${cleanLangAttr(langCode)})`, // Show language description and cleaned code
           });
         }
       });
+
+    // Open the dialog using TinyMCE's windowManager API
     editor.windowManager.open({
-      title: "Select the document's default language.",
+      title: "Select the document's default language.", // Dialog title
       body: {
         type: "tabpanel",
         tabs: [
           {
-            name: "listTab1",
+            name: "listTab1", // First tab for selecting a language from a list
             title: "Choose from list",
             items: [
               {
                 type: "htmlpanel",
                 html: `<div style="margin-bottom:10px">Current language: ${
-                  langAtts[currentLang] || currentLang
+                  langAtts[currentLang] || currentLang // Display current language or code if not in langAtts
                 }</div>`,
               },
               {
                 type: "selectbox",
                 name: "language",
                 label: "New Language:",
-                items: languages,
+                items: languages, // Use the sorted languages array for options
               },
             ],
           },
           {
-            name: "listTab2",
+            name: "listTab2", // Second tab for manually entering a language code
             title: "Enter manually",
             items: [
               {
                 type: "htmlpanel",
                 html: `<div style="margin-bottom:10px">Current language: ${
-                  langAtts[currentLang] || currentLang
+                  langAtts[currentLang] || currentLang // Display current language or code
                 }</div>`,
               },
               {
@@ -324,24 +401,42 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           },
         ],
       },
-      initialData: { language: currentLang },
+      initialData: { language: currentLang }, // Prepopulate with current language
       buttons: [
         { type: "cancel", text: "Cancel" },
-        { type: "submit", text: "Save", primary: true },
+        { type: "submit", text: "Save", primary: true }, // Highlight the save button as primary
       ],
+
+      /**
+       * Callback for when the user changes tabs.
+       * Updates the current tab to track which input method is being used.
+       *
+       * @param {Object} dialogApi - The dialog's API for interacting with the current state.
+       * @param {Object} details - Details about the tab change event.
+       */
       onTabChange(dialogApi, details) {
         currentTab = details.newTabName;
       },
+
+      /**
+       * Callback for when the user submits the dialog.
+       * Validates and processes the selected or entered language code.
+       *
+       * @param {Object} api - The dialog's API for retrieving form data.
+       */
       onSubmit(api) {
         const data = api.getData();
         let newLang =
           currentTab === "listTab2" ? data.manualLanguage : data.language;
+
+        // Validate the new language code using a regex pattern
         if (regexValidLangValue.test(newLang.trim())) {
-          newLang = cleanLangAttr(newLang);
-          editor.focus();
-          callBack(newLang);
-          api.close();
+          newLang = cleanLangAttr(newLang); // Clean the language code for consistency
+          editor.focus(); // Bring focus back to the editor
+          callBack(newLang); // Invoke the callback with the new language
+          api.close(); // Close the dialog
         } else {
+          // If validation fails, alert the user to correct the input
           alert(
             "Enter a valid language code with no spaces. Or, press cancel."
           );
@@ -349,54 +444,66 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
       },
     });
   };
+  /**
+   * Opens a dialog to configure up to six languages, allowing the user to either select from a list or enter manually.
+   *
+   * @param {Array} langMenuItems - An array of pre-selected language codes (up to 6). If empty, no languages are pre-selected.
+   * @param {Function} callBack - A callback function that is invoked with the updated list of languages after submission.
+   */
+  const openConfigureLanguagesOnSelectbox = (langMenuItems = [], callBack) => {
+    // Create an array for select box items, with "None" and "Other" options.
+    const languages = [
+      { value: "-n-", text: "None" }, // Option to select "None"
+      { value: "-o-", text: "Other - Enter manually" }, // Option to enter manually
+    ];
 
-  const openConfigureLanguagesOnSelectbox = (langMenuItems, callBack) => {
-    const languages = [];
-    languages.push({ value: "-n-", text: "None" });
-    languages.push({ value: "-o-", text: "Other - Enter manually" });
+    // Populate the language options by sorting langAtts alphabetically by description.
     Object.entries(langAtts)
-      .sort(function (a, b) {
-        const x = a[1].toLowerCase();
-        const y = b[1].toLowerCase();
-        return x < y ? -1 : x > y ? 1 : 0;
-      })
+      .sort(([codeA, descA], [codeB, descB]) =>
+        descA.toLowerCase().localeCompare(descB.toLowerCase())
+      )
       .forEach(([langCode, langDesc]) => {
         if (Object.prototype.hasOwnProperty.call(langAtts, langCode)) {
           languages.push({
             value: langCode,
-            text: `${langDesc} - (${cleanLangAttr(langCode)})`,
+            text: `${langDesc} - (${cleanLangAttr(langCode)})`, // Show description and cleaned language code
           });
         }
       });
+
+    // Create the list of items for the dialog's language selection section.
     const languageChoiceItems = [
       {
         type: "htmlpanel",
         html: '<div style="margin-bottom:10px">Choose up to six languages</div>',
       },
     ];
+
     let langCounter = 0;
-    if (langMenuItems) {
-      langMenuItems.forEach((lang) => {
-        langCounter++;
-        languageChoiceItems.push({
-          type: "bar",
-          items: [
-            {
-              type: "selectbox",
-              name: `langSelect_${langCounter}`,
-              label: `Language ${langCounter} Select box:`,
-              items: languages,
-            },
-            {
-              type: "input",
-              name: `langInput_${langCounter}`,
-              label: `Language ${langCounter} - Manual entry:`,
-              disabled: Object.prototype.hasOwnProperty.call(langAtts, lang),
-            },
-          ],
-        });
+
+    // If langMenuItems are provided, create the selection interface for them.
+    langMenuItems.forEach((lang) => {
+      langCounter++;
+      languageChoiceItems.push({
+        type: "bar",
+        items: [
+          {
+            type: "selectbox",
+            name: `langSelect_${langCounter}`,
+            label: `Language ${langCounter} Select box:`,
+            items: languages, // Use the languages array for selection options
+          },
+          {
+            type: "input",
+            name: `langInput_${langCounter}`,
+            label: `Language ${langCounter} - Manual entry:`,
+            disabled: Object.prototype.hasOwnProperty.call(langAtts, lang), // Disable input if language is predefined
+          },
+        ],
       });
-    }
+    });
+
+    // Add additional empty language selectors up to the maximum (6 total).
     for (langCounter++; langCounter <= 6; langCounter++) {
       languageChoiceItems.push({
         type: "bar",
@@ -411,33 +518,42 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
             type: "input",
             name: `langInput_${langCounter}`,
             label: `Language ${langCounter} - Manual entry:`,
-            disabled: true,
+            disabled: true, // Initially disabled as no manual input is expected.
           },
         ],
       });
     }
+
+    // Prepare initial data to pre-fill the selection boxes based on provided langMenuItems.
     const initData = {};
-    if (langMenuItems) {
-      let counter = 0;
-      langMenuItems.forEach((lang) => {
-        counter++;
-        if (Object.prototype.hasOwnProperty.call(langAtts, lang)) {
-          initData[`langSelect_${counter}`] = lang.toLowerCase();
-        } else {
-          initData[`langSelect_${counter}`] = "-o-";
-          initData[`langInput_${counter}`] = cleanLangAttr(lang);
-        }
-      });
-    }
+    langMenuItems.forEach((lang, index) => {
+      const counter = index + 1;
+      if (Object.prototype.hasOwnProperty.call(langAtts, lang)) {
+        initData[`langSelect_${counter}`] = lang.toLowerCase();
+      } else {
+        initData[`langSelect_${counter}`] = "-o-"; // Mark as manual entry
+        initData[`langInput_${counter}`] = cleanLangAttr(lang); // Pre-fill with cleaned manual language
+      }
+    });
+
+    // Open the dialog for language configuration
     editor.windowManager.open({
-      title: "Choose languages",
-      body: { type: "panel", items: languageChoiceItems },
+      title: "Choose languages", // Dialog title
+      body: { type: "panel", items: languageChoiceItems }, // Populate dialog with language choice items
       buttons: [
         { type: "cancel", text: "Cancel" },
-        { type: "submit", text: "Save", primary: true },
+        { type: "submit", text: "Save", primary: true }, // Highlight "Save" as the primary action
       ],
+
+      /**
+       * Callback to handle changes in the dialog, enabling/disabling manual input based on selection.
+       *
+       * @param {Object} dialogApi - The dialog's API for retrieving and modifying data.
+       * @param {Object} details - Contains details about the change event.
+       */
       onChange(dialogApi, details) {
-        const data = dialogApi.getData();
+        const data = dialogApi.getData(); // Get the current dialog data
+        // Enable or disable manual input fields based on "Other" selection
         for (let i = 1; i <= 6; i++) {
           if (data[`langSelect_${i}`] === "-o-") {
             dialogApi.enable(`langInput_${i}`);
@@ -446,51 +562,95 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           }
         }
       },
-      initialData: initData,
+
+      initialData: initData, // Set the initial data for pre-selecting options
+
+      /**
+       * Callback for when the user submits the dialog.
+       * Validates the selected or manually entered language codes.
+       *
+       * @param {Object} dialogApi - The dialog's API for retrieving form data.
+       */
       onSubmit(dialogApi) {
         const data = dialogApi.getData();
+        const selectedLangs = [];
+
+        // Validate language selections and manual entries
         for (let i = 1; i <= 6; i++) {
-          if (
-            data[`langSelect_${i}`] === "-o-" &&
-            regexValidLangValue.test(data[`langInput_${i}`].trim())
-          ) {
+          const selectedLang = data[`langSelect_${i}`];
+          const manualLang = data[`langInput_${i}`]?.trim();
+
+          if (selectedLang === "-o-" && !regexValidLangValue.test(manualLang)) {
             alert(
               "Enter a valid language code with no spaces. Or, press cancel."
             );
             return;
           }
-        }
-        langMenuItems = [];
-        for (let i = 1; i <= 6; i++) {
-          if (regexValidLangValue.test(data[`langSelect_${i}`])) {
-            langMenuItems.push(data[`langSelect_${i}`]);
+
+          // Collect valid languages
+          if (regexValidLangValue.test(selectedLang)) {
+            selectedLangs.push(selectedLang);
           } else if (
-            data[`langSelect_${i}`] === "-o-" &&
-            regexValidLangValue.test(data[`langInput_${i}`].trim())
+            selectedLang === "-o-" &&
+            regexValidLangValue.test(manualLang)
           ) {
-            langMenuItems.push(data[`langInput_${i}`].trim());
+            selectedLangs.push(manualLang);
           }
         }
+
+        // Focus back on the editor and invoke the callback with the selected languages
         editor.focus();
-        callBack(langMenuItems);
-        dialogApi.close();
+        callBack(selectedLangs);
+        dialogApi.close(); // Close the dialog after submission
       },
     });
   };
 
+  /**
+   * Opens a TinyMCE dialog to provide help information for editing language (lang) attributes.
+   */
   const openLangAttsHelp = () => {
     editor.windowManager.open({
-      title: "Help for editing language (lang) attributes",
+      title: "Help for Editing Language (lang) Attributes",
       body: {
         type: "panel",
         items: [
           {
             type: "htmlpanel",
-            html: "<div>This is were help would go....</div>",
+            html: `
+                <div>
+                  <p><strong>Language (lang) Attribute Help</strong></p>
+                  <p>
+                    The <code>lang</code> attribute specifies the language of the content 
+                    within an element. It helps screen readers and search engines 
+                    to understand and process the content correctly.
+                  </p>
+                  <p>
+                    To edit the language attributes in this document, you can use the 
+                    provided tools in the editor. You can set the language attribute 
+                    for specific sections or for the entire document.
+                  </p>
+                  <p>Here are some examples of language codes:</p>
+                  <ul>
+                    <li><code>en</code> - English</li>
+                    <li><code>es</code> - Spanish</li>
+                    <li><code>fr</code> - French</li>
+                    <li><code>de</code> - German</li>
+                    <li><code>zh-CN</code> - Chinese (Simplified)</li>
+                  </ul>
+                  <p>For more information, please refer to the <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3C documentation</a>.</p>
+                </div>
+              `,
           },
         ],
       },
-      buttons: [{ type: "submit", text: "Ok", primary: true }],
+      buttons: [
+        {
+          type: "submit",
+          text: "Ok",
+          primary: true,
+        },
+      ],
       onSubmit(api) {
         editor.focus();
         api.close();
@@ -498,79 +658,99 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     });
   };
 
+  /**
+   * Highlights elements with `lang` attributes in the TinyMCE editor document.
+   * Applies different background colors and border styles to indicate language markup.
+   */
   function revealLangMarkUp() {
     const doc = editor.getDoc();
     const languagesFound = {};
-    let st = doc.getElementById("langAttrQA");
-    if (st != null) st.parentElement.removeChild(st);
-    const leftOverColors = colorsAvailable.slice();
-    let langEls = doc.querySelectorAll("*[lang]");
-    langEls.forEach((el) => {
-      const langFound = el.getAttribute("lang").trim();
-      if (
-        el.length > 0 &&
-        Object.prototype.hasOwnProperty.call(languagesFound, langFound) ===
-          false
-      ) {
-        let newColor = "#e1f3f8";
-        if (leftOverColors.length > 0) newColor = leftOverColors.shift();
-        languagesFound[langFound] = newColor;
+
+    // Remove any existing stylesheet for viewing lang markup
+    const existingStyle = doc.getElementById("langAttrQA");
+    if (existingStyle) existingStyle.parentElement.removeChild(existingStyle);
+
+    // Initialize available colors for highlighting
+    const availableColors = [...colorsAvailable];
+    const defaultColor = "#e1f3f8";
+
+    // Collect unique languages found in the document and assign colors
+    const langElements = doc.querySelectorAll("*[lang]");
+    langElements.forEach((el) => {
+      const langFound = cleanLangAttr(el.getAttribute("lang").trim());
+      if (langFound && !languagesFound.hasOwnProperty(langFound)) {
+        languagesFound[langFound] =
+          availableColors.length > 0 ? availableColors.shift() : defaultColor;
       }
     });
-    for (const langCode in langColors) {
+
+    // Merge predefined language colors into the found languages
+    Object.keys(langColors).forEach((langCode) => {
       languagesFound[cleanLangAttr(langCode)] = langColors[langCode];
-    }
-    langEls = doc.querySelectorAll("*[lang]");
-    langEls.forEach((el) => {
-      const langFound = el.getAttribute("lang").trim();
-      if (
-        langFound.length > 0 &&
-        Object.prototype.hasOwnProperty.call(languagesFound, langFound) ===
-          false
-      ) {
-        let newColor = "#e1f3f8";
-        if (leftOverColors.length > 0) newColor = leftOverColors.shift();
-        languagesFound[langFound] = newColor;
-      }
     });
-    st = doc.createElement("style");
-    st.setAttribute("id", "langAttrQA");
-    for (const langCode in languagesFound) {
-      st.appendChild(
-        doc.createTextNode(
-          `*[lang=${langCode}] { padding: 5px; background-color: ${languagesFound[langCode]} !important; border: thin solid black;} `
-        )
+
+    // Create and append a new stylesheet for language markup visualization
+    const styleSheet = doc.createElement("style");
+    styleSheet.setAttribute("id", "langAttrQA");
+
+    Object.entries(languagesFound).forEach(([langCode, color]) => {
+      styleSheet.appendChild(
+        doc.createTextNode(`
+          *[lang="${langCode}"] {
+            padding: 3px;
+            margin: 2px;
+            background-color: ${color} !important;
+            border: thin solid black;
+          }
+          *[lang="${langCode}"]:before {
+            content: "[${langCode}]";
+          }
+          *[lang="${langCode}"]:after {
+            content: "[/${langCode}]";
+          }
+        `)
       );
-      st.appendChild(
-        doc.createTextNode(
-          `*[lang=${langCode}]:before { content: "[${langCode}]"} `
-        )
-      );
-      st.appendChild(
-        doc.createTextNode(
-          `*[lang=${langCode}]:after { content: "[/${langCode}]"} `
-        )
-      );
-    }
-    doc.head.appendChild(st);
+    });
+
+    doc.head.appendChild(styleSheet);
   }
 
+  /**
+   * Refreshes the language markup styles in the TinyMCE editor document.
+   * Re-applies the styles if the `langAttrQA` stylesheet is present.
+   */
   function refreshQaStyles() {
-    if (editor.getDoc().getElementById("langAttrQA")) {
+    const qaStyleElement = editor.getDoc().getElementById("langAttrQA");
+    if (qaStyleElement) {
       revealLangMarkUp();
     }
   }
 
+  /**
+   * Removes the language markup stylesheet from the TinyMCE editor document.
+   */
   function hideLangMarkUp() {
     const doc = editor.getDoc();
-    const st = doc.getElementById("langAttrQA");
-    if (st != null) st.parentElement.removeChild(st);
+
+    // Remove the stylesheet for viewing lang markup if it exists
+    const styleElement = doc.getElementById("langAttrQA");
+    if (styleElement) {
+      styleElement.parentElement.removeChild(styleElement);
+    }
   }
 
+  /**
+   * Sets the default language for the document in the TinyMCE editor.
+   * Updates or creates a `div` with the ID `defaultContentLangHolder` and applies the specified language.
+   *
+   * @param {string} lang - The language code to set as the default document language.
+   */
   function setDefaultDocumentLanguage(lang) {
     const editorDoc = editor.getDoc();
     let defaultLangDiv = editorDoc.getElementById("defaultContentLangHolder");
-    if (defaultLangDiv != null) {
+
+    // Create or update the language holder div
+    if (defaultLangDiv) {
       defaultLangDiv.setAttribute("lang", lang);
     } else {
       defaultLangDiv = editorDoc.createElement("div");
@@ -578,144 +758,249 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
       defaultLangDiv.setAttribute("lang", lang);
       editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
     }
-    while (defaultLangDiv.nextSibling) {
-      defaultLangDiv.appendChild(defaultLangDiv.nextSibling);
-    }
-    while (defaultLangDiv.previousSibling) {
-      defaultLangDiv.insertBefore(
-        defaultLangDiv.previousSibling,
-        defaultLangDiv.firstChild
-      );
-    }
+
+    // Move all sibling elements into the default language div
+    moveSiblingsIntoElement(defaultLangDiv);
+
+    // Focus the editor after making changes
     editor.focus();
   }
 
+  /**
+   * Moves all sibling elements of the target element into the target element.
+   *
+   * @param {Element} targetElement - The element to collect all its siblings.
+   */
+  function moveSiblingsIntoElement(targetElement) {
+    // Append all next siblings to the target element
+    while (targetElement.nextSibling) {
+      targetElement.appendChild(targetElement.nextSibling);
+    }
+
+    // Insert all previous siblings before the target element's first child
+    while (targetElement.previousSibling) {
+      targetElement.insertBefore(
+        targetElement.previousSibling,
+        targetElement.firstChild
+      );
+    }
+  }
+
+  /**
+   * Removes the `lang` attribute from the element at the current cursor position in the TinyMCE editor.
+   * Also removes any empty `span` elements with only the class `langMarkUp`.
+   */
   function removeLangMarkupAtCursor() {
-    const selObj = editor.getBody().ownerDocument.getSelection();
-    if (selObj !== null && selObj.rangeCount === 1) {
-      const r = selObj.getRangeAt(0);
-      if (r.collapsed === true) {
-        let el = r.startContainer;
-        if (el.nodeType === 3) el = el.parentElement;
-        while (el != null && el.hasAttribute("lang") === false) {
-          el = el.parentElement;
+    const doc = editor.getBody().ownerDocument;
+    const selection = doc.getSelection();
+
+    // Check if a single range is selected and the cursor is collapsed (no text selection)
+    if (selection && selection.rangeCount === 1) {
+      const range = selection.getRangeAt(0);
+
+      if (range.collapsed) {
+        let element =
+          range.startContainer.nodeType === 3
+            ? range.startContainer.parentElement
+            : range.startContainer;
+
+        // Traverse up the DOM to find the first ancestor with a `lang` attribute
+        while (element && !element.hasAttribute("lang")) {
+          element = element.parentElement;
         }
-        if (el != null) {
-          el.removeAttribute("lang");
+
+        // If a `lang` attribute is found, remove it and clean up the element if necessary
+        if (element) {
+          element.removeAttribute("lang");
+
+          // If the element is a span with only the `langMarkUp` class and no other attributes, unwrap it
           if (
-            el.nodeName.toLowerCase() === "span" &&
-            (el.attributes.length === 0 || el.className === "langMarkUp")
+            element.nodeName.toLowerCase() === "span" &&
+            isRemovableSpan(element)
           ) {
-            while (el.firstChild) {
-              el.parentElement.insertBefore(el.firstChild, el);
-            }
-            el.parentElement.removeChild(el);
+            unwrapElement(element);
           }
         }
       }
     }
-    const langs = editor
-      .getBody()
-      .ownerDocument.querySelectorAll("span.langMarkUp:not([lang])");
-    langs.forEach(function (langEl) {
-      if (langEl.attributes.length === 1) {
-        while (langEl.firstChild) {
-          langEl.parentElement.insertBefore(langEl.firstChild, langEl);
-        }
-        langEl.parentElement.removeChild(langEl);
+
+    // Clean up any remaining empty `span.langMarkUp` elements
+    const emptyLangSpans = doc.querySelectorAll("span.langMarkUp:not([lang])");
+    emptyLangSpans.forEach((langEl) => {
+      if (isRemovableSpan(langEl)) {
+        unwrapElement(langEl);
       }
     });
   }
 
-  function removeAllLangSpans() {
-    if (
-      confirm("Really remove all lang spans? This cannot be undone.") === true
-    ) {
-      const doc = editor.getDoc();
-      let langs = doc.querySelectorAll("*[lang]");
-      langs.forEach(function (langEl) {
-        langEl.removeAttribute("lang");
-        if (
-          langEl.attributes.length === 0 ||
-          (langEl.attributes.length === 1 && langEl.className === "langMarkUp")
-        ) {
-          while (langEl.firstChild) {
-            langEl.parentElement.insertBefore(langEl.firstChild, langEl);
-          }
-          langEl.parentElement.removeChild(langEl);
-        }
-      });
-      langs = doc.querySelectorAll("span.langMarkUp:not([lang])");
-      langs.forEach(function (langEl) {
-        if (langEl.attributes.length === 1) {
-          while (langEl.firstChild) {
-            langEl.parentElement.insertBefore(langEl.firstChild, langEl);
-          }
-          langEl.parentElement.removeChild(langEl);
-        }
-      });
-    }
+  /**
+   * Checks if the `span` element is removable, i.e., it has no other attributes
+   * and has only the `langMarkUp` class.
+   *
+   * @param {Element} element - The `span` element to check.
+   * @returns {boolean} - True if the element can be removed; false otherwise.
+   */
+  function isRemovableSpan(element) {
+    return (
+      element.attributes.length === 1 &&
+      element.classList.contains("langMarkUp") &&
+      element.classList.length === 1
+    );
   }
 
+  /**
+   * Unwraps the children of the specified element, removing the element itself.
+   *
+   * @param {Element} element - The element to be unwrapped and removed.
+   */
+  function unwrapElement(element) {
+    while (element.firstChild) {
+      element.parentElement.insertBefore(element.firstChild, element);
+    }
+    element.parentElement.removeChild(element);
+  }
+
+  /**
+   * Removes all language markup from the document after user confirmation.
+   * Unwraps and removes any `span` elements with only the `langMarkUp` class.
+   */
+  function removeAllLangSpans() {
+    if (!confirm("Really remove all language markup from the document?"))
+      return;
+
+    const doc = editor.getDoc();
+
+    // Remove `lang` attributes from all elements and clean up if necessary
+    const langElements = doc.querySelectorAll("*[lang]");
+    langElements.forEach((langEl) => {
+      langEl.removeAttribute("lang");
+      if (isRemovableSpan(langEl)) {
+        unwrapElement(langEl);
+      }
+    });
+
+    // Clean up any remaining empty `span.langMarkUp` elements
+    const emptyLangSpans = doc.querySelectorAll("span.langMarkUp:not([lang])");
+    emptyLangSpans.forEach((langEl) => {
+      if (isRemovableSpan(langEl)) {
+        unwrapElement(langEl);
+      }
+    });
+  }
+
+  /**
+   * Registers a new format in the TinyMCE editor for applying a language attribute.
+   *
+   * @param {string} lang - The language code to be applied to the selected text.
+   */
   function registerFormat(lang) {
+    // Clean and standardize the language attribute value
     lang = cleanLangAttr(lang);
+
+    // Define a unique format name based on the language code
     const formatToApply = "setLangTo_" + lang;
+
+    // Register the new format with TinyMCE
     editor.formatter.register(formatToApply, {
       inline: "span",
-      attributes: { lang: lang, class: "langMarkUp" },
+      attributes: {
+        lang: lang,
+        class: "langMarkUp",
+      },
     });
+
+    // Track the registered format to avoid duplicate registrations
     langFormatsRegistered[formatToApply] = true;
   }
 
+  /**
+   * Applies a specified language format to the document in the TinyMCE editor.
+   * If the language format is not registered, it registers and applies it.
+   *
+   * @param {string} lang - The language code to apply to the document.
+   */
   function setDocLangTo(lang) {
     const formatToApply = `setLangTo_${lang}`;
-    if (
-      !Object.prototype.hasOwnProperty.call(
-        langFormatsRegistered,
-        formatToApply
-      )
-    ) {
+
+    // Ensure the format is registered before applying
+    if (!langFormatsRegistered.hasOwnProperty(formatToApply)) {
       registerFormat(lang);
     }
+
     editor.focus();
+
+    // Apply the format within an undo transaction
     editor.undoManager.transact(() => {
-      editor.formatter.apply("setLangTo_" + lang);
+      editor.formatter.apply(formatToApply);
     });
+
+    // Refresh the QA styles to reflect the new language format
     refreshQaStyles();
   }
 
+  /**
+   * Updates the text of the language selector button in the TinyMCE editor.
+   * If the button has not been found, it searches the DOM for a button with the correct aria-label or title.
+   * Once found, it updates the button's text based on the provided language.
+   *
+   * @param {string} newLang - The new language code to display on the button.
+   */
   function updateLanguageSelector(newLang) {
-    if (!myButtonTextPtr) {
-      const container = editor.getContainer();
-      const buttons = container.querySelectorAll("button[aria-haspopup=true]");
-      buttons.forEach((button) => {
-        if (button.title === "Set text language") {
-          myButtonTextPtr = button.firstElementChild;
-          myButtonTextPtr.style = "width:10em;overflow:hidden;display:block";
-        }
-      });
-    }
-    if (myButtonTextPtr) {
-      myButtonTextPtr.innerText =
-        langAtts[newLang.toLowerCase()] || newLang || "-Langauge Not Set-";
+    try {
+      // If the button pointer is not yet set, search for the language button in the DOM
+      if (!myButtonTextPtr) {
+        const container = editor.getContainer();
+        const buttons = container.querySelectorAll(
+          "button[aria-haspopup=true]"
+        );
+
+        // Loop through buttons to find the one with the correct aria-label or title
+        buttons.forEach((button) => {
+          const isTextLanguageButton =
+            button.getAttribute("aria-label") === "Set text language" ||
+            button.getAttribute("title") === "Set text language";
+
+          if (isTextLanguageButton) {
+            // Store the reference to the text node inside the button
+            myButtonTextPtr = button.firstElementChild;
+            myButtonTextPtr.style = "width:10em;overflow:hidden;display:block";
+          }
+        });
+      }
+
+      // If the button was found, update its text with the new language or fallback to the default
+      if (myButtonTextPtr) {
+        myButtonTextPtr.innerText =
+          langAtts[newLang.toLowerCase()] || newLang || "-Language Not Set-";
+      }
+    } catch (ex) {
+      // ignore errors
     }
   }
 
+  // Register a new menu button for selecting language in the TinyMCE editor
   editor.ui.registry.addMenuButton("languageSelector", {
-    text: "-Language Not Set-",
-    tooltip: "Set text language",
+    text: "-Language Not Set-", // Default text for the button when no language is set
+    tooltip: "Set text language", // Tooltip for the button
     fetch: function (callback) {
-      const items = [];
-      const sortedArrayOfLangs = analyzeEditorDocumentLangUsage();
+      const items = []; // Array to hold menu items
+      const sortedArrayOfLangs = analyzeEditorDocumentLangUsage(); // Analyze current language usage in the document
+
+      // Initialize language menu items if they are not already populated
       if (langMenuItems.length < 1) {
+        // Add the default language of the page holding the editor if valid
         if (regexValidLangValue.test(defaultLangOfPageHoldingEditor)) {
           langMenuItems.push(defaultLangOfPageHoldingEditor.toLowerCase());
         }
+
+        // Populate the menu with up to 6 most-used languages in the document
         sortedArrayOfLangs.forEach((lang) => {
           if (langMenuItems.length < 6) {
             langMenuItems.push(lang);
           }
         });
+
+        // Add configured default languages if not already in the list
         defaultLangsConfigured.forEach((lang) => {
           let found = false;
           if (langMenuItems.length < 5) {
@@ -728,15 +1013,19 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           }
         });
       }
+
+      // Create menu items for each language in langMenuItems
       langMenuItems.forEach((lang) => {
         items.push({
           type: "menuitem",
-          text: langAtts[lang.toLowerCase()] || cleanLangAttr(lang),
+          text: langAtts[lang.toLowerCase()] || cleanLangAttr(lang), // Display language name
           onAction: function () {
-            setDocLangTo(lang);
+            setDocLangTo(lang); // Set document language to selected value
           },
         });
       });
+
+      // Add nested menu item for removing language markup
       items.push({
         type: "nestedmenuitem",
         text: "Remove Language Markup",
@@ -749,7 +1038,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
               text: "Remove current lang value",
               icon: "remove",
               onAction: function () {
-                removeLangMarkupAtCursor();
+                removeLangMarkupAtCursor(); // Remove language markup at cursor
               },
             },
             {
@@ -757,12 +1046,14 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
               text: "Remove All lang markup",
               icon: "warning",
               onAction: function () {
-                removeAllLangSpans();
+                removeAllLangSpans(); // Remove all language markup in the document
               },
             },
           ];
         },
       });
+
+      // Add item to configure languages
       items.push({
         type: "menuitem",
         icon: "preferences",
@@ -770,6 +1061,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
         onAction: function () {
           let currentLang = "";
           const editorBody = editor.getDoc().body;
+
+          // Check if the body has a lang attribute and set currentLang accordingly
           if (
             editorBody.children.length === 1 &&
             editorBody.firstElementChild.hasAttribute("lang")
@@ -779,6 +1072,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
                 editorBody.firstElementChild.getAttribute("lang")
               ) || currentLang;
           }
+
+          // Open the configuration dialog for languages
           openConfigureLanguagesOnSelectbox(
             langMenuItems,
             (newLangMenuItems) => {
@@ -787,6 +1082,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           );
         },
       });
+
+      // Add item to set default document language
       items.push({
         type: "menuitem",
         icon: "document-properties",
@@ -794,6 +1091,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
         onAction: function () {
           let currentLang = "";
           const editorBody = editor.getDoc().body;
+
+          // Get current document language if set
           if (
             editorBody.children.length === 1 &&
             editorBody.firstElementChild.hasAttribute("lang")
@@ -803,12 +1102,16 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
                 editorBody.firstElementChild.getAttribute("lang")
               ) || currentLang;
           }
+
+          // Open the default language dialog
           openChooseDefaultLangDialog(currentLang, (newLang) => {
             setDefaultDocumentLanguage(newLang);
-            refreshQaStyles();
+            refreshQaStyles(); // Refresh styles after language change
           });
         },
       });
+
+      // Toggle item for revealing/hiding language markup
       items.push({
         type: "togglemenuitem",
         text: "Reveal lang markup",
@@ -816,34 +1119,43 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
         onAction: function () {
           tsViewMarkup = !tsViewMarkup;
           if (tsViewMarkup) {
-            revealLangMarkUp();
+            revealLangMarkUp(); // Reveal language markup
           } else {
-            hideLangMarkUp();
+            hideLangMarkUp(); // Hide language markup
           }
         },
         onSetup: function (api) {
-          api.setActive(tsViewMarkup);
-          return function () {};
+          api.setActive(tsViewMarkup); // Set active state based on current view
+          return function () {}; // Return a teardown function (optional)
         },
       });
+
+      // Add help menu item for language attribute editing
       items.push({
         type: "menuitem",
         icon: "help",
         text: "Help with language (lang) attribute editing",
         onAction: function () {
-          openLangAttsHelp();
+          openLangAttsHelp(); // Open help dialog for language attribute editing
         },
       });
-      callback(items);
+
+      callback(items); // Execute callback with the built menu items
     },
+
+    // Setup event listeners for the button
     onSetup: function (buttonApi) {
       const editorEventCallback = function (eventApi) {
-        lastCurrentLang = getDocumentElementLang(eventApi.element);
-        updateLanguageSelector(lastCurrentLang);
+        let [lastCurrentLang] = getDocumentElementLang(eventApi.element); // Get current document language
+        updateLanguageSelector(lastCurrentLang); // Update button text based on the current language
       };
+
+      // Listen for content changes in the editor
       editor.on("NodeChange", editorEventCallback);
       editor.on("SetContent", editorEventCallback);
       editor.on("Focus", editorEventCallback);
+
+      // Teardown event listeners when the button is removed
       return function (buttonApi) {
         editor.off("NodeChange", editorEventCallback);
         editor.off("SetContent", editorEventCallback);
@@ -854,8 +1166,13 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
   return {
     getMetadata() {
-      return { name: "LanguageSelector plugin" };
+      return {
+        name: "LanguageSelector plugin", // Name of the plugin
+        version: "1.0.0", // Version number for better tracking of updates
+        author: "Indiana University", // Add author or maintainer for clarity
+        description:
+          "A plugin to ease setting language (lang) attributes in TinyMCE editor document content.", // Brief description of the plugin
+      };
     },
   };
-
 });
