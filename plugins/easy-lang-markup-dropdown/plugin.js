@@ -7,8 +7,15 @@
 tinyMCE.PluginManager.add("languageSelect", function (editor) {
   "use strict";
   const regexValidLangValue = /^[^-\s]{2,5}(-[^-\s]{2,6})*$/;
-  const defaultLangsConfigured = ["en", "es", "fr", "it", "de"];
-  const langColors = {
+
+  let iconName = "easyLangIcon";
+  let showCurrentLanguage = false;
+  let enableKeyboardShortcuts = true;
+
+  let keyboardShortCuts = ["meta+Shift+1", "meta+Shift+2", "meta+Shift+3", "meta+Shift+4", "meta+Shift+5", "meta+Shift+6"];
+
+  let defaultLanguages = ["en", "es", "fr", "it", "de"];
+  let langColors = {
     en: "#eee",
     "en-us": "#ddd",
     es: "#E6B0AA",
@@ -16,7 +23,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     it: "#ABEBC6",
     de: "#F9E79F",
   };
-  const colorsAvailable = [
+  let colorsAvailable = [
     "#02bfe7",
     "#59C879",
     "#f9c642",
@@ -26,11 +33,10 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     "#aeb0b5",
     "#EC0000",
   ];
+
   const langFormatsRegistered = {};
   let defaultLangOfPageHoldingEditor = "";
-  let langsUsedInEditorDocument = {};
   let tsViewMarkup = false;
-  let lastCurrentLang = null;
   let langMenuItems = [];
   let myButtonTextPtr = null;
 
@@ -97,14 +103,24 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
     let defaultLang = "";
 
+    // See if the tinyMCE.init has a config value for easylang_default_document_language
+    if(editor && editor.getParam) {
+      const defaultLangFromConfig = editor.getParam("easylang_default_document_language");
+      if (regexValidLangValue.test(defaultLangFromConfig)) {
+        defaultLang = defaultLangFromConfig;
+      }
+    }
+
     // 1. Check if editor has a configured language setting
-    if (editor.settings && editor.settings.language) {
+    if (!regexValidLangValue.test(defaultLang) && editor && editor.settings && editor.settings.language) {
       defaultLang = cleanLangAttr(editor.settings.language);
     }
 
     // 2. Check if the document body has one child with a lang attribute
     if (
       !regexValidLangValue.test(defaultLang) &&
+      editorDocument &&
+      editorDocument.body &&
       editorDocument.body.childElementCount === 1 &&
       editorDocument.body.children[0].hasAttribute("lang")
     ) {
@@ -116,6 +132,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     // 3. Check if the document body has a lang attribute
     if (
       !regexValidLangValue.test(defaultLang) &&
+      editorDocument &&
+      editorDocument.body &&
       editorDocument.body.hasAttribute("lang")
     ) {
       defaultLang = cleanLangAttr(editorDocument.body.getAttribute("lang"));
@@ -124,6 +142,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     // 4. Check if the document root (HTML element) has a lang attribute
     if (
       !regexValidLangValue.test(defaultLang) &&
+      topDocument &&
+      topDocument.documentElement &&
       topDocument.documentElement.hasAttribute("lang")
     ) {
       defaultLang = cleanLangAttr(
@@ -132,7 +152,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     }
 
     // 5. Fallback: Use browser language or default to 'en'
-    if (!regexValidLangValue.test(defaultLang)) {
+    if (!regexValidLangValue.test(defaultLang) && window && window.navigator) {
       defaultLang =
         baseLanguage(
           window.navigator.language || window.navigator.userLanguage
@@ -336,6 +356,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
    * @param {Function} callBack - A callback function that is invoked with the new language code selected by the user.
    */
   const openChooseDefaultLangDialog = (currentLang = "", callBack) => {
+    let initialLanguageValue =
+      currentLang || defaultLangOfPageHoldingEditor || "";
     // Keep track of the currently active tab
     let currentTab = "listTab1";
 
@@ -401,7 +423,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           },
         ],
       },
-      initialData: { language: currentLang }, // Prepopulate with current language
+      initialData: { language: initialLanguageValue.toLowerCase() }, // Prepopulate with current language
       buttons: [
         { type: "cancel", text: "Cancel" },
         { type: "submit", text: "Save", primary: true }, // Highlight the save button as primary
@@ -444,6 +466,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
       },
     });
   };
+
   /**
    * Opens a dialog to configure up to six languages, allowing the user to either select from a list or enter manually.
    *
@@ -497,7 +520,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
             type: "input",
             name: `langInput_${langCounter}`,
             label: `Language ${langCounter} - Manual entry:`,
-            disabled: Object.prototype.hasOwnProperty.call(langAtts, lang), // Disable input if language is predefined
+            disabled: Object.prototype.hasOwnProperty.call(langAtts, lang), // Disable input if language is predefined (pre v7)
+            enabled: !Object.prototype.hasOwnProperty.call(langAtts, lang), // Disable input if language is predefined
           },
         ],
       });
@@ -518,7 +542,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
             type: "input",
             name: `langInput_${langCounter}`,
             label: `Language ${langCounter} - Manual entry:`,
-            disabled: true, // Initially disabled as no manual input is expected.
+            disabled: true, // Initially disabled as no manual input is expected. (pre v7)
+            enabled: false,
           },
         ],
       });
@@ -556,9 +581,17 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
         // Enable or disable manual input fields based on "Other" selection
         for (let i = 1; i <= 6; i++) {
           if (data[`langSelect_${i}`] === "-o-") {
-            dialogApi.enable(`langInput_${i}`);
+            if (dialogApi.setEnabled) {
+              dialogApi.setEnabled(`langInput_${i}`, true);
+            } else if (dialogApi.enable) {
+              dialogApi.enable(`langInput_${i}`);
+            }
           } else {
-            dialogApi.disable(`langInput_${i}`);
+            if (dialogApi.setEnabled) {
+              dialogApi.setEnabled(`langInput_${i}`, false);
+            } else if (dialogApi.disable) {
+              dialogApi.disable(`langInput_${i}`);
+            }
           }
         }
       },
@@ -978,176 +1011,257 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     }
   }
 
-  // Register a new menu button for selecting language in the TinyMCE editor
-  editor.ui.registry.addMenuButton("languageSelector", {
-    text: "-Language Not Set-", // Default text for the button when no language is set
-    tooltip: "Set text language", // Tooltip for the button
-    fetch: function (callback) {
-      const items = []; // Array to hold menu items
+  const initializeLanguageMenuEntriesList = () => {
+    // Initialize language menu items if they are not already populated
+    if (langMenuItems.length < 1) {
       const sortedArrayOfLangs = analyzeEditorDocumentLangUsage(); // Analyze current language usage in the document
 
-      // Initialize language menu items if they are not already populated
-      if (langMenuItems.length < 1) {
-        // Add the default language of the page holding the editor if valid
-        if (regexValidLangValue.test(defaultLangOfPageHoldingEditor)) {
-          langMenuItems.push(defaultLangOfPageHoldingEditor.toLowerCase());
-        }
-
-        // Populate the menu with up to 6 most-used languages in the document
-        sortedArrayOfLangs.forEach((lang) => {
-          if (langMenuItems.length < 6) {
-            langMenuItems.push(lang);
-          }
-        });
-
-        // Add configured default languages if not already in the list
-        defaultLangsConfigured.forEach((lang) => {
-          let found = false;
-          if (langMenuItems.length < 5) {
-            langMenuItems.forEach((l) => {
-              if (l.toLowerCase().startsWith(lang.toLowerCase())) found = true;
-            });
-            if (!found) {
-              langMenuItems.push(lang);
-            }
-          }
-        });
+      // Add the default language of the page holding the editor if valid
+      if (
+        regexValidLangValue.test(defaultLangOfPageHoldingEditor) &&
+        !langMenuItems.includes(defaultLangOfPageHoldingEditor.toLowerCase())
+      ) {
+        langMenuItems.push(defaultLangOfPageHoldingEditor.toLowerCase());
       }
 
-      // Create menu items for each language in langMenuItems
-      langMenuItems.forEach((lang) => {
-        items.push({
-          type: "menuitem",
-          text: langAtts[lang.toLowerCase()] || cleanLangAttr(lang), // Display language name
-          onAction: function () {
-            setDocLangTo(lang); // Set document language to selected value
+      // Populate the menu with up to 6 most-used languages in the document
+      sortedArrayOfLangs.forEach((lang) => {
+        lang = lang.toLowerCase();
+        if (langMenuItems.length < 6 && !langMenuItems.includes(lang)) {
+          langMenuItems.push(lang);
+        }
+      });
+
+      // Add configured default languages if not already in the list
+      defaultLanguages.forEach((lang) => {
+        lang = lang.toLowerCase();
+        if (langMenuItems.length < 6 && !langMenuItems.includes(lang)) {
+          langMenuItems.push(lang);
+        }
+      });
+    }
+  };
+
+  const buildEasyLangMenuItems = (callback) => {
+    const items = []; // Array to hold menu items
+
+    initializeLanguageMenuEntriesList();
+
+    // Create menu items for each language in langMenuItems
+    langMenuItems.forEach((lang, index) => {
+      items.push({
+        type: "menuitem",
+        text: langAtts[lang.toLowerCase()] || cleanLangAttr(lang), // Display language name
+        shortcut: enableKeyboardShortcuts ? `meta+Shift+${index+1}` : null,
+        onAction: function () {
+          setDocLangTo(lang); // Set document language to selected value
+        },
+      });
+    });
+
+    // Add nested menu item for removing language markup
+    items.push({
+      type: "nestedmenuitem",
+      text: "Remove Language Markup",
+      icon: "remove",
+      disabled: false,
+      getSubmenuItems: function () {
+        return [
+          {
+            type: "menuitem",
+            text: "Remove current lang value",
+            icon: "remove",
+            onAction: function () {
+              removeLangMarkupAtCursor(); // Remove language markup at cursor
+            },
           },
+          {
+            type: "menuitem",
+            text: "Remove All lang markup",
+            icon: "warning",
+            onAction: function () {
+              removeAllLangSpans(); // Remove all language markup in the document
+            },
+          },
+        ];
+      },
+    });
+
+    // Add item to configure languages
+    items.push({
+      type: "menuitem",
+      icon: "preferences",
+      text: "Configure languages",
+      onAction: function () {
+        let currentLang = "";
+        const editorBody = editor.getDoc().body;
+
+        // Check if the body has a lang attribute and set currentLang accordingly
+        if (
+          editorBody.children.length === 1 &&
+          editorBody.firstElementChild.hasAttribute("lang")
+        ) {
+          currentLang =
+            cleanLangAttr(editorBody.firstElementChild.getAttribute("lang")) ||
+            currentLang;
+        }
+
+        // Open the configuration dialog for languages
+        openConfigureLanguagesOnSelectbox(langMenuItems, (newLangMenuItems) => {
+          langMenuItems = newLangMenuItems;
         });
-      });
+      },
+    });
 
-      // Add nested menu item for removing language markup
-      items.push({
-        type: "nestedmenuitem",
-        text: "Remove Language Markup",
-        icon: "remove",
-        disabled: false,
-        getSubmenuItems: function () {
-          return [
-            {
-              type: "menuitem",
-              text: "Remove current lang value",
-              icon: "remove",
-              onAction: function () {
-                removeLangMarkupAtCursor(); // Remove language markup at cursor
-              },
-            },
-            {
-              type: "menuitem",
-              text: "Remove All lang markup",
-              icon: "warning",
-              onAction: function () {
-                removeAllLangSpans(); // Remove all language markup in the document
-              },
-            },
-          ];
-        },
-      });
+    // Add item to set default document language
+    items.push({
+      type: "menuitem",
+      icon: "document-properties",
+      text: "Set default document language",
+      onAction: function () {
+        let currentLang = "";
+        const editorBody = editor.getDoc().body;
 
-      // Add item to configure languages
-      items.push({
-        type: "menuitem",
-        icon: "preferences",
-        text: "Configure languages",
-        onAction: function () {
-          let currentLang = "";
-          const editorBody = editor.getDoc().body;
+        // Get current document language if set
+        if (
+          editorBody.children.length === 1 &&
+          editorBody.firstElementChild.hasAttribute("lang")
+        ) {
+          currentLang =
+            cleanLangAttr(editorBody.firstElementChild.getAttribute("lang")) ||
+            currentLang;
+        }
 
-          // Check if the body has a lang attribute and set currentLang accordingly
-          if (
-            editorBody.children.length === 1 &&
-            editorBody.firstElementChild.hasAttribute("lang")
-          ) {
-            currentLang =
-              cleanLangAttr(
-                editorBody.firstElementChild.getAttribute("lang")
-              ) || currentLang;
-          }
+        // Open the default language dialog
+        openChooseDefaultLangDialog(currentLang, (newLang) => {
+          setDefaultDocumentLanguage(newLang);
+          refreshQaStyles(); // Refresh styles after language change
+        });
+      },
+    });
 
-          // Open the configuration dialog for languages
-          openConfigureLanguagesOnSelectbox(
-            langMenuItems,
-            (newLangMenuItems) => {
-              langMenuItems = newLangMenuItems;
-            }
-          );
-        },
-      });
+    // Toggle item for revealing/hiding language markup
+    items.push({
+      type: "togglemenuitem",
+      text: "Reveal lang markup",
+      icon: "preview",
+      onAction: function () {
+        tsViewMarkup = !tsViewMarkup;
+        if (tsViewMarkup) {
+          revealLangMarkUp(); // Reveal language markup
+        } else {
+          hideLangMarkUp(); // Hide language markup
+        }
+      },
+      onSetup: function (api) {
+        api.setActive(tsViewMarkup); // Set active state based on current view
+        return function () {}; // Return a teardown function (optional)
+      },
+    });
 
-      // Add item to set default document language
-      items.push({
-        type: "menuitem",
-        icon: "document-properties",
-        text: "Set default document language",
-        onAction: function () {
-          let currentLang = "";
-          const editorBody = editor.getDoc().body;
+    // Add help menu item for language attribute editing
+    items.push({
+      type: "menuitem",
+      icon: "help",
+      text: "Help with language (lang) attribute editing",
+      onAction: function () {
+        openLangAttsHelp(); // Open help dialog for language attribute editing
+      },
+    });
 
-          // Get current document language if set
-          if (
-            editorBody.children.length === 1 &&
-            editorBody.firstElementChild.hasAttribute("lang")
-          ) {
-            currentLang =
-              cleanLangAttr(
-                editorBody.firstElementChild.getAttribute("lang")
-              ) || currentLang;
-          }
-
-          // Open the default language dialog
-          openChooseDefaultLangDialog(currentLang, (newLang) => {
-            setDefaultDocumentLanguage(newLang);
-            refreshQaStyles(); // Refresh styles after language change
-          });
-        },
-      });
-
-      // Toggle item for revealing/hiding language markup
-      items.push({
-        type: "togglemenuitem",
-        text: "Reveal lang markup",
-        icon: "preview",
-        onAction: function () {
-          tsViewMarkup = !tsViewMarkup;
-          if (tsViewMarkup) {
-            revealLangMarkUp(); // Reveal language markup
-          } else {
-            hideLangMarkUp(); // Hide language markup
-          }
-        },
-        onSetup: function (api) {
-          api.setActive(tsViewMarkup); // Set active state based on current view
-          return function () {}; // Return a teardown function (optional)
-        },
-      });
-
-      // Add help menu item for language attribute editing
-      items.push({
-        type: "menuitem",
-        icon: "help",
-        text: "Help with language (lang) attribute editing",
-        onAction: function () {
-          openLangAttsHelp(); // Open help dialog for language attribute editing
-        },
-      });
-
+    if (callback) {
       callback(items); // Execute callback with the built menu items
+    } else {
+      return items;
+    }
+  };
+
+  const addKeyboardShortcuts = () => {
+    if(enableKeyboardShortcuts && keyboardShortCuts && keyboardShortCuts.length>0) {
+      keyboardShortCuts.forEach((shortcut, index) => {
+        shortcut = shortcut.trim();
+        if(shortcut>"") {
+          const langNumber = index+1;
+          const commandName = `setLanguageShortcut${langNumber}`;
+          // Define a custom command
+          editor.addCommand(commandName, function() {
+            setDocLangTo(langMenuItems[index]); // Set document language to selected value
+          });
+
+          // Assign the keyboard shortcut Ctrl+Shift+1 to the command
+          editor.addShortcut(shortcut, `Apply Language ${langNumber}`, commandName);
+        }
+      });
+    }
+  }
+
+  editor.ui.registry.addIcon(
+    "easyLangIcon",
+    '<svg width="24" height="24"><g><path d="M10.9,8.1v1.7L5.1,7.2V5.8l5.9-2.6v1.7L6.8,6.5L10.9,8.1z"/><path d="M18.9,7.2l-5.9,2.6V8.2l4.1-1.6l-4.1-1.6V3.3l5.9,2.5V7.2z"/></g><g><path d="M0.2,19.8v-6.9c0-0.3,0.1-0.6,0.2-0.7s0.3-0.2,0.6-0.2s0.4,0.1,0.6,0.2s0.2,0.4,0.2,0.7v6.9c0,0.3-0.1,0.6-0.2,0.7 S1.3,20.8,1,20.8c-0.2,0-0.4-0.1-0.6-0.3S0.2,20.2,0.2,19.8z"/><path d="M7.5,19.9c-0.4,0.3-0.8,0.5-1.1,0.7s-0.8,0.2-1.2,0.2c-0.4,0-0.8-0.1-1.1-0.2s-0.5-0.4-0.7-0.7S3.1,19.3,3.1,19 c0-0.4,0.1-0.8,0.4-1.1s0.7-0.5,1.1-0.6c0.1,0,0.4-0.1,0.8-0.2s0.7-0.2,1-0.2s0.6-0.2,0.9-0.2c0-0.4-0.1-0.7-0.3-0.9 s-0.5-0.3-0.9-0.3c-0.4,0-0.7,0.1-0.9,0.2s-0.4,0.3-0.5,0.5s-0.2,0.4-0.3,0.4s-0.2,0.1-0.4,0.1c-0.2,0-0.3-0.1-0.5-0.2 S3.4,16.2,3.4,16c0-0.3,0.1-0.6,0.3-0.8s0.5-0.5,0.9-0.7s0.9-0.3,1.6-0.3c0.7,0,1.3,0.1,1.7,0.2s0.7,0.4,0.9,0.8S9,16.2,9,16.8 c0,0.4,0,0.7,0,1s0,0.6,0,0.9c0,0.3,0,0.6,0.1,0.9s0.1,0.5,0.1,0.6c0,0.2-0.1,0.3-0.2,0.4s-0.3,0.2-0.5,0.2c-0.2,0-0.3-0.1-0.5-0.2 S7.7,20.2,7.5,19.9z M7.4,17.6c-0.2,0.1-0.6,0.2-1,0.3S5.7,18,5.5,18.1S5.1,18.2,5,18.3s-0.2,0.3-0.2,0.5c0,0.2,0.1,0.4,0.3,0.6 s0.4,0.3,0.7,0.3c0.3,0,0.6-0.1,0.9-0.2s0.5-0.3,0.6-0.5c0.1-0.2,0.2-0.6,0.2-1.2V17.6z"/><path d="M12.1,15.2v0.2c0.3-0.4,0.6-0.6,0.9-0.8s0.7-0.3,1.2-0.3c0.4,0,0.8,0.1,1.1,0.3s0.6,0.4,0.7,0.8c0.1,0.2,0.2,0.4,0.2,0.6 s0,0.5,0,0.9v3c0,0.3-0.1,0.6-0.2,0.7s-0.3,0.2-0.6,0.2c-0.2,0-0.4-0.1-0.6-0.3s-0.2-0.4-0.2-0.7v-2.7c0-0.5-0.1-0.9-0.2-1.2 s-0.4-0.4-0.9-0.4c-0.3,0-0.5,0.1-0.8,0.3s-0.4,0.4-0.5,0.7c-0.1,0.2-0.1,0.7-0.1,1.3v2c0,0.3-0.1,0.6-0.2,0.7s-0.3,0.2-0.6,0.2 c-0.2,0-0.4-0.1-0.6-0.3s-0.2-0.4-0.2-0.7v-4.6c0-0.3,0.1-0.5,0.2-0.7s0.3-0.2,0.5-0.2c0.1,0,0.3,0,0.4,0.1s0.2,0.2,0.3,0.3 S12.1,15,12.1,15.2z"/><path d="M23.8,15.5v4.6c0,0.5-0.1,1-0.2,1.4s-0.3,0.7-0.5,0.9s-0.6,0.4-1,0.6s-0.9,0.2-1.5,0.2c-0.6,0-1-0.1-1.5-0.2 s-0.8-0.4-1-0.6s-0.4-0.5-0.4-0.8c0-0.2,0.1-0.4,0.2-0.5s0.3-0.2,0.5-0.2c0.2,0,0.4,0.1,0.6,0.3c0.1,0.1,0.2,0.2,0.3,0.3 s0.2,0.2,0.3,0.3S19.8,22,20,22s0.3,0.1,0.5,0.1c0.4,0,0.7-0.1,1-0.2s0.4-0.3,0.5-0.5s0.1-0.4,0.2-0.7s0-0.6,0-1.1 c-0.2,0.3-0.5,0.6-0.9,0.8s-0.7,0.3-1.2,0.3c-0.5,0-1-0.1-1.4-0.4s-0.7-0.7-0.9-1.1s-0.3-1.1-0.3-1.7c0-0.5,0.1-0.9,0.2-1.3 s0.3-0.7,0.6-1s0.5-0.5,0.8-0.6s0.7-0.2,1-0.2c0.5,0,0.8,0.1,1.2,0.3s0.6,0.4,0.9,0.8v-0.2c0-0.3,0.1-0.5,0.2-0.6s0.3-0.2,0.5-0.2 c0.3,0,0.5,0.1,0.6,0.3S23.8,15.1,23.8,15.5z M19.1,17.5c0,0.6,0.1,1.1,0.4,1.5s0.6,0.5,1.1,0.5c0.3,0,0.5-0.1,0.8-0.2 s0.4-0.4,0.6-0.6s0.2-0.6,0.2-1c0-0.7-0.1-1.2-0.4-1.5s-0.7-0.5-1.1-0.5c-0.5,0-0.8,0.2-1.1,0.5S19.1,16.9,19.1,17.5z"/></g></svg>'
+  );
+
+  // Check for custom configuration settings in editor.settings from the tinyMCE.init
+  (() => {
+    if (!(editor && editor.getParam)) return;
+
+    const new_icon_name = editor.getParam("easylang_icon");
+    if (new_icon_name) {
+      const icons = editor.ui.registry.getAll().icons;
+      if (icons.hasOwnProperty(new_icon_name)) {
+        iconName = new_icon_name;
+      }
+    }
+
+    showCurrentLanguage = editor.getParam('easylang_show_current_language') === true;
+    
+    enableKeyboardShortcuts = !(editor.getParam('easylang_enable_keyboard_shortcuts') === false);
+    if(enableKeyboardShortcuts) {
+      addKeyboardShortcuts();
+    }
+
+    const content_langs = editor.getParam("content_langs");
+    if (content_langs && content_langs.length > 0) {
+      const newDefaultLanguages = [];
+      content_langs.forEach((language) => {
+        if (regexValidLangValue.test(language.code)) {
+          let newCode = language.code.toLowerCase();
+          newDefaultLanguages.push(newCode);
+          let newLanguageTitle = (language.title || "").trim();
+          if (newLanguageTitle) {
+            langAtts[newCode] = newLanguageTitle || newCode;
+          }
+        }
+      });
+      if (newDefaultLanguages.length > 0) {
+        defaultLanguages = newDefaultLanguages;
+      }
+    }
+  })();
+
+  // Register a menu item that triggers an alert when clicked
+  // To show this menu item in the editor, include it in the menu setting
+  editor.ui.registry.addNestedMenuItem("easyLangMenu", {
+    text: "Language",
+    getSubmenuItems: function () {
+      return buildEasyLangMenuItems();
+    },
+  });
+
+  // Register a new menu button for selecting language in the TinyMCE editor
+  editor.ui.registry.addMenuButton("languageSelector", {
+    text: showCurrentLanguage ? "-Language Not Set-" : null, // Default text for the button when no language is set
+    icon: showCurrentLanguage ? null : (iconName || "easyLangIcon"),
+    tooltip: "Set text language", // Tooltip for the button
+    fetch: function (callback) {
+      buildEasyLangMenuItems(callback);
     },
 
     // Setup event listeners for the button
     onSetup: function (buttonApi) {
       const editorEventCallback = function (eventApi) {
         let [lastCurrentLang] = getDocumentElementLang(eventApi.element); // Get current document language
-        updateLanguageSelector(lastCurrentLang); // Update button text based on the current language
+        if(showCurrentLanguage) updateLanguageSelector(lastCurrentLang); // Update button text based on the current language
+        buttonApi.setActive(lastCurrentLang > "");
       };
 
       // Listen for content changes in the editor
