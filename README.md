@@ -6,12 +6,17 @@ This plugin provides an easy-to-use interface for managing language attributes (
 
 - Set document-wide default language
 - Apply language attributes to selected text
-- Quick access to commonly used languages
+- Quick access to commonly used languages and languages available are user configurable
+- Automatically scans existing documents for languages used within it
 - Visual highlighting of language-marked sections
 - Keyboard shortcuts for frequent language selections
 - Remove language markup from selections or entire document
 - Validation of language codes
 - Help documentation for proper language attribute usage
+
+## Demo
+
+To see the plugin in action, see the [TinyMCE Language Plugin Development (TinyMCE Version 7.4.0)](https://brichwin.pages.iu.edu/tests/tinyMCE-lang-plugins/examples_7.4.0/basic-tinyMCE-langs-canvas.html)
 
 ## Installation
 
@@ -96,10 +101,9 @@ This plugin utilizes the following TinyMCE APIs:
 
 This plugin helps maintain WCAG compliance by:
 
-- Ensuring proper language attribute (`lang`) usage
-- Supporting screen readers with correct language pronunciation
-- Providing keyboard shortcuts for common operations
-- Making language changes visually apparent with optional highlighting
+- Ensuring proper language attribute (`lang`) usage which supports screen reading software with correct language pronunciation
+- Optionally provides keyboard shortcuts for common operations
+- Makes verifying language change markup easy by making them visually apparent with optional highlighting
 
 ## License
 
