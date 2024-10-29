@@ -29,7 +29,15 @@ your-project/
 tinymce.init({
   selector: 'textarea',  // change to match your selector
   plugins: 'languageSelect',
-  toolbar: 'languageSelector'
+  toolbar: 'languageSelector',
+  "menu": {
+    // ... other menu options ...
+    "format": {
+      "title": "Format",
+      "items": "bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | easyLangMenu | removeformat"
+    },
+    // ... other menu options ...
+  }
 });
 ```
 
