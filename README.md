@@ -34,7 +34,7 @@ your-project/
         plugin.min.js
 ```
 
-2. Add the plugin and toolbar button to your TinyMCE configuration:
+2. Add the plugin, toolbar button, and menu entry to your TinyMCE configuration:
 ```javascript
 tinymce.init({
   selector: 'textarea',  // change to match your selector
