@@ -18,6 +18,10 @@ This plugin provides an easy-to-use interface for managing language attributes (
 
 To see the plugin in action, see the [TinyMCE Language Plugin Development (TinyMCE Version 7.4.0)](https://brichwin.pages.iu.edu/tests/tinyMCE-lang-plugins/examples_7.4.0/basic-tinyMCE-langs-canvas.html)
 
+## Build
+
+Use your favorite tool to minify the plugin.js file to plugin.min.js.
+
 ## Installation
 
 1. Copy the `languageSelect` plugin to your TinyMCE plugins directory:
@@ -27,6 +31,7 @@ your-project/
     plugins/
       languageSelect/
         plugin.js
+        plugin.min.js
 ```
 
 2. Add the plugin and toolbar button to your TinyMCE configuration:
