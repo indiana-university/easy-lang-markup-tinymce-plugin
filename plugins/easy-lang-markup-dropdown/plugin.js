@@ -3,6 +3,355 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+
+const i18n2 = {
+  'en': {
+    setTextLanguage: "Set text language",
+    languageNotSet: "-Language Not Set-",
+    chooseLanguages: "Choose languages",
+    removeLanguageMarkup: "Remove Language Markup",
+    removeCurrentLang: "Remove current lang value",
+    removeAllLang: "Remove All lang markup",
+    configureLanguages: "Configure languages",
+    setDefaultDocLang: "Set default document language",
+    revealLangMarkup: "Reveal lang markup",
+    helpWithLang: "Help with language (lang) attribute editing",
+    selectDocDefaultLang: "Select the document's default language.",
+    chooseFromList: "Choose from list",
+    enterManually: "Enter manually",
+    none: "None",
+    otherEnterManually: "Other - Enter manually",
+    currentLanguage: "Current language:",
+    newLanguage: "New Language:",
+    enterLangCode: 'Enter new lang code (e.g., "en-US"):',
+    chooseUpToSix: "Choose up to six languages",
+    languageSelect: "Language select",
+    manualLanguageEntry: "Manual language entry",
+    confirmRemoveAll: "Really remove all language markup from the document?",
+    invalidLangCode: "Enter a valid language code with no spaces. Or, press cancel.",
+    helpTitle: "Help for Editing Language (lang) Attributes",
+    helpContent: `
+      <div>
+        <p><strong>Language (lang) Attribute Help</strong></p>
+        <p>
+          The <code>lang</code> attribute specifies the language of the content 
+          within an element. It helps screen readers and search engines 
+          to understand and process the content correctly.
+        </p>
+        <p>
+          To edit the language attributes in this document, you can use the 
+          provided tools in the editor. You can set the language attribute 
+          for specific sections or for the entire document.
+        </p>
+        <p>Here are some examples of language codes:</p>
+        <ul>
+          <li><code>en</code> - English</li>
+          <li><code>es</code> - Spanish</li>
+          <li><code>fr</code> - French</li>
+          <li><code>de</code> - German</li>
+          <li><code>zh-CN</code> - Chinese (Simplified)</li>
+        </ul>
+        <p>For more information, please refer to the <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3C documentation</a>.</p>
+      </div>
+    `
+  },
+  'es': {
+    setTextLanguage: "Establecer idioma del texto",
+    languageNotSet: "-Idioma no establecido-",
+    chooseLanguages: "Elegir idiomas",
+    removeLanguageMarkup: "Eliminar marcado de idioma",
+    removeCurrentLang: "Eliminar valor de idioma actual",
+    removeAllLang: "Eliminar todo el marcado de idioma",
+    configureLanguages: "Configurar idiomas",
+    setDefaultDocLang: "Establecer idioma predeterminado del documento",
+    revealLangMarkup: "Mostrar marcado de idioma",
+    helpWithLang: "Ayuda con la edición de atributos de idioma (lang)",
+    selectDocDefaultLang: "Seleccione el idioma predeterminado del documento.",
+    chooseFromList: "Elegir de la lista",
+    enterManually: "Ingresar manualmente",
+    none: "Ninguno",
+    otherEnterManually: "Otro - Ingresar manualmente",
+    currentLanguage: "Idioma actual:",
+    newLanguage: "Nuevo idioma:",
+    enterLangCode: 'Ingrese el nuevo código de idioma (ej., "es-MX"):',
+    chooseUpToSix: "Elija hasta seis idiomas",
+    languageSelect: "Selección de idioma",
+    manualLanguageEntry: "Entrada manual de idioma",
+    confirmRemoveAll: "¿Realmente desea eliminar todo el marcado de idioma del documento?",
+    invalidLangCode: "Ingrese un código de idioma válido sin espacios. O presione cancelar.",
+    helpTitle: "Ayuda para editar atributos de idioma (lang)",
+    helpContent: `
+      <div>
+        <p><strong>Ayuda con atributos de idioma (lang)</strong></p>
+        <p>
+          El atributo <code>lang</code> especifica el idioma del contenido 
+          dentro de un elemento. Ayuda a los lectores de pantalla y motores de búsqueda 
+          a entender y procesar el contenido correctamente.
+        </p>
+        <p>
+          Para editar los atributos de idioma en este documento, puede usar las 
+          herramientas proporcionadas en el editor. Puede establecer el atributo de idioma 
+          para secciones específicas o para todo el documento.
+        </p>
+        <p>Aquí hay algunos ejemplos de códigos de idioma:</p>
+        <ul>
+          <li><code>en</code> - Inglés</li>
+          <li><code>es</code> - Español</li>
+          <li><code>fr</code> - Francés</li>
+          <li><code>de</code> - Alemán</li>
+          <li><code>zh-CN</code> - Chino (Simplificado)</li>
+        </ul>
+        <p>Para más información, consulte la <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">documentación de W3C</a>.</p>
+      </div>
+    `
+  },
+  'fr': {
+    setTextLanguage: "Définir la langue du texte",
+    languageNotSet: "-Langue non définie-",
+    chooseLanguages: "Choisir les langues",
+    removeLanguageMarkup: "Supprimer le balisage de langue",
+    removeCurrentLang: "Supprimer la valeur de langue actuelle",
+    removeAllLang: "Supprimer tout le balisage de langue",
+    configureLanguages: "Configurer les langues",
+    setDefaultDocLang: "Définir la langue par défaut du document",
+    revealLangMarkup: "Révéler le balisage de langue",
+    helpWithLang: "Aide à l'édition des attributs de langue (lang)",
+    selectDocDefaultLang: "Sélectionnez la langue par défaut du document.",
+    chooseFromList: "Choisir dans la liste",
+    enterManually: "Saisir manuellement",
+    none: "Aucun",
+    otherEnterManually: "Autre - Saisir manuellement",
+    currentLanguage: "Langue actuelle :",
+    newLanguage: "Nouvelle langue :",
+    enterLangCode: 'Entrez le nouveau code de langue (ex., "fr-FR") :',
+    chooseUpToSix: "Choisissez jusqu'à six langues",
+    languageSelect: "Sélection de langue",
+    manualLanguageEntry: "Saisie manuelle de langue",
+    confirmRemoveAll: "Voulez-vous vraiment supprimer tout le balisage de langue du document ?",
+    invalidLangCode: "Entrez un code de langue valide sans espaces. Ou appuyez sur annuler.",
+    helpTitle: "Aide pour l'édition des attributs de langue (lang)",
+    helpContent: `
+      <div>
+        <p><strong>Aide sur les attributs de langue (lang)</strong></p>
+        <p>
+          L'attribut <code>lang</code> spécifie la langue du contenu 
+          à l'intérieur d'un élément. Il aide les lecteurs d'écran et les moteurs de recherche 
+          à comprendre et traiter correctement le contenu.
+        </p>
+        <p>
+          Pour modifier les attributs de langue dans ce document, vous pouvez utiliser les 
+          outils fournis dans l'éditeur. Vous pouvez définir l'attribut de langue 
+          pour des sections spécifiques ou pour l'ensemble du document.
+        </p>
+        <p>Voici quelques exemples de codes de langue :</p>
+        <ul>
+          <li><code>en</code> - Anglais</li>
+          <li><code>es</code> - Espagnol</li>
+          <li><code>fr</code> - Français</li>
+          <li><code>de</code> - Allemand</li>
+          <li><code>zh-CN</code> - Chinois (Simplifié)</li>
+        </ul>
+        <p>Pour plus d'informations, consultez la <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">documentation W3C</a>.</p>
+      </div>
+    `
+  },
+  'de': {
+    setTextLanguage: "Textsprache festlegen",
+    languageNotSet: "-Sprache nicht festgelegt-",
+    chooseLanguages: "Sprachen auswählen",
+    removeLanguageMarkup: "Sprachmarkierung entfernen",
+    removeCurrentLang: "Aktuelle Sprachwert entfernen",
+    removeAllLang: "Alle Sprachmarkierungen entfernen",
+    configureLanguages: "Sprachen konfigurieren",
+    setDefaultDocLang: "Standardsprache des Dokuments festlegen",
+    revealLangMarkup: "Sprachmarkierung anzeigen",
+    helpWithLang: "Hilfe zur Bearbeitung von Sprachattributen (lang)",
+    selectDocDefaultLang: "Wählen Sie die Standardsprache des Dokuments.",
+    chooseFromList: "Aus Liste auswählen",
+    enterManually: "Manuell eingeben",
+    none: "Keine",
+    otherEnterManually: "Andere - Manuell eingeben",
+    currentLanguage: "Aktuelle Sprache:",
+    newLanguage: "Neue Sprache:",
+    enterLangCode: 'Geben Sie den neuen Sprachcode ein (z.B. "de-DE"):',
+    chooseUpToSix: "Wählen Sie bis zu sechs Sprachen",
+    languageSelect: "Sprachauswahl",
+    manualLanguageEntry: "Manuelle Spracheingabe",
+    confirmRemoveAll: "Möchten Sie wirklich alle Sprachmarkierungen aus dem Dokument entfernen?",
+    invalidLangCode: "Geben Sie einen gültigen Sprachcode ohne Leerzeichen ein. Oder drücken Sie Abbrechen.",
+    helpTitle: "Hilfe zum Bearbeiten von Sprachattributen (lang)",
+    helpContent: `
+      <div>
+        <p><strong>Hilfe zu Sprachattributen (lang)</strong></p>
+        <p>
+          Das <code>lang</code>-Attribut gibt die Sprache des Inhalts 
+          innerhalb eines Elements an. Es hilft Screenreadern und Suchmaschinen, 
+          den Inhalt richtig zu verstehen und zu verarbeiten.
+        </p>
+        <p>
+          Um die Sprachattribute in diesem Dokument zu bearbeiten, können Sie die 
+          bereitgestellten Werkzeuge im Editor verwenden. Sie können das Sprachattribut 
+          für bestimmte Abschnitte oder für das gesamte Dokument festlegen.
+        </p>
+        <p>Hier sind einige Beispiele für Sprachcodes:</p>
+        <ul>
+          <li><code>en</code> - Englisch</li>
+          <li><code>es</code> - Spanisch</li>
+          <li><code>fr</code> - Französisch</li>
+          <li><code>de</code> - Deutsch</li>
+          <li><code>zh-CN</code> - Chinesisch (Vereinfacht)</li>
+        </ul>
+        <p>Weitere Informationen finden Sie in der <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3C-Dokumentation</a>.</p>
+      </div>
+    `
+  },
+  'ja': {
+    setTextLanguage: "テキスト言語を設定",
+    languageNotSet: "-言語未設定-",
+    chooseLanguages: "言語を選択",
+    removeLanguageMarkup: "言語マークアップを削除",
+    removeCurrentLang: "現在の言語値を削除",
+    removeAllLang: "すべての言語マークアップを削除",
+    configureLanguages: "言語を設定",
+    setDefaultDocLang: "文書のデフォルト言語を設定",
+    revealLangMarkup: "言語マークアップを表示",
+    helpWithLang: "言語属性の編集ヘルプ",
+    selectDocDefaultLang: "文書のデフォルト言語を選択してください。",
+    chooseFromList: "リストから選択",
+    enterManually: "手動で入力",
+    none: "なし",
+    otherEnterManually: "その他 - 手動で入力",
+    currentLanguage: "現在の言語：",
+    newLanguage: "新しい言語：",
+    enterLangCode: '新しい言語コードを入力（例："ja-JP"）：',
+    chooseUpToSix: "最大6つの言語を選択",
+    languageSelect: "言語選択",
+    manualLanguageEntry: "言語の手動入力",
+    confirmRemoveAll: "文書からすべての言語マークアップを削除してもよろしいですか？",
+    invalidLangCode: "スペースを含まない有効な言語コードを入力してください。またはキャンセルを押してください。",
+    helpTitle: "言語属性の編集ヘルプ",
+    helpContent: `
+      <div>
+        <p><strong>言語（lang）属性のヘルプ</strong></p>
+        <p>
+          <code>lang</code> 属性は要素内のコンテンツの言語を指定します。
+          スクリーンリーダーや検索エンジンが内容を正しく理解し処理するのに役立ちます。
+        </p>
+        <p>
+          この文書の言語属性を編集するには、エディターで提供されているツールを使用できます。
+          特定のセクションまたは文書全体の言語属性を設定できます。
+        </p>
+        <p>言語コードの例：</p>
+        <ul>
+          <li><code>en</code> - 英語</li>
+          <li><code>es</code> - スペイン語</li>
+          <li><code>fr</code> - フランス語</li>
+          <li><code>de</code> - ドイツ語</li>
+          <li><code>zh-CN</code> - 中国語（簡体字）</li>
+        </ul>
+        <p>詳細については、<a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3Cドキュメント</a>を参照してください。</p>
+      </div>
+    `
+  },
+  'zh-CN': {
+    setTextLanguage: "设置文本语言",
+    languageNotSet: "-未设置语言-",
+    chooseLanguages: "选择语言",
+    removeLanguageMarkup: "删除语言标记",
+    removeCurrentLang: "删除当前语言值",
+    removeAllLang: "删除所有语言标记",
+    configureLanguages: "配置语言",
+    setDefaultDocLang: "设置文档默认语言",
+    revealLangMarkup: "显示语言标记",
+    helpWithLang: "语言（lang）属性编辑帮助",
+    selectDocDefaultLang: "选择文档的默认语言。",
+    chooseFromList: "从列表中选择",
+    enterManually: "手动输入",
+    none: "无",
+    otherEnterManually: "其他 - 手动输入",
+    currentLanguage: "当前语言：",
+    newLanguage: "新语言：",
+    enterLangCode: '输入新的语言代码（例如："zh-CN"）：',
+    chooseUpToSix: "最多选择六种语言",
+    languageSelect: "语言选择",
+    manualLanguageEntry: "手动语言输入",
+    confirmRemoveAll: "确实要删除文档中的所有语言标记吗？",
+    invalidLangCode: "请输入有效的语言代码，不含空格。或按取消。",
+    helpTitle: "语言（lang）属性编辑帮助",
+    helpContent: `
+      <div>
+        <p><strong>语言（lang）属性帮助</strong></p>
+        <p>
+          <code>lang</code>属性指定元素内容的语言。
+          它帮助屏幕阅读器和搜索引擎正确理解和处理内容。
+        </p>
+        <p>
+          要编辑此文档中的语言属性，您可以使用编辑器中提供的工具。
+          您可以为特定部分或整个文档设置语言属性。
+        </p>
+        <p>以下是一些语言代码示例：</p>
+        <ul>
+          <li><code>en</code> - 英语</li>
+          <li><code>es</code> - 西班牙语</li>
+          <li><code>fr</code> - 法语</li>
+          <li><code>de</code> - 德语</li>
+          <li><code>zh-CN</code> - 中文（简体）</li>
+        </ul>
+        <p>更多信息，请参阅<a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3C文档</a>。</p>
+      </div>
+    `
+  },
+  'zh': {
+    setTextLanguage: "设置文本语言",
+    languageNotSet: "-未设置语言-",
+    chooseLanguages: "选择语言",
+    removeLanguageMarkup: "删除语言标记",
+    removeCurrentLang: "删除当前语言值",
+    removeAllLang: "删除所有语言标记",
+    configureLanguages: "配置语言",
+    setDefaultDocLang: "设置文档默认语言",
+    revealLangMarkup: "显示语言标记",
+    helpWithLang: "语言属性编辑帮助",
+    selectDocDefaultLang: "选择文档的默认语言。",
+    chooseFromList: "从列表中选择",
+    enterManually: "手动输入",
+    none: "无",
+    otherEnterManually: "其他 - 手动输入",
+    currentLanguage: "当前语言：",
+    newLanguage: "新语言：",
+    enterLangCode: '输入新的语言代码（例如："zh-CN"）：',
+    chooseUpToSix: "最多选择六种语言",
+    languageSelect: "语言选择",
+    manualLanguageEntry: "手动语言输入",
+    confirmRemoveAll: "确实要删除文档中的所有语言标记吗？",
+    invalidLangCode: "请输入没有空格的有效语言代码。或按取消。",
+    helpTitle: "语言属性编辑帮助",
+    helpContent: `
+      <div>
+        <p><strong>语言（lang）属性帮助</strong></p>
+        <p>
+          <code>lang</code> 属性指定元素内容的语言。
+          它帮助屏幕阅读器和搜索引擎正确理解和处理内容。
+        </p>
+        <p>
+          要编辑此文档中的语言属性，您可以使用编辑器中提供的工具。
+          您可以为特定部分或整个文档设置语言属性。
+        </p>
+        <p>以下是一些语言代码示例：</p>
+        <ul>
+          <li><code>en</code> - 英语</li>
+          <li><code>es</code> - 西班牙语</li>
+          <li><code>fr</code> - 法语</li>
+          <li><code>de</code> - 德语</li>
+          <li><code>zh-CN</code> - 中文（简体）</li>
+        </ul>
+        <p>更多信息，请参阅 <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3C文档</a>。</p>
+      </div>
+    `
+  }
+
+};
+
 /* global alert, confirm, tinyMCE */
 tinyMCE.PluginManager.add("languageSelect", function (editor) {
   "use strict";
@@ -39,6 +388,38 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
   let tsViewMarkup = false;
   let langMenuItems = [];
   let myButtonTextPtr = null;
+
+  // Helper function to get the current editor language
+  function getCurrentEditorLanguage() {
+    // Get the full language code from editor settings or options, defaulting to 'en'
+    const fullLangCode = (editor.settings?.language || editor.options?.get('language') || 'en').toLowerCase();
+    return fullLangCode.replace('_','-').replaceAll(' ','');
+  }
+
+  // Helper function to get translation string with fallback hierarchy
+  function translate(key) {
+    const fullLangCode = getCurrentEditorLanguage();
+    console.log(`Full language code found: ${fullLangCode}`);
+    
+    // Try the full language code first (e.g., 'es-MX')
+    if (i18n2[fullLangCode]?.[key]) {
+      return i18n2[fullLangCode][key];
+    }
+    
+    // If not found and there's a hyphen, try the primary language code (e.g., 'es')
+    const primaryLangCode = fullLangCode.split('-')[0];
+    if (fullLangCode.includes('-') && i18n2[primaryLangCode]?.[key]) {
+      return i18n2[primaryLangCode][key];
+    }
+    
+    // Fall back to English if available
+    if (i18n2['en']?.[key]) {
+      return i18n2['en'][key];
+    }
+    
+    // Last resort: return the key itself
+    return key;
+  }
 
   /**
    * Takes the first token in the string and returns it as a well-formatted lang attribute:
@@ -382,13 +763,13 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
     // Open the dialog using TinyMCE's windowManager API
     editor.windowManager.open({
-      title: "Select the document's default language.", // Dialog title
+      title: translate('selectDocDefaultLang'), // Dialog title
       body: {
         type: "tabpanel",
         tabs: [
           {
             name: "listTab1", // First tab for selecting a language from a list
-            title: "Choose from list",
+            title: translate('chooseFromList'),
             items: [
               {
                 type: "htmlpanel",
@@ -399,14 +780,14 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
               {
                 type: "selectbox",
                 name: "language",
-                label: "New Language:",
+                label: translate('newLanguage'),
                 items: languages, // Use the sorted languages array for options
               },
             ],
           },
           {
             name: "listTab2", // Second tab for manually entering a language code
-            title: "Enter manually",
+            title: translate('enterManually'),
             items: [
               {
                 type: "htmlpanel",
@@ -417,7 +798,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
               {
                 type: "input",
                 name: "manualLanguage",
-                label: 'Enter new lang code (e.g., "en-US"):',
+                label: translate('enterLangCode'),
               },
             ],
           },
@@ -476,8 +857,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
   const openConfigureLanguagesOnSelectbox = (langMenuItems = [], callBack) => {
     // Create an array for select box items, with "None" and "Other" options.
     const languages = [
-      { value: "-n-", text: "None" }, // Option to select "None"
-      { value: "-o-", text: "Other - Enter manually" }, // Option to enter manually
+      { value: "-n-", text: translate('none') }, // Option to select "None"
+      { value: "-o-", text: translate('otherEnterManually') }, // Option to enter manually
     ];
 
     // Populate the language options by sorting langAtts alphabetically by description.
@@ -498,7 +879,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     const languageChoiceItems = [
       {
         type: "htmlpanel",
-        html: '<div style="margin-bottom:10px">Choose up to six languages</div>',
+        html: `<div style="margin-bottom:10px">${translate('chooseUpToSix')}</div>`,
       },
     ];
 
@@ -513,13 +894,13 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           {
             type: "selectbox",
             name: `langSelect_${langCounter}`,
-            label: `Language ${langCounter} Select box:`,
+            label: `${translate('languageSelect')} ${langCounter}:`,
             items: languages, // Use the languages array for selection options
           },
           {
             type: "input",
             name: `langInput_${langCounter}`,
-            label: `Language ${langCounter} - Manual entry:`,
+            label: `${translate('manualLanguageEntry')} ${langCounter}:`,
             disabled: Object.prototype.hasOwnProperty.call(langAtts, lang), // Disable input if language is predefined (pre v7)
             enabled: !Object.prototype.hasOwnProperty.call(langAtts, lang), // Disable input if language is predefined
           },
@@ -535,13 +916,13 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           {
             type: "selectbox",
             name: `langSelect_${langCounter}`,
-            label: `Language ${langCounter} Select box:`,
+            label: `${translate('languageSelect')} ${langCounter}:`,
             items: languages,
           },
           {
             type: "input",
             name: `langInput_${langCounter}`,
-            label: `Language ${langCounter} - Manual entry:`,
+            label: `${translate('manualLanguageEntry')} ${langCounter}:`,
             disabled: true, // Initially disabled as no manual input is expected. (pre v7)
             enabled: false,
           },
@@ -563,7 +944,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
     // Open the dialog for language configuration
     editor.windowManager.open({
-      title: "Choose languages", // Dialog title
+      title: translate('chooseLanguages'), // Dialog title
       body: { type: "panel", items: languageChoiceItems }, // Populate dialog with language choice items
       buttons: [
         { type: "cancel", text: "Cancel" },
@@ -615,7 +996,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
           if (selectedLang === "-o-" && !regexValidLangValue.test(manualLang)) {
             alert(
-              "Enter a valid language code with no spaces. Or, press cancel."
+              translate('invalidLangCode')
             );
             return;
           }
@@ -644,43 +1025,20 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
    */
   const openLangAttsHelp = () => {
     editor.windowManager.open({
-      title: "Help for Editing Language (lang) Attributes",
+      title: translate('helpTitle'),
       body: {
         type: "panel",
         items: [
           {
             type: "htmlpanel",
-            html: `
-                <div>
-                  <p><strong>Language (lang) Attribute Help</strong></p>
-                  <p>
-                    The <code>lang</code> attribute specifies the language of the content 
-                    within an element. It helps screen readers and search engines 
-                    to understand and process the content correctly.
-                  </p>
-                  <p>
-                    To edit the language attributes in this document, you can use the 
-                    provided tools in the editor. You can set the language attribute 
-                    for specific sections or for the entire document.
-                  </p>
-                  <p>Here are some examples of language codes:</p>
-                  <ul>
-                    <li><code>en</code> - English</li>
-                    <li><code>es</code> - Spanish</li>
-                    <li><code>fr</code> - French</li>
-                    <li><code>de</code> - German</li>
-                    <li><code>zh-CN</code> - Chinese (Simplified)</li>
-                  </ul>
-                  <p>For more information, please refer to the <a href="https://www.w3.org/International/questions/qa-lang-why" target="_blank">W3C documentation</a>.</p>
-                </div>
-              `,
+            html: translate('helpContent'),
           },
         ],
       },
       buttons: [
         {
           type: "submit",
-          text: "Ok",
+          text: "OK",
           primary: true,
         },
       ],
@@ -898,7 +1256,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
    * Unwraps and removes any `span` elements with only the `langMarkUp` class.
    */
   function removeAllLangSpans() {
-    if (!confirm("Really remove all language markup from the document?"))
+    if (!confirm(translate('confirmRemoveAll')))
       return;
 
     const doc = editor.getDoc();
@@ -990,8 +1348,8 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
         // Loop through buttons to find the one with the correct aria-label or title
         buttons.forEach((button) => {
           const isTextLanguageButton =
-            button.getAttribute("aria-label") === "Set text language" ||
-            button.getAttribute("title") === "Set text language";
+            button.getAttribute("aria-label") === translate('setTextLanguage') ||
+            button.getAttribute("title") === translate('setTextLanguage');
 
           if (isTextLanguageButton) {
             // Store the reference to the text node inside the button
@@ -1004,7 +1362,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
       // If the button was found, update its text with the new language or fallback to the default
       if (myButtonTextPtr) {
         myButtonTextPtr.innerText =
-          langAtts[newLang.toLowerCase()] || newLang || "-Language Not Set-";
+          langAtts[newLang.toLowerCase()] || newLang || translate('languageNotSet');
       }
     } catch (ex) {
       // ignore errors
@@ -1062,14 +1420,14 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     // Add nested menu item for removing language markup
     items.push({
       type: "nestedmenuitem",
-      text: "Remove Language Markup",
+      text: translate('removeLanguageMarkup'),
       icon: "remove",
       disabled: false,
       getSubmenuItems: function () {
         return [
           {
             type: "menuitem",
-            text: "Remove current lang value",
+            text: translate('removeCurrentLang'),
             icon: "remove",
             onAction: function () {
               removeLangMarkupAtCursor(); // Remove language markup at cursor
@@ -1077,7 +1435,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
           },
           {
             type: "menuitem",
-            text: "Remove All lang markup",
+            text: translate('removeAllLang'),
             icon: "warning",
             onAction: function () {
               removeAllLangSpans(); // Remove all language markup in the document
@@ -1091,7 +1449,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     items.push({
       type: "menuitem",
       icon: "preferences",
-      text: "Configure languages",
+      text: translate('configureLanguages'),
       onAction: function () {
         let currentLang = "";
         const editorBody = editor.getDoc().body;
@@ -1117,7 +1475,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     items.push({
       type: "menuitem",
       icon: "document-properties",
-      text: "Set default document language",
+      text: translate('setDefaultDocLang'),
       onAction: function () {
         let currentLang = "";
         const editorBody = editor.getDoc().body;
@@ -1143,7 +1501,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     // Toggle item for revealing/hiding language markup
     items.push({
       type: "togglemenuitem",
-      text: "Reveal lang markup",
+      text: translate('revealLangMarkup'),
       icon: "preview",
       onAction: function () {
         tsViewMarkup = !tsViewMarkup;
@@ -1163,7 +1521,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
     items.push({
       type: "menuitem",
       icon: "help",
-      text: "Help with language (lang) attribute editing",
+      text: translate('helpWithLang'),
       onAction: function () {
         openLangAttsHelp(); // Open help dialog for language attribute editing
       },
@@ -1249,9 +1607,9 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
   // Register a new menu button for selecting language in the TinyMCE editor
   editor.ui.registry.addMenuButton("languageSelector", {
-    text: showCurrentLanguage ? "-Language Not Set-" : null, // Default text for the button when no language is set
+    text: showCurrentLanguage ? translate('languageNotSet') : null, // Default text for the button when no language is set
     icon: showCurrentLanguage ? null : (iconName || "easyLangIcon"),
-    tooltip: "Set text language", // Tooltip for the button
+    tooltip: translate('setTextLanguage'), // Tooltip for the button
     fetch: function (callback) {
       buildEasyLangMenuItems(callback);
     },
