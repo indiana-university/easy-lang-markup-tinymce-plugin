@@ -253,7 +253,7 @@ const i18n2 = {
       </div>
     `
   },
-  'zh-CN': {
+  'zh-cn': {
     setTextLanguage: "设置文本语言",
     languageNotSet: "-未设置语言-",
     chooseLanguages: "选择语言",
@@ -349,7 +349,6 @@ const i18n2 = {
       </div>
     `
   }
-
 };
 
 /* global alert, confirm, tinyMCE */
@@ -359,6 +358,7 @@ tinyMCE.PluginManager.add("languageSelect", function (editor) {
 
   let iconName = "easyLangIcon";
   let showCurrentLanguage = false;
+  let showCurrentLangCodeOnly = false;
   let enableKeyboardShortcuts = true;
 
   let keyboardShortCuts = ["meta+Shift+1", "meta+Shift+2", "meta+Shift+3", "meta+Shift+4", "meta+Shift+5", "meta+Shift+6"];
@@ -837,97 +837,97 @@ const languageNames = {
   },
 
 'en': {
-  af: 'Afrikaans',
-  ak: 'Akan',
-  ar: 'Arabic',
-  az: 'Azerbaijani',
-  bg: 'Bulgarian',
-  bho: 'Bhojpuri',
-  bm: 'Bambara',
-  bn: 'Bengali',
-  bo: 'Tibetan',
-  bs: 'Bosnian',
-  ca: 'Catalan; Valencian',
-  cs: 'Czech',
-  cu: 'Bulgarian, Old',
-  da: 'Danish',
-  de: 'German',
-  el: 'Greek',
-  en: 'English',
-  'en-au': 'English (Australia)',
-  'en-gb': 'English (United Kingdom)',
-  'en-in': 'English (Indian)',
-  'en-ie': 'English (Ireland)',
-  'en-tt': 'English (Trinidad)',
-  'en-us': 'English (United States)',
-  'en-za': 'English (South Africa)',
-  es: 'Spanish',
-  'es-ar': 'Spanish (Argentinia)',
-  'es-cl': 'Spanish (Chile)',
-  'es-co': 'Spanish (Columbia)',
-  'es-mx': 'Spanish (Mexico)',
-  'es-pe': 'Spanish (Peru)',
-  et: 'Estonian',
-  eu: 'Basque',
-  fa: 'Persian',
-  fi: 'Finnish',
-  fr: 'French',
-  'fr-ca': 'French (Canadian)',
-  gl: 'Galician (Spain)',
-  he: 'Hebrew',
-  hi: 'Hindi',
-  hr: 'Croatian',
-  hu: 'Hungarian',
-  id: 'Indonesian',
-  it: 'Italian',
-  ja: 'Japanese',
-  kk: 'Kazakh',
-  kn: 'Kannada',
-  ko: 'Korean',
-  la: 'Latin',
-  lkt: 'Lakota',
-  mn: 'Mongolian',
-  mr: 'Marathi',
-  nb: 'Norwegian Bokmål',
-  nl: 'Dutch',
-  'nl-be': 'Dutch (Belgium)',
-  nn: 'Norwegian Nynorsk',
-  pl: 'Polish',
-  ps: 'Pashto',
-  pt: 'Portuguese, International',
-  'pt-br': 'Portuguese, Brazil',
-  qu: 'Quechua',
-  ro: 'Romanian',
-  ru: 'Russian',
-  sa: 'Sanskrit',
-  'sk-sk': 'Slovak',
-  sl: 'Slovenian',
-  sma: 'Southern Sami',
-  smj: 'Lule Sami',
-  sr: 'Serbian',
-  sv: 'Swedish',
-  sw: 'Swahili',
-  ta: 'Tamil',
-  te: 'Telugu',
-  tg: 'Tajik',
-  th: 'Thai',
-  tr: 'Turkish',
-  ug: 'Uyghur',
-  uk: 'Ukrainian',
-  ur: 'Urdu',
-  uz: 'Uzbek',
-  vi: 'Vietnamese',
-  wo: 'Wolof',
-  yi: 'Yiddish',
-  yo: 'Yoruba',
-  yua: 'Yucatec Maya',
-  zh: 'Chinese',
-  'zh-cn': 'Chinese (China)',
-  'zh-hk': 'Chinese (Hong Kong)',
-  'zh-tw': 'Chinese (Taiwan)',
-  'zh-hans': 'Chinese, Simplified',
-  'zh-hant': 'Chinese, Traditional',
-  zu: 'Zulu'},
+    af: 'Afrikaans',
+    ak: 'Akan',
+    ar: 'Arabic',
+    az: 'Azerbaijani',
+    bg: 'Bulgarian',
+    bho: 'Bhojpuri',
+    bm: 'Bambara',
+    bn: 'Bengali',
+    bo: 'Tibetan',
+    bs: 'Bosnian',
+    ca: 'Catalan; Valencian',
+    cs: 'Czech',
+    cu: 'Bulgarian, Old',
+    da: 'Danish',
+    de: 'German',
+    el: 'Greek',
+    en: 'English',
+    'en-au': 'English (Australia)',
+    'en-gb': 'English (United Kingdom)',
+    'en-in': 'English (Indian)',
+    'en-ie': 'English (Ireland)',
+    'en-tt': 'English (Trinidad)',
+    'en-us': 'English (United States)',
+    'en-za': 'English (South Africa)',
+    es: 'Spanish',
+    'es-ar': 'Spanish (Argentinia)',
+    'es-cl': 'Spanish (Chile)',
+    'es-co': 'Spanish (Columbia)',
+    'es-mx': 'Spanish (Mexico)',
+    'es-pe': 'Spanish (Peru)',
+    et: 'Estonian',
+    eu: 'Basque',
+    fa: 'Persian',
+    fi: 'Finnish',
+    fr: 'French',
+    'fr-ca': 'French (Canadian)',
+    gl: 'Galician (Spain)',
+    he: 'Hebrew',
+    hi: 'Hindi',
+    hr: 'Croatian',
+    hu: 'Hungarian',
+    id: 'Indonesian',
+    it: 'Italian',
+    ja: 'Japanese',
+    kk: 'Kazakh',
+    kn: 'Kannada',
+    ko: 'Korean',
+    la: 'Latin',
+    lkt: 'Lakota',
+    mn: 'Mongolian',
+    mr: 'Marathi',
+    nb: 'Norwegian Bokmål',
+    nl: 'Dutch',
+    'nl-be': 'Dutch (Belgium)',
+    nn: 'Norwegian Nynorsk',
+    pl: 'Polish',
+    ps: 'Pashto',
+    pt: 'Portuguese, International',
+    'pt-br': 'Portuguese, Brazil',
+    qu: 'Quechua',
+    ro: 'Romanian',
+    ru: 'Russian',
+    sa: 'Sanskrit',
+    'sk-sk': 'Slovak',
+    sl: 'Slovenian',
+    sma: 'Southern Sami',
+    smj: 'Lule Sami',
+    sr: 'Serbian',
+    sv: 'Swedish',
+    sw: 'Swahili',
+    ta: 'Tamil',
+    te: 'Telugu',
+    tg: 'Tajik',
+    th: 'Thai',
+    tr: 'Turkish',
+    ug: 'Uyghur',
+    uk: 'Ukrainian',
+    ur: 'Urdu',
+    uz: 'Uzbek',
+    vi: 'Vietnamese',
+    wo: 'Wolof',
+    yi: 'Yiddish',
+    yo: 'Yoruba',
+    yua: 'Yucatec Maya',
+    zh: 'Chinese',
+    'zh-cn': 'Chinese (China)',
+    'zh-hk': 'Chinese (Hong Kong)',
+    'zh-tw': 'Chinese (Taiwan)',
+    'zh-hans': 'Chinese, Simplified',
+    'zh-hant': 'Chinese, Traditional',
+    zu: 'Zulu'},
 
   'es': {
     af: 'Afrikáans',
@@ -1023,98 +1023,98 @@ const languageNames = {
     zu: 'Zulú'
   },
 
-    'fr': {
-      af: 'Afrikaans',
-      ak: 'Akan',
-      ar: 'Arabe',
-      az: 'Azerbaïdjanais',
-      bg: 'Bulgare',
-      bho: 'Bhojpuri',
-      bm: 'Bambara',
-      bn: 'Bengali',
-      bo: 'Tibétain',
-      bs: 'Bosniaque',
-      ca: 'Catalan; Valencien',
-      cs: 'Tchèque',
-      cu: 'Vieux bulgare',
-      da: 'Danois',
-      de: 'Allemand',
-      el: 'Grec',
-      en: 'Anglais',
-      'en-au': 'Anglais (Australie)',
-      'en-gb': 'Anglais (Royaume-Uni)',
-      'en-in': 'Anglais (Indien)',
-      'en-ie': 'Anglais (Irlande)',
-      'en-tt': 'Anglais (Trinité)',
-      'en-us': 'Anglais (États-Unis)',
-      'en-za': 'Anglais (Afrique du Sud)',
-      es: 'Espagnol',
-      'es-ar': 'Espagnol (Argentine)',
-      'es-cl': 'Espagnol (Chili)',
-      'es-co': 'Espagnol (Colombie)',
-      'es-mx': 'Espagnol (Mexique)',
-      'es-pe': 'Espagnol (Pérou)',
-      et: 'Estonien',
-      eu: 'Basque',
-      fa: 'Persan',
-      fi: 'Finnois',
-      fr: 'Français',
-      'fr-ca': 'Français (Canadien)',
-      gl: 'Galicien',
-      he: 'Hébreu',
-      hi: 'Hindi',
-      hr: 'Croate',
-      hu: 'Hongrois',
-      id: 'Indonésien',
-      it: 'Italien',
-      ja: 'Japonais',
-      kk: 'Kazakh',
-      kn: 'Kannada',
-      ko: 'Coréen',
-      la: 'Latin',
-      lkt: 'Lakota',
-      mn: 'Mongol',
-      mr: 'Marathi',
-      nb: 'Norvégien bokmål',
-      nl: 'Néerlandais',
-      'nl-be': 'Néerlandais (Belgique)',
-      nn: 'Norvégien nynorsk',
-      pl: 'Polonais',
-      ps: 'Pachto',
-      pt: 'Portugais international',
-      'pt-br': 'Portugais (Brésil)',
-      qu: 'Quechua',
-      ro: 'Roumain',
-      ru: 'Russe',
-      sa: 'Sanskrit',
-      'sk-sk': 'Slovaque',
-      sl: 'Slovène',
-      sma: 'Same du Sud',
-      smj: 'Same de Lule',
-      sr: 'Serbe',
-      sv: 'Suédois',
-      sw: 'Swahili',
-      ta: 'Tamoul',
-      te: 'Telugu',
-      tg: 'Tadjik',
-      th: 'Thaï',
-      tr: 'Turc',
-      ug: 'Ouïghour',
-      uk: 'Ukrainien',
-      ur: 'Ourdou',
-      uz: 'Ouzbek',
-      vi: 'Vietnamien',
-      wo: 'Wolof',
-      yi: 'Yiddish',
-      yo: 'Yoruba',
-      yua: 'Maya yucatèque',
-      zh: 'Chinois',
-      'zh-cn': 'Chinois (Chine)',
-      'zh-hk': 'Chinois (Hong Kong)',
-      'zh-tw': 'Chinois (Taïwan)',
-      'zh-hans': 'Chinois simplifié',
-      'zh-hant': 'Chinois traditionnel',
-      zu: 'Zoulou'
+  'fr': {
+    af: 'Afrikaans',
+    ak: 'Akan',
+    ar: 'Arabe',
+    az: 'Azerbaïdjanais',
+    bg: 'Bulgare',
+    bho: 'Bhojpuri',
+    bm: 'Bambara',
+    bn: 'Bengali',
+    bo: 'Tibétain',
+    bs: 'Bosniaque',
+    ca: 'Catalan; Valencien',
+    cs: 'Tchèque',
+    cu: 'Vieux bulgare',
+    da: 'Danois',
+    de: 'Allemand',
+    el: 'Grec',
+    en: 'Anglais',
+    'en-au': 'Anglais (Australie)',
+    'en-gb': 'Anglais (Royaume-Uni)',
+    'en-in': 'Anglais (Indien)',
+    'en-ie': 'Anglais (Irlande)',
+    'en-tt': 'Anglais (Trinité)',
+    'en-us': 'Anglais (États-Unis)',
+    'en-za': 'Anglais (Afrique du Sud)',
+    es: 'Espagnol',
+    'es-ar': 'Espagnol (Argentine)',
+    'es-cl': 'Espagnol (Chili)',
+    'es-co': 'Espagnol (Colombie)',
+    'es-mx': 'Espagnol (Mexique)',
+    'es-pe': 'Espagnol (Pérou)',
+    et: 'Estonien',
+    eu: 'Basque',
+    fa: 'Persan',
+    fi: 'Finnois',
+    fr: 'Français',
+    'fr-ca': 'Français (Canadien)',
+    gl: 'Galicien',
+    he: 'Hébreu',
+    hi: 'Hindi',
+    hr: 'Croate',
+    hu: 'Hongrois',
+    id: 'Indonésien',
+    it: 'Italien',
+    ja: 'Japonais',
+    kk: 'Kazakh',
+    kn: 'Kannada',
+    ko: 'Coréen',
+    la: 'Latin',
+    lkt: 'Lakota',
+    mn: 'Mongol',
+    mr: 'Marathi',
+    nb: 'Norvégien bokmål',
+    nl: 'Néerlandais',
+    'nl-be': 'Néerlandais (Belgique)',
+    nn: 'Norvégien nynorsk',
+    pl: 'Polonais',
+    ps: 'Pachto',
+    pt: 'Portugais international',
+    'pt-br': 'Portugais (Brésil)',
+    qu: 'Quechua',
+    ro: 'Roumain',
+    ru: 'Russe',
+    sa: 'Sanskrit',
+    'sk-sk': 'Slovaque',
+    sl: 'Slovène',
+    sma: 'Same du Sud',
+    smj: 'Same de Lule',
+    sr: 'Serbe',
+    sv: 'Suédois',
+    sw: 'Swahili',
+    ta: 'Tamoul',
+    te: 'Telugu',
+    tg: 'Tadjik',
+    th: 'Thaï',
+    tr: 'Turc',
+    ug: 'Ouïghour',
+    uk: 'Ukrainien',
+    ur: 'Ourdou',
+    uz: 'Ouzbek',
+    vi: 'Vietnamien',
+    wo: 'Wolof',
+    yi: 'Yiddish',
+    yo: 'Yoruba',
+    yua: 'Maya yucatèque',
+    zh: 'Chinois',
+    'zh-cn': 'Chinois (Chine)',
+    'zh-hk': 'Chinois (Hong Kong)',
+    'zh-tw': 'Chinois (Taïwan)',
+    'zh-hans': 'Chinois simplifié',
+    'zh-hant': 'Chinois traditionnel',
+    zu: 'Zoulou'
   },
 
   'de': {
@@ -1210,7 +1210,8 @@ const languageNames = {
     'zh-hant': 'Chinesisch (Traditionell)',
     zu: 'Zulu'
   },
- 'it': {
+
+  'it': {
     af: 'Afrikaans',
     ak: 'Akan',
     ar: 'Arabo',
@@ -1303,6 +1304,7 @@ const languageNames = {
     'zh-hant': 'Cinese tradizionale',
     zu: 'Zulu'
   },
+
   'ja': {
     af: 'アフリカーンス語',
     ak: 'アカン語',
@@ -1396,6 +1398,7 @@ const languageNames = {
     'zh-hant': '中国語（繁体字）',
     zu: 'ズールー語'
   },
+
   'ko': {
     af: '아프리칸스어',
     ak: '아칸어',
@@ -1489,6 +1492,7 @@ const languageNames = {
     'zh-hant': '중국어 (번체)',
     zu: '줄루어'
   },
+
   'pt': {
     af: 'Africâner',
     ak: 'Akan',
@@ -1582,6 +1586,7 @@ const languageNames = {
     'zh-hant': 'Chinês Tradicional',
     zu: 'Zulu'
   },
+
   'ru': {
     af: 'Африкаанс',
     ak: 'Акан',
@@ -1675,6 +1680,7 @@ const languageNames = {
     'zh-hant': 'Китайский, традиционный',
     zu: 'Зулу'
   },
+
   'zh': {
     af: '南非荷兰语',
     ak: '阿坎语',
@@ -1768,6 +1774,7 @@ const languageNames = {
     'zh-hant': '中文（繁体）',
     zu: '祖鲁语'
   },
+
   'zh-hans': {
     af: '南非荷兰语',
     ak: '阿坎语',
@@ -1861,6 +1868,7 @@ const languageNames = {
     'zh-hant': '繁体中文',
     zu: '祖鲁语'
   },
+
   'zh-tw': {
     af: '南非荷蘭語',
     ak: '阿坎語',
@@ -1954,6 +1962,7 @@ const languageNames = {
     'zh-hant': '中文（繁體）',
     zu: '祖魯語'
   },
+
   'zh-hant': {
     af: '南非語',
     ak: '阿坎語',
@@ -2050,10 +2059,10 @@ const languageNames = {
 };
 
    // Helper function to get translation string with fallback hierarchy
-   function getLanguageNameForLocale(langCode, localeLangCode=editorLanguage) {
+  function getLanguageNameForLocale(langCode, localeLangCode=editorLanguage) {
     
     if(!langCode) return '';
-    langCode=langCode.toLowerCase();
+    langCode=langCode.toLowerCase().trim();
 
     // Try the full language code first (e.g., 'es-MX')
     if (languageNames[localeLangCode]?.[langCode]) {
@@ -2074,6 +2083,7 @@ const languageNames = {
     return '';
   }
 
+  // Used for selector lists
   function getLanguageCodeDescription(langCode, localeLangCode=editorLanguage) {
     let langCodeLanguageNameForLocale = getLanguageNameForLocale(langCode, localeLangCode);
     let nativeLangName = langAtts[langCode];
@@ -2089,6 +2099,7 @@ const languageNames = {
     return langCode;
   }
 
+  // Used for menu entries
   function getShortLanguageCodeDescription(langCode, localeLangCode=editorLanguage) {
     let langCodeLanguageNameForLocale = getLanguageNameForLocale(langCode, localeLangCode);
     let nativeLangName = langAtts[langCode];
@@ -2667,10 +2678,13 @@ const languageNames = {
    */
   function registerFormat(lang) {
     // Clean and standardize the language attribute value
+    console.log(`registerFormat: received "${lang}"`);
     lang = cleanLangAttr(lang);
+    console.log(`registerFormat: cleaned to "${lang}"`);
 
     // Define a unique format name based on the language code
     const formatToApply = "setLangTo_" + lang;
+    console.log(`registerFormat: formatToApply is "${formatToApply}", now register it`);
 
     // Register the new format with TinyMCE
     editor.formatter.register(formatToApply, {
@@ -2680,6 +2694,7 @@ const languageNames = {
         class: "langMarkUp",
       },
     });
+    console.log(`registerFormat: registered "${formatToApply}"`);
 
     // Track the registered format to avoid duplicate registrations
     langFormatsRegistered[formatToApply] = true;
@@ -2692,22 +2707,35 @@ const languageNames = {
    * @param {string} lang - The language code to apply to the document.
    */
   function setDocLangTo(lang) {
+    console.log(`setDocLangTo: received lang: ${lang}`);
+    lang = cleanLangAttr(lang);
+    console.log(`setDocLangTo: cleaned lang: ${lang}`);
     const formatToApply = `setLangTo_${lang}`;
+
+    console.log(`setDocLangTo: formatToApply: ${formatToApply}`);
 
     // Ensure the format is registered before applying
     if (!langFormatsRegistered.hasOwnProperty(formatToApply)) {
+       console.log(`setDocLangTo: registerFormat: ${lang}`);
       registerFormat(lang);
     }
 
+    console.log(`setDocLangTo: editor.focus`);
     editor.focus();
+
+    console.log(`setDocLangTo: enter undo transaction`);
 
     // Apply the format within an undo transaction
     editor.undoManager.transact(() => {
+      console.log(`setDocLangTo: apply format ${formatToApply}`);
       editor.formatter.apply(formatToApply);
     });
 
+    console.log(`setDocLangTo: post apply, refreshQaStyles`);
+
     // Refresh the QA styles to reflect the new language format
     refreshQaStyles();
+    console.log(`setDocLangTo: post refreshQaStyles, exit`);
   }
 
   /**
@@ -2736,14 +2764,23 @@ const languageNames = {
             // Store the reference to the text node inside the button
             myButtonTextPtr = button.firstElementChild;
             myButtonTextPtr.style = "width:10em;overflow:hidden;display:block";
+            myButtonTextPtr.originalHTML = button.firstElementChild.innerHTML;
           }
         });
       }
 
       // If the button was found, update its text with the new language or fallback to the default
       if (myButtonTextPtr) {
-        myButtonTextPtr.innerText =
+        if(showCurrentLangCodeOnly) {
+          if(newLang) {
+            myButtonTextPtr.innerText = newLang || null;
+          } else {
+            myButtonTextPtr.innerHTML = myButtonTextPtr.originalHTML;
+          }
+        } else {
+          myButtonTextPtr.innerText =
           getShortLanguageCodeDescription(newLang.toLowerCase()) || newLang || translate('languageNotSet');
+        }
       }
     } catch (ex) {
       // ignore errors
@@ -2793,6 +2830,7 @@ const languageNames = {
         text: getShortLanguageCodeDescription(lang.toLowerCase()) || cleanLangAttr(lang), // Display language name
         shortcut: enableKeyboardShortcuts ? `meta+Shift+${index+1}` : null,
         onAction: function () {
+          console.log(`langMenuItem onAction: ${lang}`);
           setDocLangTo(lang); // Set document language to selected value
         },
       });
@@ -2897,6 +2935,34 @@ const languageNames = {
         return function () {}; // Return a teardown function (optional)
       },
     });
+
+    if(!showCurrentLanguage) {
+      // Toggle item for revealing/hiding language markup
+      items.push({
+        type: "togglemenuitem",
+        text: 'View lang',
+        icon: "language",
+        onAction: function () {
+          showCurrentLanguage = !showCurrentLanguage;
+          showCurrentLangCodeOnly = true; // Not enough room to show language name
+          if (showCurrentLanguage) {
+            updateLanguageSelector(); // Show current language in toolbar
+          } else {
+          // hideLangMarkUp(); // Hide language markup
+          }
+        },
+        onSetup: function (api) {
+          api.setActive(showCurrentLanguage); // Set active state based on current view
+          return function () {}; // Return a teardown function (optional)
+        },
+      });
+    }
+
+
+
+
+
+
 
     // Add help menu item for language attribute editing
     items.push({
