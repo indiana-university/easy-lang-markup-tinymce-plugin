@@ -118,6 +118,6 @@ Copyright (C) 2018 The Trustees of Indiana University
 
 ## Support
 
-For issues related to the plugin, please contact [your support contact info].
+For issues related to the plugin, please contact [brichwin@iu.edu](mailto:brichwin@iu.edu).
 
 For TinyMCE-specific questions, refer to the [TinyMCE Documentation](https://www.tiny.cloud/docs/).
