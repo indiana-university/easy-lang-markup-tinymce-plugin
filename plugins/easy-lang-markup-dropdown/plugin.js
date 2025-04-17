@@ -1,6 +1,6 @@
 /**
- * Copyright (C) 2018 The Trustees of Indiana University
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (C) 2012 The Trustees of Indiana University
+ * SPDX-License-Identifier: GPL-3.0-only
  */
 
 
