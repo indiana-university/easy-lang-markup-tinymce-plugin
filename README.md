@@ -112,7 +112,7 @@ This plugin helps maintain WCAG compliance by:
 
 ## License
 
-BSD-3-Clause License
+[GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 Copyright (C) 2018 The Trustees of Indiana University
 
