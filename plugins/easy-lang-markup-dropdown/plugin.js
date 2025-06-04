@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-
 const i18n2 = {
   'en': {
     setTextLanguage: "Set text language",
@@ -903,6 +902,7 @@ const languageNames = {
     'sk-sk': 'Slovak',
     sl: 'Slovenian',
     sma: 'Southern Sami',
+    sme: 'Northern Sami',
     smj: 'Lule Sami',
     sr: 'Serbian',
     sv: 'Swedish',
