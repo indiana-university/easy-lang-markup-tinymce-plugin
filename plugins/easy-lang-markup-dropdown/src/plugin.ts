@@ -26,7 +26,7 @@ class LanguageSelect {
   private enableKeyboardShortcuts: boolean = true;
 
   private keyboardShortCuts: string[] = ["meta+Shift+1", "meta+Shift+2", "meta+Shift+3", "meta+Shift+4", "meta+Shift+5", "meta+Shift+6"];
-  
+
   private langColors: Record<string, string> = {
     "en-us": "#ddd",
     en: "#EEEEEE",
@@ -633,8 +633,7 @@ class LanguageSelect {
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">Current language: ${this.getLanguageCodeDescription(initialLanguageValue) // Display current language or code if not in langAtts
-                  }</div>`,
+                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(initialLanguageValue) || this.translate('None')}</div>`,
               },
               {
                 type: "selectbox",
@@ -650,8 +649,7 @@ class LanguageSelect {
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">Current language: ${this.getLanguageCodeDescription(initialLanguageValue) // Display current language or code
-                  }</div>`,
+                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(initialLanguageValue) || this.translate('None')}</div>`,
               },
               {
                 type: "input",

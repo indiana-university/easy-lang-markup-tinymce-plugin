@@ -633,8 +633,7 @@ class LanguageSelect {
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">Current language: ${this.getLanguageCodeDescription(initialLanguageValue) // Display current language or code if not in langAtts
-                  }</div>`,
+                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(initialLanguageValue) || this.translate('None')}</div>`,
               },
               {
                 type: "selectbox",
@@ -650,8 +649,7 @@ class LanguageSelect {
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">Current language: ${this.getLanguageCodeDescription(initialLanguageValue) // Display current language or code
-                  }</div>`,
+                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(initialLanguageValue) || this.translate('None')}</div>`,
               },
               {
                 type: "input",
