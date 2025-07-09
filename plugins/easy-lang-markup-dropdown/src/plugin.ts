@@ -262,6 +262,12 @@ class LanguageSelect {
   }
 
   private getLanguageFromSingleChild(): string | null {
+    if (this.editor && this.editor.getBody) {
+      const editorBody = this.editor.getBody();
+      if (editorBody?.children?.length === 1) {
+        return LanguageSelect.getValidLangAttribute(editorBody.children[0]);
+      }
+    }
     if (this.editor && this.editor.getDoc) {
       const editorDoc = this.editor.getDoc();
       if (editorDoc?.body?.children.length === 1) {
@@ -336,6 +342,62 @@ class LanguageSelect {
     if (navigator) {
       const browserLang = navigator.language || (navigator as any).userLanguage;
       return LanguageSelect.isValidLang(browserLang) ? browserLang.trim() : null;
+    }
+    return null;
+  }
+
+  /**
+   * Gets the default document language from a single DIV wrapper element.
+   * 
+   * This method checks if the TinyMCE editor's document body contains exactly one
+   * child element that is a DIV. If found, it extracts and validates the lang 
+   * attribute from that DIV element. This is useful for documents that wrap all
+   * content in a single container DIV with language markup.
+   * 
+   * The method tries two approaches in order:
+   * 1. Uses editor.getBody() to access the body element directly
+   * 2. Falls back to editor.getDoc().body if getBody() is unavailable
+   * 
+   * @returns {string | null} The valid language code (e.g., "en", "es-MX") if a 
+   *                          single DIV child with valid lang attribute is found,
+   *                          null otherwise
+   */
+  private getDocumentDefaultLanguage(): string | null {
+    // Try getBody() first
+    if (this.editor?.getBody) {
+      const result = this.checkSingleDivChild(this.editor.getBody());
+      if (result) return result;
+    }
+    
+    // Fallback to getDoc().body
+    if (this.editor?.getDoc) {
+      const editorDoc = this.editor.getDoc();
+      if(editorDoc) {
+        const result = this.checkSingleDivChild(editorDoc.body);
+        if (result) return result;
+        }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Checks if a parent element has exactly one DIV child and extracts its lang attribute.
+   * 
+   * This helper method examines a parent element to determine if it contains exactly
+   * one child element that is a DIV tag. If this condition is met, it attempts to
+   * extract and validate the lang attribute from that DIV element.
+   * 
+   * @param {Element | null} parent - The parent element to examine. Can be null.
+   * 
+   * @returns {string | null} The valid language code from the DIV's lang attribute
+   *                          if exactly one DIV child exists with a valid lang attribute,
+   *                          null otherwise
+   */
+  private checkSingleDivChild(parent: Element | null): string | null {
+    if (parent?.children?.length === 1 && 
+        parent.children[0]?.tagName === "DIV") {
+      return LanguageSelect.getValidLangAttribute(parent.children[0]);
     }
     return null;
   }
@@ -560,7 +622,9 @@ class LanguageSelect {
   }
 
   // Used for selector lists
-  private getLanguageCodeDescription(langCode: string): string {
+  private getLanguageCodeDescription(langCode: string | null): string | null {
+    if(!LanguageSelect.isNotBlank(langCode)) return null;
+
     let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
     let nativeLangName = LanguageSelect.getNativeLanguageName(langCode);
 
@@ -593,7 +657,9 @@ class LanguageSelect {
   private readonly openChooseDefaultLangDialog = (callback: (newLang: string) => any) => {
     const self: LanguageSelect = this;
 
-    let initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || this.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
+    const initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || this.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
+    const currentDefaultDocLang = self.getDocumentDefaultLanguage();
+
     // Keep track of the currently active tab
     let currentTab = "listTab1";
 
@@ -633,7 +699,7 @@ class LanguageSelect {
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(initialLanguageValue) || this.translate('None')}</div>`,
+                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || this.translate('None')}</div>`,
               },
               {
                 type: "selectbox",
@@ -649,7 +715,7 @@ class LanguageSelect {
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(initialLanguageValue) || this.translate('None')}</div>`,
+                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || this.translate('None')}</div>`,
               },
               {
                 type: "input",
