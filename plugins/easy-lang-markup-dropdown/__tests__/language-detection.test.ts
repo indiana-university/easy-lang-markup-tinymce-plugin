@@ -1,4 +1,4 @@
-import { LanguageSelect } from './plugin-for-tests';
+import { LanguageSelect } from '../dist/plugin_for_tests/plugin-for-tests';
 import * as Types from '../src/plugin_types';
 
 // Mock the document

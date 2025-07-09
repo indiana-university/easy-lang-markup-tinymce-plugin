@@ -1,17 +1,46 @@
 // esbuild.config.mjs
 import { build } from 'esbuild';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, copyFileSync, readdirSync, mkdirSync } from 'fs';
+import { join, extname } from 'path';
 
 // Function to create test-friendly TypeScript file
 const createTestFiles = () => {
   const sourceContent = readFileSync('src/plugin.ts', 'utf8');
   const testContent = sourceContent + '\nexport { LanguageSelect };\n';
-  writeFileSync('__tests__/plugin-for-tests.ts', testContent);
+  writeFileSync('dist/plugin_for_tests/plugin-for-tests.ts', testContent);
 
   const sourceContent2 = readFileSync('src/plugin_types.ts', 'utf8');
-  writeFileSync('__tests__/plugin_types.ts', sourceContent2);
+  writeFileSync('dist/plugin_for_tests/plugin_types.ts', sourceContent2);
 };
 
+// Function to copy language files
+const copyLangFiles = () => {
+  const srcLangsDir = 'src/langs';
+  const destLangsDir = 'dist/plugins/languageSelect/langs';
+  
+  try {
+    // Create destination directory if it doesn't exist
+    mkdirSync(destLangsDir, { recursive: true });
+    
+    // Read all files from source langs directory
+    const files = readdirSync(srcLangsDir);
+    
+    // Copy only .js files
+    files.forEach(file => {
+      if (extname(file) === '.js') {
+        const srcPath = join(srcLangsDir, file);
+        const destPath = join(destLangsDir, file);
+        copyFileSync(srcPath, destPath);
+        console.log(`📄 Copied ${file} to ${destLangsDir}`);
+      }
+    });
+    
+    console.log('✅ Language files copied successfully');
+  } catch (error) {
+    console.error('❌ Failed to copy language files:', error);
+    throw error;
+  }
+};
 
 // Common settings
 const entryFile = 'src/plugin.ts';
@@ -62,7 +91,7 @@ const builds = [
 // Create test file first
 createTestFiles();
 
-// Run both builds
+// Run all builds
 Promise.all(
   builds.map((opts) =>
     build({
@@ -75,6 +104,7 @@ Promise.all(
   )
 )
   .then(() => {
+    copyLangFiles();
     console.log('✅ All builds completed successfully');
   })
   .catch((err) => {

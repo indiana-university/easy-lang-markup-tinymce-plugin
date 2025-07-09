@@ -1,4 +1,4 @@
-import { LanguageSelect } from './plugin-for-tests';
+import { LanguageSelect } from '../dist/plugin_for_tests/plugin-for-tests';
 
 describe('isValidLang', () => {
   test('returns true for valid language codes', () => {
