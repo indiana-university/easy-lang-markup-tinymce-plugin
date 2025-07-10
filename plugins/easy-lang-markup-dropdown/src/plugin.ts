@@ -48,8 +48,11 @@ class LanguageSelect {
     "#EFAA1C",
   ];
 
-  private static readonly rtlLangs: Set<string> = new Set(['ar', 'fa', 'he', 'ur', 'ps', 'dv', 'ku']);
-
+  private static readonly rtlLangs: Set<string> = new Set([
+    'ar', 'fa', 'he', 'ur', 'ps', 'dv', 'ku', 'ckb', 'yi', 'arc', 
+    'sd', 'ug', 'bal', 'bqi', 'glk', 'lrc', 'mzn', 'pnb', 'azb'
+  ]);
+  
   private readonly langFormatsRegistered: Record<string, boolean> = {};
   private editorLanguage: string = LanguageSelect.CONFIG.DEFAULT_LANG;
   private tsViewMarkup: boolean = false;
@@ -840,6 +843,8 @@ class LanguageSelect {
    * @param {Function} callback - A callback function that is invoked with the updated list of languages after submission.
    */
   private readonly openConfigureLanguagesOnSelectbox = (langMenuItems: string[] = [], callback: Function | null = null) => {
+    const self: LanguageSelect = this;
+
     // Create an array for select box items, with "None" and "Other" options.
     const languages = [
       { value: "-n-", text: this.translate('None') }, // Option to select "None"
@@ -985,7 +990,7 @@ class LanguageSelect {
 
           if (selectedLang === "-o-" && !LanguageSelect.isValidLang(manualLang)) {
             alert(
-              this.translate('Enter a valid language code with no spaces. Or, press cancel.')
+              self.translate('Enter a valid language code with no spaces. Or, press cancel.')
             );
             return;
           }
@@ -1002,7 +1007,7 @@ class LanguageSelect {
         }
 
         // Focus back on the editor and invoke the callback with the selected languages
-        this.editor.focus();
+        if(self?.editor?.focus) self.editor.focus();
         if (callback) callback(selectedLangs);
         dialogApi.close(); // Close the dialog after submission
       },
@@ -1099,16 +1104,20 @@ class LanguageSelect {
   private setDefaultDocumentLanguage(langValue: string) {
     const editorDoc = this.getEditorDoc();
 
-    if (editorDoc) {
+    if (editorDoc && LanguageSelect.isNotBlank(langValue)) {
+      const dir = LanguageSelect.getTextDirection(langValue);
+      langValue = LanguageSelect.cleanLangAttr(langValue);
       let defaultLangDiv = editorDoc.getElementById(LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID);
 
       // Create or update the language holder div
       if (defaultLangDiv) {
         defaultLangDiv.setAttribute("lang", langValue);
+        defaultLangDiv.setAttribute("dir", dir);
       } else {
         defaultLangDiv = editorDoc.createElement("div");
         defaultLangDiv.id = LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID;
         defaultLangDiv.setAttribute("lang", langValue);
+        defaultLangDiv.setAttribute("dir", dir);
         editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
       }
 
