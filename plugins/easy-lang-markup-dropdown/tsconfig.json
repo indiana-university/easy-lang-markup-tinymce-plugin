@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "types": ["jest","tinymce"],
+    "types": ["jest","node","tinymce"],
     "removeComments": true,
     "noEmit": true
   },
