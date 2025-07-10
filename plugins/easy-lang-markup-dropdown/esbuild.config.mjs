@@ -75,14 +75,17 @@ const builds = [
     },
     footer: {
       js: `
-  tinymce.PluginManager.add('languageSelect', (editor, url) => {
-    const plugin = new LanguageSelect(editor, url);
-    plugin.init();
-    return {
-      name: 'languageSelect',
-    };
-  });
-  tinymce.PluginManager.requireLangPack('languageSelect', 'ar, ar_SA, bg, bg_BG, ca, cs, cy, da, da_x_k12, de, el, en, en_AU, en_CA, en_GB, en_US, es, es_CR, es_ES, es_MX, fa, fa_AF, fa_IR, fi, fi_FI, fr, fr_CA, fr_FR, ga, he, he_IL, hi, hr, hr_HR, ht, hu, hu_HU, hy, id, is, it, ja, ko, ko_KR, mi, nb, nb_NO, nb_x_k12, nl, nn, pl, pt, pt_BR, pt_PT, ro, ru, ru_RU, sl, sl_SI, sr, sv, sv_SE, sv_x_k12, th, th_TH, tr, tr_TR, uk, uk_UA, vi, vi_VN, zh, zh_CN, zh_Hans, zh_Hant, zh_TW');`
+tinymce.PluginManager.add('languageSelect', (editor, url) => {
+  const editorLang = editor.options.get('language');
+  const plugin = new LanguageSelect(editor, url);
+  plugin.init();
+  tinymce.PluginManager.requireLangPack('languageSelect', editorLang);
+
+  return {
+    name: 'languageSelect',
+  };
+});
+ `
     },
     target: 'es2015'
   }

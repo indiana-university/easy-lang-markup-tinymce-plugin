@@ -348,17 +348,17 @@ class LanguageSelect {
 
   /**
    * Gets the default document language from a single DIV wrapper element.
-   * 
+   *
    * This method checks if the TinyMCE editor's document body contains exactly one
-   * child element that is a DIV. If found, it extracts and validates the lang 
+   * child element that is a DIV. If found, it extracts and validates the lang
    * attribute from that DIV element. This is useful for documents that wrap all
    * content in a single container DIV with language markup.
-   * 
+   *
    * The method tries two approaches in order:
    * 1. Uses editor.getBody() to access the body element directly
    * 2. Falls back to editor.getDoc().body if getBody() is unavailable
-   * 
-   * @returns {string | null} The valid language code (e.g., "en", "es-MX") if a 
+   *
+   * @returns {string | null} The valid language code (e.g., "en", "es-MX") if a
    *                          single DIV child with valid lang attribute is found,
    *                          null otherwise
    */
@@ -368,35 +368,35 @@ class LanguageSelect {
       const result = this.checkSingleDivChild(this.editor.getBody());
       if (result) return result;
     }
-    
+
     // Fallback to getDoc().body
     if (this.editor?.getDoc) {
       const editorDoc = this.editor.getDoc();
-      if(editorDoc) {
+      if (editorDoc) {
         const result = this.checkSingleDivChild(editorDoc.body);
         if (result) return result;
-        }
+      }
     }
-    
+
     return null;
   }
 
   /**
    * Checks if a parent element has exactly one DIV child and extracts its lang attribute.
-   * 
+   *
    * This helper method examines a parent element to determine if it contains exactly
    * one child element that is a DIV tag. If this condition is met, it attempts to
    * extract and validate the lang attribute from that DIV element.
-   * 
+   *
    * @param {Element | null} parent - The parent element to examine. Can be null.
-   * 
+   *
    * @returns {string | null} The valid language code from the DIV's lang attribute
    *                          if exactly one DIV child exists with a valid lang attribute,
    *                          null otherwise
    */
   private checkSingleDivChild(parent: Element | null): string | null {
-    if (parent?.children?.length === 1 && 
-        parent.children[0]?.tagName === "DIV") {
+    if (parent?.children?.length === 1 &&
+      parent.children[0]?.tagName === "DIV") {
       return LanguageSelect.getValidLangAttribute(parent.children[0]);
     }
     return null;
@@ -482,138 +482,188 @@ class LanguageSelect {
    * Language names are in the native language.
    */
   private static readonly langAtts: Record<string, string> = {
-    'af': 'Afrikaans',
-    'ak': 'Akan',
-    'ar': 'العربية',
-    'az': 'Azerbaijani',
-    'bg': 'Bulgarian',
-    'bg-bg': 'Bulgarian (Bulgaria)',
-    'bho': 'Bhojpuri',
-    'bm': 'Bambara',
-    'bn': 'Bengali (Bangla)',
-    'bo': 'Tibetan',
-    'bs': 'Bosnian (Bosanski)',
-    'ca': 'Català',
-    'cs': 'Čeština',
-    'cu': 'Bulgarian, Old (Church Slavic)',
-    'cy': 'Cymraeg',
-    'da': 'Dansk',
-    'de': 'Deutsch',
-    'el': 'Ελληνικά',
-    'en-au': 'English (Australia)',
-    'en-ca': 'English (Canada)',
-    'en-gb': 'English (United Kingdom)',
-    'en-ie': 'English (Ireland)',
-    'en-in': 'English (Indian)',
-    'en-tt': 'English (Trinidad)',
-    'en-us': 'English (United States)',
-    'en-za': 'English (South Africa)',
-    'en': 'English',
-    'es-ar': 'Spanish (Argentinia)',
-    'es-cl': 'Spanish (Chile)',
-    'es-co': 'Spanish (Columbia)',
-    'es-cr': 'Spanish (Costa Rica)',
-    'es-es': 'Spanish (Spain)',
-    'es-mx': 'Spanish (Mexico)',
-    'es-pe': 'Spanish (Peru)',
-    'es': 'Español',
-    'et': 'Eesti',
-    'eu': 'Euskera',
-    'fa': 'فارسی',
-    'fa-af': 'Persian (Afghanistan)',
-    'fa-ir': 'Persian (Iran)',
-    'fi': 'Suomi',
-    'fi-fi': 'Finnish (Finland)',
-    'fr-ca': 'Français (Canada)',
-    'fr': 'Français',
-    'ga': 'Gaeilge',
-    'gl': 'Galician (Spain)',
-    'he': 'עִברִית',
-    'he-il': 'Hebrew (Israel)',
-    'hi': 'हिन्दी',
-    'hr': 'Croatian',
-    'hr-hr': 'Croatian (Croatia)',
-    'ht': 'Kreyòl Ayisyen',
-    'hu': 'Magyar',
-    'hu-hu': 'Hungarian (Hungary)',
-    'hy': 'Հայերեն',
-    'id': 'Bahasa Indonesia',
-    'is': 'Íslenska',
-    'it': 'Italiano',
-    'ja': '日本語',
-    'kk': 'Kazakh',
-    'kn': 'Kannada',
-    'ko': '한국말',
-    'ko-kr': 'Korean (Korea)',
-    'la': 'Latin',
-    'lkt': 'Lakota',
-    'mi': 'Reo Māori',
-    'mn': 'Mongolian',
-    'mr': 'Marathi',
-    'ms': 'Bahasa Melayu',
-    'nb': 'Norsk Bokmål',
-    'nb-no': 'Norwegian Bokmål (Norway)',
-    'nl-be': 'Dutch (Belgium)',
-    'nl': 'Nederlands',
-    'nn': 'Norsk Nynorsk',
-    'pl': 'Polski',
-    'ps': 'Pashto',
-    'pt-br': 'Português do Brasil',
-    'pt': 'Português',
-    'qu': 'Quechua',
-    'ro': 'Română',
-    'ru': 'Русский',
-    'sa': 'Sanskrit',
-    'se': 'Sámegiella',
-    'sk-sk': 'Slovakia',
-    'sl': 'Slovenščina',
-    'sl-si': 'Slovenian (Slovenia)',
-    'sma': 'SMA',
-    'sme': 'SME',
-    'smj': 'SMJ',
-    'sr': 'Српски',
-    'sv': 'Svenska',
-    'sv-se': 'Swedish (Sweden)',
-    'sw': 'Swahili',
-    'ta': 'Tamil',
-    'te': 'Telugu',
-    'tg': 'Tajik',
-    'th': 'ไทย',
-    'th-th': 'Thai (Thailand)',
-    'tr': 'Türkçe',
-    'tr-tr': 'Turkish (Turkey)',
-    'ug': 'Uyghur',
-    'uk': 'Українська',
-    'ur': 'Urdu',
-    'uz': 'Uzbek',
-    'vi': 'Tiếng Việt',
-    'wo': 'Wolof',
-    'yi': 'Yiddish',
-    'yo': 'Yoruba',
-    'yua': 'Yucatec Maya',
-    'zh-cn': 'Chinese (China)',
-    'zh-hans': '简体中文',
-    'zh-hant': '繁體中文',
-    'zh-hk': 'Chinese (Hong Kong)',
-    'zh-tw': 'Chinese (Taiwan)',
-    'zh': 'Chinese',
-    'zu': 'Zulu',
-};
+    "af": "Afrikaans",
+    "af-za": "Afrikaans (Suid-Afrika)",
+    "ak": "Akan",
+    "am": "አማርኛ",
+    "ar": "العربية",
+    "ar-eg": "العربية (مصر)",
+    "ar-ma": "العربية (المغرب)",
+    "ar-sa": "العربية (السعودية)",
+    "az": "azərbaycan",
+    "be": "беларуская",
+    "bg": "български",
+    "bg-bg": "български (България)",
+    "bho": "भोजपुरी",
+    "bm": "bamanakan",
+    "bn": "বাংলা",
+    "bo": "བོད་སྐད་",
+    "bs": "bosanski",
+    "ca": "català",
+    "cop": "ⲘⲉⲧⲢⲉⲙⲛ̀ⲭⲏⲙⲓ",
+    "cr": "ᓀᐦᐃᔭᐍᐏᐣ",
+    "cs": "čeština",
+    "cu": "ѩзыкъ словѣньскъ",
+    "cy": "Cymraeg",
+    "da": "dansk",
+    "de": "Deutsch",
+    "de-at": "Österreichisches Deutsch",
+    "de-ch": "Schweizer Hochdeutsch",
+    "de-de": "Deutsch (Deutschland)",
+    "dv": "ދިވެހިބަސް",
+    "el": "Ελληνικά",
+    "en-au": "Australian English",
+    "en-ca": "Canadian English",
+    "en-gb": "British English",
+    "en-ie": "English (Ireland)",
+    "en-in": "English (Indian)",
+    "en-tt": "English (Trinidad)",
+    "en-us": "English (United States)",
+    "en-za": "English (South Africa)",
+    "en": "English",
+    "eo": "Esperanto",
+    "es-ar": "español de Argentina",
+    "es-cl": "español de Chile",
+    "es-co": "español de Colombia",
+    "es-cr": "español de Costa Rica",
+    "es-es": "español de España",
+    "es-mx": "español de México",
+    "es-pe": "español de Perú",
+    "es": "español",
+    "et": "eesti",
+    "eu": "euskara",
+    "fa": "فارسی",
+    "fa-af": "دری",
+    "fa-ir": "فارسی (ایران)",
+    "ff": "Pulaar",
+    "fi": "suomi",
+    "fi-fi": "suomi (Suomi)",
+    "fil": "Filipino",
+    "fr-be": "français (Belgique)",
+    "fr-ca": "français canadien",
+    "fr-ch": "français suisse",
+    "fr": "français",
+    "ga": "Gaeilge",
+    "gl": "galego",
+    "grc": "Ἀρχαία ἑλληνικὴ",
+    "ha": "Hausa",
+    "he": "עברית",
+    "he-il": "עברית (ישראל)",
+    "hi": "हिन्दी",
+    "hr": "hrvatski",
+    "hr-hr": "hrvatski (Hrvatska)",
+    "ht": "Kreyòl Ayisyen",
+    "hu": "magyar",
+    "hu-hu": "magyar (Magyarország)",
+    "hy": "հայերեն",
+    "id": "Indonesia",
+    "ig": "Igbo",
+    "is": "íslenska",
+    "it": "italiano",
+    "it-it": "italiano (Italia)",
+    "iu": "ᐃᓄᒃᑎᑐᑦ",
+    "ja": "日本語",
+    "ja-jp": "日本語 (日本)",
+    "ka": "ქართული",
+    "kab": "Taqbaylit",
+    "kk": "қазақ тілі",
+    "km": "ខ្មែរ",
+    "kn": "ಕನ್ನಡ",
+    "ko": "한국어",
+    "ko-kr": "한국어 (대한민국)",
+    "la": "Latina",
+    "lkt": "Lakȟólʼiyapi",
+    "lo": "ລາວ",
+    "lv": "latviešu",
+    "lt": "lietuvių",
+    "mi": "Māori",
+    "mn": "монгол",
+    "mr": "मराठी",
+    "ms": "Melayu",
+    "mt": "Malti",
+    "my": "မြန်မာ",
+    "nb": "norsk bokmål",
+    "nb-no": "norsk bokmål (Norge)",
+    "ne": "नेपाली",
+    "nl-be": "Vlaams",
+    "nl": "Nederlands",
+    "nn": "norsk nynorsk",
+    "nv": "Diné Bizaad",
+    "ota": "لسان عثمانى",
+    "pa": "ਪੰਜਾਬੀ",
+    "peo": "𐎱𐎠𐎼𐎿",
+    "pl": "polski",
+    "ps": "پښتو",
+    "pt-br": "Português do Brasil",
+    "pt-pt": "português europeu",
+    "pt": "português",
+    "qu": "Runasimi",
+    "ro": "română",
+    "ru": "русский",
+    "rw": "Ikinyarwanda",
+    "sa": "संस्कृत भाषा",
+    "se": "davvisámegiella",
+    "sk-sk": "slovenčina (Slovensko)",
+    "si": "සිංහල",
+    "sl": "slovenščina",
+    "sl-si": "slovenščina (Slovenija)",
+    "sma": "Åarjelsaemien gïele",
+    "sme": "davvisámegiella",
+    "smj": "julevsámegiella",
+    "sn": "chiShona",
+    "sr": "српски",
+    "sr-latn": "srpski (latinica)",
+    "sv": "svenska",
+    "sv-se": "svenska (Sverige)",
+    "sw": "Kiswahili",
+    "sw-ke": "Kiswahili (Kenya)",
+    "sw-tz": "Kiswahili (Tanzania)",
+    "syc": "ܠܫܢܐ ܣܘܪܝܝܐ",
+    "ta": "தமிழ்",
+    "te": "తెలుగు",
+    "tg": "тоҷикӣ",
+    "th": "ไทย",
+    "th-th": "ไทย (ไทย)",
+    "tk": "türkmen dili",
+    "tl": "Tagalog",
+    "tr": "Türkçe",
+    "tr-tr": "Türkçe (Türkiye)",
+    "tt": "татар",
+    "ug": "ئۇيغۇرچە",
+    "uk": "українська",
+    "ur": "اردو",
+    "uz": "o‘zbek",
+    "vi": "Tiếng Việt",
+    "wo": "Wolof",
+    "xh": "IsiXhosa",
+    "yi": "ייִדיש",
+    "yo": "Èdè Yorùbá",
+    "yua": "Maaya T'aan",
+    "zh-cn": "中文（中国）",
+    "zh-hans": "简体中文",
+    "zh-hant": "繁體中文",
+    "zh-hk": "中文（香港）",
+    "zh-sg": "中文（新加坡）",
+    "zh-tw": "中文（台灣）",
+    "zh": "中文",
+    "zu": "isiZulu",
+    "zu-za": "isiZulu (iNingizimu Afrika)"
+  };
 
   // Helper function to get translation string with fallback hierarchy
   getLanguageNameForLocale(langCode: string | null): string {
 
-    if (!langCode) return '';
+    if (!LanguageSelect.isNotBlank(langCode)) return '';
     langCode = langCode.toLowerCase().trim();
     let langNameKey = `langName.${langCode}`;
 
     // Try the full language code first (e.g., 'es-MX')
     let languageName = this.editor.translate(langNameKey);
-    if (languageName === langNameKey && langCode.includes('-')) {
+    if ((!LanguageSelect.isNotBlank(languageName) || languageName === langNameKey) && langCode.includes('-')) {
       // If not found and there's a hyphen, try the primary language code (e.g., 'es')
       langNameKey = `langName.${LanguageSelect.baseLanguage(langCode)}`;
       languageName = this.editor.translate(langNameKey);
-      if (languageName === langNameKey) {
+      if (languageName === langNameKey || !LanguageSelect.isNotBlank(languageName)) {
         if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, langCode)) {
           languageName = LanguageSelect.langAtts[langCode];
         } else if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, LanguageSelect.baseLanguage(langCode))) {
@@ -636,7 +686,7 @@ class LanguageSelect {
 
   // Used for selector lists
   private getLanguageCodeDescription(langCode: string | null): string | null {
-    if(!LanguageSelect.isNotBlank(langCode)) return null;
+    if (!LanguageSelect.isNotBlank(langCode)) return null;
 
     let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
     let nativeLangName = LanguageSelect.getNativeLanguageName(langCode);

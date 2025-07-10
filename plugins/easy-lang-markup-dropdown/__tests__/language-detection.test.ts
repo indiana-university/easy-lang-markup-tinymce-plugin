@@ -196,7 +196,7 @@ describe('LanguageDetector', () => {
     it('should return the native spelling a language name', () => {
       expect(LanguageSelect.getNativeLanguageName('en')).toBe('English');
       expect(LanguageSelect.getNativeLanguageName(' en ')).toBe('English');
-      expect(LanguageSelect.getNativeLanguageName('fr-CA')).toBe('Français (Canada)');
+      expect(LanguageSelect.getNativeLanguageName('fr-CA')).toBe('français canadien');
     });
     it('should return the lang code when not found', () => {
       expect(LanguageSelect.getNativeLanguageName('en')).toBe('English');
@@ -216,7 +216,7 @@ describe('LanguageDetector', () => {
     });
     it('should return the native language name for missing keys that are in langAtts', () => {
       const plugin = new LanguageSelect(mockEditor, 'fakeURL');
-      expect(plugin.getLanguageNameForLocale('fr-CA')).toBe('Français (Canada)');
+      expect(plugin.getLanguageNameForLocale('fr-CA')).toBe('français canadien');
     })
 
   });

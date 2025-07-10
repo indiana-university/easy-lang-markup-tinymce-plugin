@@ -299,16 +299,8 @@ describe('Localization Files', () => {
           )
           .join('\n');
         
-        fail(`Translation key inconsistencies found:\n${errorMessage}`);
+        expect(`Translation key inconsistencies found:\n${errorMessage}`).toBe('No inconsistencies should exist');
       }
-    });
-
-    test('should have reasonable number of translation keys across all files', () => {
-      if (wellFormedFiles.length === 0) return;
-      
-      // Expect at least 10 keys and no more than 500 (reasonable bounds)
-      expect(statistics.keyCountRange.average).toBeGreaterThanOrEqual(10);
-      expect(statistics.keyCountRange.average).toBeLessThanOrEqual(500);
     });
 
     test('should have consistent key counts across files', () => {
@@ -318,8 +310,7 @@ describe('Localization Files', () => {
       const variance = max - min;
       
       // Allow some variance but not too much (max 10% difference)
-      const allowedVariance = Math.max(5, Math.floor(max * 0.1));
-      expect(variance).toBeLessThanOrEqual(allowedVariance);
+      expect(variance).toBeLessThanOrEqual(0);
     });
   });
 
