@@ -48,11 +48,6 @@ class LanguageSelect {
     "#EFAA1C",
   ];
 
-  private static readonly rtlLangs: Set<string> = new Set([
-    'ar', 'fa', 'he', 'ur', 'ps', 'dv', 'ku', 'ckb', 'yi', 'arc', 
-    'sd', 'ug', 'bal', 'bqi', 'glk', 'lrc', 'mzn', 'pnb', 'azb'
-  ]);
-  
   private readonly langFormatsRegistered: Record<string, boolean> = {};
   private editorLanguage: string = LanguageSelect.CONFIG.DEFAULT_LANG;
   private tsViewMarkup: boolean = false;
@@ -131,12 +126,98 @@ class LanguageSelect {
 
     return translated;
   }
-
-  static getTextDirection(lang: string): 'rtl' | 'ltr' {
-    const baseLang = LanguageSelect.baseLanguage(lang).toLowerCase();
-    return LanguageSelect.rtlLangs.has(baseLang) ? 'rtl' : 'ltr';
+  
+  /**
+   * Parses a BCP 47 language tag into its component parts: language, script, and region.
+   * Uses Intl.Locale if available, with a manual fallback for older environments.
+   * 
+   * The HTML spec states that language tags in the lang attribute should follow BCP 47, 
+   * but it doesn't enforce strict casing. The spec treats language tags as case-insensitive 
+   * for matching purposes.
+   * 
+   * The returned values are normalized: language and script are lowercased; region is uppercased.
+   *
+   * @param {string} lang - The BCP 47 language tag (e.g., 'ku-Arab-IQ').
+   * @returns {{ language: string, script?: string, region?: string }} An object with parsed locale components.
+   */
+  static getLocaleParts(lang: string): Types.LocaleParts {
+    // Use native Intl.Locale if available
+    if ('Intl' in window && 'Locale' in Intl) {
+      try {
+        const locale = new Intl.Locale(lang);
+        return {
+          language: locale.language.toLowerCase(),
+          script: locale.script?.toLowerCase(),
+          region: locale.region?.toUpperCase(),
+        };
+      } catch {
+        // Fallback to manual parsing
+      }
+    }
+  
+    // Fallback BCP 47-style parser
+    const parts = lang.split('-');
+    const result: Types.LocaleParts = {
+      language: parts[0].toLowerCase(),
+    };
+  
+    for (let i = 1; i < parts.length; i++) {
+      const part = parts[i];
+      if (!result.script && /^[A-Za-z]{4}$/.test(part)) {
+        result.script = part.toLowerCase(); // e.g., "Arab"
+      } else if (!result.region && (/^[A-Z]{2}$/i.test(part) || /^[0-9]{3}$/.test(part))) {
+        result.region = part.toUpperCase(); // e.g., "IQ" or "419"
+      }
+    }
+  
+    return result;
   }
+  
+  /**
+   * Determines the text direction ('ltr', 'rtl', or 'auto') based on a BCP 47 language tag.
+   * Considers both script and language subtags, with special handling for ambiguous languages.
+   *
+   * @param {string} lang - The BCP 47 language tag (e.g., 'ar', 'ku-Latn', 'pa').
+   * @returns {'ltr' | 'rtl' | 'auto'} The inferred text direction.
+   */
+  static getTextDirection(lang: string): 'rtl' | 'ltr' | 'auto' {
 
+    const rtlScripts = new Set([ // Scripts inherently written right-to-left
+      'arab', 'hebr', 'syrc', 'thaa', 'nkoo', 'samr', 'phnx', 'mand', 'adlm',
+      'rohg', 'yezi', 'elym', 'palm', 'nbat', 'armi'
+    ]);
+    
+    const rtlLanguages = new Set([ // Languages always written RTL regardless of script tag
+      'ar', 'fa', 'he', 'ur', 'ps', 'dv', 'ckb', 'yi', 'arc', 'azb',
+      'bqi', 'glk', 'lrc', 'mzn', 'pnb', 'bal', 'syr', 'sam', 'nqo', 'phn',
+      'rhg', 'skr', 'bgn'
+    ]);
+    
+    const ambiguousLanguages = new Set([ // Direction depends on script, but script is not always specified
+      'ku', 'pa', 'ha', 'az', 'ms', 'tg', 'ug', 'sd', 'ks', 'rhg', 'bft'
+    ]);
+    
+    const locale: Types.LocaleParts = LanguageSelect.getLocaleParts(lang);
+  
+    if (LanguageSelect.isNotBlank(locale.script)) {
+      if (rtlScripts.has(locale.script)) {
+        return 'rtl';
+      } else {
+        return 'ltr';
+      }
+    } 
+  
+    if (rtlLanguages.has(locale.language)) {
+      return 'rtl';
+    }
+  
+    if (ambiguousLanguages.has(locale.language)) {
+      return 'auto';
+    }
+  
+    return 'ltr';
+  }
+  
   /**
    * Takes the first token in the string and returns it as a well-formatted lang attribute:
    * - "en" becomes "en"

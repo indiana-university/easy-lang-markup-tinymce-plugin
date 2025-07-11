@@ -74,30 +74,103 @@ describe('baseLanguage', () => {
   });
 });
 
-describe('LanguageSelect.getTextDirection', () => {
-  it('returns "rtl" for known right-to-left languages', () => {
-    expect(LanguageSelect.getTextDirection('ar')).toBe('rtl');       // Arabic
-    expect(LanguageSelect.getTextDirection('fa')).toBe('rtl');       // Persian
-    expect(LanguageSelect.getTextDirection('he')).toBe('rtl');       // Hebrew
-    expect(LanguageSelect.getTextDirection('ur')).toBe('rtl');       // Urdu
-    expect(LanguageSelect.getTextDirection('ps')).toBe('rtl');       // Pashto
-    expect(LanguageSelect.getTextDirection('dv')).toBe('rtl');       // Divehi
-    expect(LanguageSelect.getTextDirection('ku')).toBe('rtl');       // Kurdish (Sorani)
-    expect(LanguageSelect.getTextDirection('ar-EG')).toBe('rtl');    // Arabic (Egypt)
-    expect(LanguageSelect.getTextDirection('FA-IR')).toBe('rtl');    // Case insensitivity
+describe('getLocaleParts', () => {
+  test.each([
+    // [ input, expected output ]
+    ['en',               { language: 'en' }],
+    ['fr-CA',            { language: 'fr', region: 'CA' }],
+    ['zh-Hant',          { language: 'zh', script: 'hant' }],
+    ['zh-Hans-CN',       { language: 'zh', script: 'hans', region: 'CN' }],
+    ['ku-Arab-IQ',       { language: 'ku', script: 'arab', region: 'IQ' }],
+    ['pa-Guru-IN',       { language: 'pa', script: 'guru', region: 'IN' }],
+    ['az-Latn',          { language: 'az', script: 'latn' }],
+    ['es-419',           { language: 'es', region: '419' }], // Latin America (UN M.49)
+    ['fa-AF',            { language: 'fa', region: 'AF' }],
+    ['und',              { language: 'und' }],
+    ['xyz',              { language: 'xyz' }],
+    ['abc-DEF-123',      { language: 'abc', region: '123' }],
+    ['en-GB-oed',        { language: 'en', region: 'GB' }], // extension ignored
+    ['fr-CA-u-ca-gregory', { language: 'fr', region: 'CA' }], // Unicode extension ignored
+  ])('getLocaleParts("%s") should return %j', (input, expected) => {
+    expect(LanguageSelect.getLocaleParts(input)).toEqual(expected);
   });
 
-  it('returns "ltr" for left-to-right or unknown languages', () => {
-    expect(LanguageSelect.getTextDirection('en')).toBe('ltr');       // English
-    expect(LanguageSelect.getTextDirection('fr')).toBe('ltr');       // French
-    expect(LanguageSelect.getTextDirection('ja')).toBe('ltr');       // Japanese (neutral script)
-    expect(LanguageSelect.getTextDirection('zh-Hans')).toBe('ltr');  // Chinese Simplified
-    expect(LanguageSelect.getTextDirection('x-custom')).toBe('ltr'); // Private-use tag
-    expect(LanguageSelect.getTextDirection('zz')).toBe('ltr');       // Unknown code
+  test('returns language only for empty string', () => {
+    expect(LanguageSelect.getLocaleParts('')).toEqual({ language: '' });
+  });
+});
+
+describe('getTextDirection', () => {
+  describe('returns "rtl" for right-to-left languages', () => {
+    test.each([
+      'ar',
+      'fa',
+      'he',
+      'ur',
+      'ps',
+      'dv',
+      'ckb',
+      'yi',
+      'fa-AF',
+      'fa-IR',
+      'ar-EG',
+      'ku-Arab',
+      'ku-Arab-IQ',
+      'ku-arab',   // Function should be case insensitive
+      'ku-arab-iq',
+      'pa-Arab',
+      'pa-Arab-PK',
+      'ha-Arab',
+      'az-Arab',
+      'az-Arab-IR',
+    ])('getTextDirection("%s") should return "rtl"', (lang) => {
+      expect(LanguageSelect.getTextDirection(lang)).toBe('rtl');
+    });
   });
 
-  it('is robust to extra whitespace', () => {
-    expect(LanguageSelect.getTextDirection('  ar  ')).toBe('rtl');
-    expect(LanguageSelect.getTextDirection('\nfa\t')).toBe('rtl');
+  describe('returns "ltr" for left-to-right languages', () => {
+    test.each([
+      'en',
+      'fr',
+      'de',
+      'zh',
+      'ja',
+      'ru',
+      'hi',
+      'en-US',
+      'fr-CA',
+      'ku-Latn',
+      'ku-Latn-TR',
+      'ku-latn',     // Function should be case insensitive
+      'ku-latn-tr',
+      'pa-Guru',
+      'pa-Guru-IN',
+      'zh-Hans',
+      'ha-Latn',
+      'az-Latn',
+      'x-custom',
+      '',           // empty
+      'und',        // undefined language
+      'zz',         // undefined language
+      'xyz',        // unknown
+      'fr-Unknown', // invalid region
+      'abc-DEF-123', // junk tag
+      ' en ',       // allows whitespace
+      '\nen\n'      // allows whitespace
+    ])('getTextDirection("%s") should return "ltr"', (lang) => {
+      expect(LanguageSelect.getTextDirection(lang)).toBe('ltr');
+    });
+  });
+
+  describe('returns "auto" for ambiguous language tags without a script', () => {
+    test.each([
+      'ku',
+      'pa',
+      'ha',
+      'az',
+      'ug'
+    ])('getTextDirection("%s") should return "auto"', (lang) => {
+      expect(LanguageSelect.getTextDirection(lang)).toBe('auto');
+    });
   });
 });

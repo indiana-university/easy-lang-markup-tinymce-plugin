@@ -113,6 +113,12 @@ export interface EventArgs<T = any> {
   stopPropagation(): void;
 }
 
+export interface LocaleParts {
+  language: string;
+  script?: string;
+  region?: string;
+}
+
 export interface ContentLanguage {
   code: string;
   title: string;
