@@ -1,19 +1,22 @@
-tinymce.addI18n('cs', {
+tinymce.addI18n("cs", {
   "-Language Not Set-": "-Jazyk není nastaven-",
   "Choose from list": "Vybrat ze seznamu",
   "Choose languages": "Vybrat jazyky",
   "Choose up to six languages": "Vyberte až šest jazyků",
   "Configure languages": "Konfigurovat jazyky",
   "Current language:": "Aktuální jazyk:",
-  "Enter a valid language code with no spaces. Or, press cancel.": "Zadejte platný kód jazyka bez mezer. Nebo stiskněte zrušit.",
+  "Enter a valid language code with no spaces. Or, press cancel.":
+    "Zadejte platný kód jazyka bez mezer. Nebo stiskněte zrušit.",
   "Enter manually": "Zadat ručně",
-  "Enter new lang code (e.g., \"en-US\"):": "Zadejte nový kód jazyka (např. \"cs-CZ\"):",
+  'Enter new lang code (e.g., "en-US"):':
+    'Zadejte nový kód jazyka (např. "cs-CZ"):',
   "Indicate current language": "Označit aktuální jazyk",
   "Manually enter language {{number}}:": "Ručně zadat jazyk {{number}}:",
   "New Language:": "Nový jazyk:",
-  "None": "Žádný",
+  None: "Žádný",
   "Other - Enter manually": "Jiný - Zadat ručně",
-  "Really remove all language markup from the document?": "Opravdu odstranit všechny jazykové značky z dokumentu?",
+  "Really remove all language markup from the document?":
+    "Opravdu odstranit všechny jazykové značky z dokumentu?",
   "Remove All lang markup": "Odstranit všechny jazykové značky",
   "Remove Language Markup": "Odstranit jazykové značky",
   "Remove current lang value": "Odstranit aktuální hodnotu jazyka",
@@ -187,5 +190,5 @@ tinymce.addI18n('cs', {
   "langName.zh-sg": "",
   "langName.zh-tw": "Čínština (Tchaj-wan)",
   "langName.zu": "zuluština",
-  "langName.zu-za": "zuluština"
+  "langName.zu-za": "zuluština",
 });

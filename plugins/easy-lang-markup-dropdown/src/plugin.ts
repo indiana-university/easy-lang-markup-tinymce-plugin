@@ -14,6 +14,7 @@ class LanguageSelect {
   private static readonly CONFIG = {
     MAX_MENU_ITEMS: 6,
     DEFAULT_LANG: 'en',
+    SET_DIR_WHEN_SETTING_LANG: true,
     LANG_ATTR_QA_ID: 'langAttrQA',
     DEFAULT_LANG_HOLDER_ID: 'defaultContentLangHolder'
   } as const;
@@ -104,8 +105,10 @@ class LanguageSelect {
   }
 
   // Helper function to get translation string
+  // editor.translate returns key if key not found
+  // editor.translate returns "" if the key's value is ""
   translate(key: string): string {
-    const translated: string = this.editor.translate(key);
+    const translated: string = this.editor.translate(key) || key;
     return translated;
   }
 
@@ -116,7 +119,7 @@ class LanguageSelect {
    * @returns Translated string with parameters substituted
    */
   translateTemplate(key: string, replacements: Record<string, string | number>): string {
-    let translated = this.translate(key);
+    let translated = this.translate(key) || key;
 
     // Replace {{key}} with values from replacements object
     Object.entries(replacements).forEach(([placeholder, value]) => {
@@ -1193,12 +1196,12 @@ class LanguageSelect {
       // Create or update the language holder div
       if (defaultLangDiv) {
         defaultLangDiv.setAttribute("lang", langValue);
-        defaultLangDiv.setAttribute("dir", dir);
+        if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
       } else {
         defaultLangDiv = editorDoc.createElement("div");
         defaultLangDiv.id = LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID;
         defaultLangDiv.setAttribute("lang", langValue);
-        defaultLangDiv.setAttribute("dir", dir);
+        if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
         editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
       }
 
@@ -1359,14 +1362,24 @@ class LanguageSelect {
     const dir = LanguageSelect.getTextDirection(langValue);
 
     // Register the new format with TinyMCE
-    this.editor.formatter.register(formatToApply, {
-      inline: "span",
-      attributes: {
-        lang: langValue,
-        dir: dir,
-        class: "langMarkUp",
-      },
-    });
+    if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) {
+      this.editor.formatter.register(formatToApply, {
+        inline: "span",
+        attributes: {
+          lang: langValue,
+          dir: dir,
+          class: "langMarkUp",
+        },
+      });
+    } else {
+      this.editor.formatter.register(formatToApply, {
+        inline: "span",
+        attributes: {
+          lang: langValue,
+          class: "langMarkUp",
+        },
+      });
+    }
     console.log(`registerFormat: registered "${formatToApply}"`);
 
     // Track the registered format to avoid duplicate registrations
