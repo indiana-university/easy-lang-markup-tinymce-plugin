@@ -7,7 +7,7 @@ tinymce.addI18n("cs", {
   "Current language:": "Aktuální jazyk:",
   "Enter a valid language code with no spaces. Or, press cancel.":"Zadejte platný kód jazyka bez mezer. Nebo stiskněte zrušit.",
   "Enter manually": "Zadat ručně",
-  'Enter new lang code (e.g., "en-US"):': 'Zadejte nový kód jazyka (např. "cs-CZ"):',
+  "Enter new lang code (e.g., \"en-US\"):": "Zadejte nový kód jazyka (např. \"cs-CZ\"):",
   "Indicate current language": "Označit aktuální jazyk",
   "Manually enter language {{number}}:": "Ručně zadat jazyk {{number}}:",
   "New Language:": "Nový jazyk:",
@@ -187,5 +187,5 @@ tinymce.addI18n("cs", {
   "langName.zh-sg": "čínština (Singapur)",
   "langName.zh-tw": "čínština (Tchaj-wan)",
   "langName.zu": "zuluština",
-  "langName.zu-za": "zuluština",
+  "langName.zu-za": "zuluština"
 });
