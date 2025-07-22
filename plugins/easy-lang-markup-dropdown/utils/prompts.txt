@@ -1,0 +1,10 @@
+
+The attached nb.js file is a localization file for a tinymce plugin that facilitates marking up the text in the tinymce document for the language (it allows highlighting text, clicking on a language in the menu, and then it sets a format with a lang attribute for the language). It also allows the user to see language markup by using CSS to set different colors for the various lang attribute values found in the document, etc. 
+
+The nb.js localization has a few issues in the language names. The language names are used to present the user a list of languages to chose from (select dropdown option values). Issue 1: Some of the language name translations are missing. Issue 2: Some of the language names are capitalized when they should not be. Issue 3: Some of the existing language translations are not in a consistent format.
+
+Please update the nb.js file to fill in the missing language+region translations and set the case the language names as appropriate in the locale's culture. The country/region names may remain capitalized as appropriate. 
+
+I have attached as PDF with screenshots of some of the menus and dialogs that the plugin presents as a reference. I have also attached the en.js localization file for a reference on the format for the language+region names.
+
+Thanks!
