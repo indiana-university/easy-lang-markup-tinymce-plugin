@@ -8,3 +8,14 @@ Please update the nb.js file to fill in the missing language+region translations
 I have attached as PDF with screenshots of some of the menus and dialogs that the plugin presents as a reference. I have also attached the en.js localization file for a reference on the format for the language+region names.
 
 Thanks!
+
+-------
+
+Please also review the attached vi.js localization file.
+
+-----
+
+Please also review the attached da_x_k12.js localization file which is written for a younger audience.
+
+-----
+
