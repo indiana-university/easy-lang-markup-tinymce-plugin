@@ -144,6 +144,7 @@ tinymce.addI18n('hu_HU', {
   "langName.sa": "szanszkrit",
   "langName.se": "északi számi",
   "langName.si": "szingaléz",
+  "langName.sk": "szlovák",
   "langName.sk-sk": "szlovák (Szlovákia)",
   "langName.sl": "szlovén",
   "langName.sl-si": "szlovén (Szlovénia)",

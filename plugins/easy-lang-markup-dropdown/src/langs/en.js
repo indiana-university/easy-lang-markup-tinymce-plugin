@@ -144,6 +144,7 @@ tinymce.addI18n('en', {
   "langName.sa": "Sanskrit",
   "langName.se": "Sami (Northern)",
   "langName.si": "Sinhala",
+  "langName.sk": "Slovak",
   "langName.sk-sk": "Slovak (Slovakia)",
   "langName.sl": "Slovenian",
   "langName.sl-si": "Slovenian (Slovenia)",
