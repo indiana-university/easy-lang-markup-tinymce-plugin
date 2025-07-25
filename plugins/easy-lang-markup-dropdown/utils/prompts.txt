@@ -1,13 +1,68 @@
 
-The attached nb.js file is a localization file for a tinymce plugin that facilitates marking up the text in the tinymce document for the language (it allows highlighting text, clicking on a language in the menu, and then it sets a format with a lang attribute for the language). It also allows the user to see language markup by using CSS to set different colors for the various lang attribute values found in the document, etc. 
+The attached fr.js file is a localization file for a tinymce plugin. The plugin facilitates marking up a text passage in the tinymce document for the language (it allows highlighting text, clicking on a language in the menu, and then it sets a format with a lang attribute for the language). It also allows the user to see language markup by using CSS to set different colors for the various lang attribute values found in the document, etc. 
 
-The nb.js localization has a few issues in the language names. The language names are used to present the user a list of languages to chose from (select dropdown option values). Issue 1: Some of the language name translations are missing. Issue 2: Some of the language names are capitalized when they should not be. Issue 3: Some of the existing language translations are not in a consistent format.
+The translation strings for the langName.xx keys are going to be listed in an alphabetically sorted dropdown (options in a select). All of the entries for a given language need to appear together. 
 
-Please update the nb.js file to fill in the missing language+region translations and set the case the language names as appropriate in the locale's culture. The country/region names may remain capitalized as appropriate. 
+For proper alphabetical sorting where all variants of a language appear together, we need consistent "Language (Region/Country/Script)" formatting.
+The translations need to use that consistent parenthetical format, for example: "German (Germany)", "English (Ireland)", "Chinese (Hong Kong)"
+
+The langName translations cannot have adjective language name formats (American English, Austrian German, etc.) because if they did then all the entries for a given language would not be listed together.
+
+The attached localization file has a few issues in the language names.
+ - Issue 1: Some of the language name translations are missing. 
+ - Issue 2: Some of the language names do not have the correct capitalization for the locale's culture. 
+ - Issue 3: Some of the existing language translations are not in a consistent format (parenthetical format, etc.)
 
 I have attached as PDF with screenshots of some of the menus and dialogs that the plugin presents as a reference. I have also attached the en.js localization file for a reference on the format for the language+region names.
 
+Please update the attached fr.js localization file to fill in any missing language+region translations, and set the case of the language names as appropriate in the locale's culture (the country/region names may remain capitalized as appropriate), and of course make sure they are in the parenthetical format when not just a language code.
+
 Thanks!
+-------
+I have TinyMCE localization files that need language name corrections. Please analyze and fix:
+
+Issues to address:
+1. Missing language entries (compare to English reference)
+2. Empty string values ("")
+3. Inconsistent format - need "language (Country/Region)" format
+4. Adjective forms (like "American English") should be "English (United States)"
+
+Requirements:
+- All regional variants must use parenthetical format (Format suitable for alphabetical sorting where language variants appear together)
+- Language names should follow the target language's capitalization rules
+- All entries from English reference (en.js) must be present
+
+
+Please create corrected versions with consistent formatting for proper alphabetical sorting for these attached file: mi.js, nl.js
+
+Group 1: Norwegian variants
+
+nb.js, nb_NO.js, nb_x_k12.js, nn.js
+All Norwegian - can process together since they'll share most language name translations
+
+Group 2: Swedish variants
+
+sv.js, sv_SE.js, sv_x_k12.js
+All Swedish variants
+
+Group 3: Slovenian variants
+
+sl.js, sl_SI.js
+Both Slovenian
+
+Group 4: Thai variants
+
+th.js, th_TH.js
+Both Thai
+
+Group 5: Individual languages (process separately)
+
+ht.js (Haitian Creole)
+is.js (Icelandic)
+mi.js (Māori)
+nl.js (Dutch)
+ro.js (Romanian)
+sr.js (Serbian)
 
 -------
 
