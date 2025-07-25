@@ -568,7 +568,7 @@ class LanguageSelect {
    * The key will get correctly cased when used as an attribute value.
    * Language names are in the native language.
    */
-  private static readonly langAtts: Record<string, string> = {
+  private static readonly languageTags: Record<string, string> = {
     "af": "Afrikaans",
     "af-za": "Afrikaans (Suid-Afrika)",
     "ak": "Akan",
@@ -751,10 +751,10 @@ class LanguageSelect {
       langNameKey = `langName.${LanguageSelect.baseLanguage(langCode)}`;
       languageName = this.editor.translate(langNameKey);
       if (languageName === langNameKey || !LanguageSelect.isNotBlank(languageName)) {
-        if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, langCode)) {
-          languageName = LanguageSelect.langAtts[langCode];
-        } else if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, LanguageSelect.baseLanguage(langCode))) {
-          languageName = LanguageSelect.langAtts[LanguageSelect.baseLanguage(langCode)];
+        if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode)) {
+          languageName = LanguageSelect.languageTags[langCode];
+        } else if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, LanguageSelect.baseLanguage(langCode))) {
+          languageName = LanguageSelect.languageTags[LanguageSelect.baseLanguage(langCode)];
         } else {
           languageName = LanguageSelect.cleanLangAttr(langCode);
         }
@@ -767,7 +767,7 @@ class LanguageSelect {
   static getNativeLanguageName(langCode: string | null): string {
     if (!LanguageSelect.isNotBlank(langCode)) return '';
     langCode = langCode.trim().toLowerCase();
-    const nativeLangName: string = Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, langCode) ? LanguageSelect.langAtts[langCode] : langCode;
+    const nativeLangName: string = Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode) ? LanguageSelect.languageTags[langCode] : langCode;
     return nativeLangName;
   }
 
@@ -800,6 +800,60 @@ class LanguageSelect {
   }
 
   /**
+   * Builds a sorted list of languages for the TinyMCE dialog dropdown
+   * @returns Array of language options in the format required by TinyMCE selectbox
+   */
+  private buildSortedLanguagesList(): Array<{ value: string; text: string }> {
+    const editorLocale = this.editor?.settings?.language || 
+                        (this.editor?.options?.get ? this.editor.options.get('language') : 'en') || 'en';
+    
+    const languages: Array<{ value: string; text: string }> = [];
+    
+    // Iterate through all language tags
+    for (const [langCode, nativeName] of Object.entries(LanguageSelect.languageTags)) {
+      // Get the localized name for this language in the current editor locale
+      const localizedName = this.translate(`langName.${langCode.toLowerCase()}`);
+      
+      // Skip if translation is missing (fallback to avoid broken entries)
+      if (!localizedName || localizedName === `langName.${langCode.toLowerCase()}`) {
+        continue;
+      }
+      
+      // Build the display text: "Localized Name - Native Name (code)"
+      const displayText = `${localizedName} - ${nativeName} (${langCode.toLowerCase()})`;
+      
+      languages.push({
+        value: langCode.toLowerCase(),
+        text: displayText
+      });
+    }
+    
+    // Sort alphabetically by the localized language name (first part before the dash)
+    languages.sort((a, b) => {
+      const aLocalizedName = a.text.split(' - ')[0];
+      const bLocalizedName = b.text.split(' - ')[0];
+      return aLocalizedName.localeCompare(bLocalizedName, editorLocale, { 
+        sensitivity: 'base',
+        numeric: true 
+      });
+    });
+    
+    return languages;
+  }
+
+  /**
+   * Alternative approach if you want to cache the languages list for performance
+   */
+  private _cachedLanguagesList: Array<{ value: string; text: string }> | null = null;
+
+  private getSortedLanguagesList(): Array<{ value: string; text: string }> {
+    if (!this._cachedLanguagesList) {
+      this._cachedLanguagesList = this.buildSortedLanguagesList();
+    }
+    return this._cachedLanguagesList;
+  }
+
+  /**
    * Opens a dialog for selecting or entering a default language for the document.
    *
    * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
@@ -814,28 +868,7 @@ class LanguageSelect {
     let currentTab = "listTab1";
 
     // Initialize an array to hold language options
-    const languages: object[] = [];
-
-    // Populate the languages array with sorted entries from langAtts (assumed to be a predefined object).
-    Object.entries(LanguageSelect.langAtts)
-      .sort(([codeA, descA], [codeB, descB]) => {
-        // Compare language descriptions alphabetically, case-insensitive
-        return descA.toLowerCase().localeCompare(descB.toLowerCase());
-      })
-      .forEach(([langCode, langDesc]) => {
-        // Only add valid language attributes (though Object.entries ensures all are valid).
-        let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
-
-        if (langCodeLanguageNameForLocale && langCodeLanguageNameForLocale !== langDesc) {
-          langDesc = `${langCodeLanguageNameForLocale} (${langDesc})`
-        }
-        if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, langCode)) {
-          languages.push({
-            value: langCode,
-            text: `${langDesc}: "${LanguageSelect.cleanLangAttr(langCode)}"`, // Show language description and cleaned code
-          });
-        }
-      });
+    const languages = this.getSortedLanguagesList();
 
     // Open the dialog using TinyMCE's windowManager API
     if (this.editor?.windowManager?.open) this.editor.windowManager.open({
@@ -936,12 +969,12 @@ class LanguageSelect {
     ];
 
     // Populate the language options by sorting langAtts alphabetically by description.
-    Object.entries(LanguageSelect.langAtts)
+    Object.entries(LanguageSelect.languageTags)
       .sort(([codeA, descA], [codeB, descB]) =>
         descA.toLowerCase().localeCompare(descB.toLowerCase())
       )
       .forEach(([langCode, langDesc]) => {
-        if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, langCode)) {
+        if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode)) {
           let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
           if (langCodeLanguageNameForLocale && langCodeLanguageNameForLocale !== langDesc) {
             langDesc = `${langCodeLanguageNameForLocale} (${langDesc})`
@@ -979,8 +1012,8 @@ class LanguageSelect {
             type: "input",
             name: `langInput_${langCounter}`,
             label: `${this.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
-            disabled: Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, lang), // Disable input if language is predefined (pre v7)
-            enabled: !Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, lang), // Disable input if language is predefined
+            disabled: Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined (pre v7)
+            enabled: !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined
           },
         ],
       });
@@ -1012,7 +1045,7 @@ class LanguageSelect {
     const initData: Record<string, string> = {};
     langMenuItems.forEach((lang: string, index: number) => {
       const counter = index + 1;
-      if (Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, lang)) {
+      if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang)) {
         initData[`langSelect_${counter}`] = lang.toLowerCase();
       } else {
         initData[`langSelect_${counter}`] = "-o-"; // Mark as manual entry
@@ -1690,8 +1723,8 @@ class LanguageSelect {
           let newCode = language.code.toLowerCase();
           newDefaultLanguages.push(newCode);
           let newLanguageTitle = (language.title || "").trim();
-          if (newLanguageTitle && !Object.prototype.hasOwnProperty.call(LanguageSelect.langAtts, newCode)) {
-            LanguageSelect.langAtts[newCode] = newLanguageTitle || newCode;
+          if (newLanguageTitle && !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, newCode)) {
+            LanguageSelect.languageTags[newCode] = newLanguageTitle || newCode;
           }
         }
       });
