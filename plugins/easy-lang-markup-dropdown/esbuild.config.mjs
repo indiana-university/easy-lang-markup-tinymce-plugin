@@ -76,16 +76,21 @@ const builds = [
     footer: {
       js: `
 tinymce.PluginManager.add('languageSelect', (editor, url) => {
-  const editorLang = editor.options.get('language');
+  const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
+  const script = document.createElement('script');
+  script.src = url+'/langs/'+locale+'.js';
+  script.async = false;
+  document.head.appendChild(script);
+
   const plugin = new LanguageSelect(editor, url);
   plugin.init();
-  tinymce.PluginManager.requireLangPack('languageSelect', editorLang);
+  tinymce.PluginManager.requireLangPack('languageSelect', locale);
 
   return {
     name: 'languageSelect',
   };
 });
- `
+`
     },
     target: 'es2015'
   }
