@@ -963,12 +963,16 @@ class LanguageSelect {
     const self: LanguageSelect = this;
 
     // Create an array for select box items, with "None" and "Other" options.
-    const languages = [
+    const languages = this.getSortedLanguagesList();
+    languages.unshift({ value: "-n-", text: this.translate('None') }); // Option to select "None"
+    languages.unshift({ value: "-o-", text: this.translate('Other - Enter manually') }); // Option to enter manually
+
+/*     const languages = [
       { value: "-n-", text: this.translate('None') }, // Option to select "None"
       { value: "-o-", text: this.translate('Other - Enter manually') }, // Option to enter manually
     ];
-
-    // Populate the language options by sorting langAtts alphabetically by description.
+ */
+/*     // Populate the language options by sorting langAtts alphabetically by description.
     Object.entries(LanguageSelect.languageTags)
       .sort(([codeA, descA], [codeB, descB]) =>
         descA.toLowerCase().localeCompare(descB.toLowerCase())
@@ -986,7 +990,7 @@ class LanguageSelect {
         }
       });
 
-    // Create the list of items for the dialog's language selection section.
+ */    // Create the list of items for the dialog's language selection section.
     const languageChoiceItems: any[] = [
       {
         type: "htmlpanel",
