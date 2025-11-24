@@ -7,6 +7,8 @@
 "use strict";
 
 import * as Types from './plugin_types';
+declare const tinymce: any;
+declare const tinyMCE: any;
 
 class LanguageSelect {
   constructor(private editor: Types.TinyMCEEditor, private url: string) { }
@@ -19,9 +21,11 @@ class LanguageSelect {
     DEFAULT_LANG_HOLDER_ID: 'defaultContentLangHolder'
   } as const;
 
+  private isWordPress: boolean = false;
+  private hasDashIcons: boolean = false;
   private defaultLanguages: string[] = ["en", "es", "fr", "it", "de"];
 
-  private iconName: string = "easyLangIcon";
+  private iconName: string | null = "easyLangIcon";
   private showCurrentLanguage: boolean = false;
   private showCurrentLangCodeOnly: boolean = false;
   private enableKeyboardShortcuts: boolean = true;
@@ -1743,6 +1747,125 @@ class LanguageSelect {
     }
   };
 
+  // Inside class LanguageSelect
+// TinyMCE 4-style menu builder
+private readonly buildEasyLangMenuItemsV4 = (): any[] => {
+  const self: LanguageSelect = this;
+  const items: any[] = [];
+
+  self.initializeLanguageMenuEntriesList();
+
+  // Per-language items (top level)
+  self.langMenuItems.forEach((lang: string, index: number) => {
+    const label =
+      self.getShortLanguageCodeDescription(lang.toLowerCase()) ||
+      LanguageSelect.cleanLangAttr(lang);
+
+    items.push({
+      text: label,
+      // TinyMCE 4 uses `onclick` instead of `onAction`
+      onclick: function () {
+        // shortcuts are handled elsewhere in v4; menu items themselves
+        // don't need shortcut metadata
+        console.log(`langMenuItem onclick (v4): ${lang}`);
+        self.setDocLangTo(lang);
+      }
+    });
+  });
+
+  // --- Remove language markup submenu --------------------------------------
+  items.push({
+    text: self.translate('Remove Language Markup'),
+    icon: 'remove',
+    menu: [
+      {
+        text: self.translate('Remove current lang value'),
+        icon: 'remove',
+        onclick: function () {
+          self.removeLangMarkupAtCursor();
+        }
+      },
+      {
+        text: self.translate('Remove All lang markup'),
+        icon: 'warning',
+        onclick: function () {
+          self.removeAllLangSpans();
+        }
+      }
+    ]
+  });
+
+  // --- Configure languages --------------------------------------------------
+  items.push({
+    text: self.translate('Configure languages'),
+    icon: 'preferences',
+    onclick: function () {
+      self.openConfigureLanguagesOnSelectbox(
+        self.langMenuItems,
+        (newLangMenuItems: string[]) => {
+          self.langMenuItems = newLangMenuItems;
+        }
+      );
+    }
+  });
+
+  // --- Set default document language ---------------------------------------
+  items.push({
+    text: self.translate('Set default document language'),
+    icon: 'document-properties',
+    onclick: function () {
+      self.openChooseDefaultLangDialog((newLang: string) => {
+        self.setDefaultDocumentLanguage(newLang);
+        self.refreshQaStyles();
+      });
+    }
+  });
+
+  // --- Toggle: Reveal lang markup ------------------------------------------
+  items.push({
+    text: self.translate('Reveal lang markup'),
+    icon: 'preview',
+    onclick: function () {
+      self.tsViewMarkup = !self.tsViewMarkup;
+      if (self.tsViewMarkup) {
+        self.revealLangMarkUp();
+      } else {
+        self.hideLangMarkUp();
+      }
+      // In TinyMCE 4, menu item instances expose `active()`
+      (this as any).active(self.tsViewMarkup);
+    },
+    onPostRender: function () {
+      (this as any).active(self.tsViewMarkup);
+    }
+  });
+
+  // --- Toggle: Indicate current language -----------------------------------
+  if (!self.showCurrentLanguage) {
+    items.push({
+      text: self.translate('Indicate current language'),
+      icon: 'language',
+      onclick: function () {
+        self.showCurrentLanguage = !self.showCurrentLanguage;
+        self.showCurrentLangCodeOnly = true;
+
+        if (self.showCurrentLanguage) {
+          self.updateLanguageSelector();
+        } else {
+          // could clear selector here if desired
+          // self.updateLanguageSelector('');
+        }
+        (this as any).active(self.showCurrentLanguage);
+      },
+      onPostRender: function () {
+        (this as any).active(self.showCurrentLanguage);
+      }
+    });
+  }
+
+  return items;
+};
+
   private readonly buildEasyLangMenuItems = (callback: Function | null = null) => {
     const self: LanguageSelect = this;
     const items: Types.LanguageMenuItem[] = []; // Array to hold menu items
@@ -1884,16 +2007,60 @@ class LanguageSelect {
     }
   }
 
-  public init() {
+  // TODO: the types for the editor probably need adjusted to handle version 4 vs version 5+
+  // Initialize settings specific to TinyMCE version 4 as needed by WP/Pressbooks
+  private initV4() {
     const self: LanguageSelect = this;
-    if (!(self.editor && self.editor.getParam && self.editor.ui?.registry?.addIcon)) return;
+    
+    if (!(self.editor && self.editor.getParam && self.editor.addButton)) throw new Error('No supported editor instance found');
+
+    self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
+    const new_icon_name = self.editor.getParam("easylang_icon");
+
+    if (LanguageSelect.isNotBlank(new_icon_name)) {
+      self.iconName = new_icon_name.trim();
+    } else if (self.isWordPress && self.hasDashIcons) {
+      self.iconName = 'dashicons-translation'
+    } else {
+      self.iconName = null;
+    }
+
+    self.editor.addButton('languageSelector', {
+      type: 'menubutton',
+      text: self.iconName ? null : 'Language',
+      icon: self.iconName ? self.iconName : null,
+      tooltip: self.translate('Set text language'), // Tooltip for the button
+      menu: self.buildEasyLangMenuItemsV4(),    // now includes a submenu
+      onPostRender: function () {
+        var ctrl = this;
+
+        function refreshMenu() {
+          var newMenu = self.buildEasyLangMenuItemsV4();
+          ctrl.settings.menu = newMenu;
+          ctrl.state.data.menu = newMenu;
+        }
+
+        ctrl.on('mousedown', refreshMenu);
+        ctrl.on('keydown', function (e: KeyboardEvent) {
+          const key = e.key;
+          if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'ArrowDown') {
+            refreshMenu();
+          }
+        });
+      }
+    });
+  }
+
+  private initPostV4() {
+    const self: LanguageSelect = this;
+    
+    if (!(self.editor && self.editor.getParam && self.editor.ui?.registry?.addIcon)) throw new Error('No supported editor instance found');
 
     self.editor.ui.registry.addIcon(
       "easyLangIcon",
       '<svg width="24" height="24"><g><path d="M10.9,8.1v1.7L5.1,7.2V5.8l5.9-2.6v1.7L6.8,6.5L10.9,8.1z"/><path d="M18.9,7.2l-5.9,2.6V8.2l4.1-1.6l-4.1-1.6V3.3l5.9,2.5V7.2z"/></g><g><path d="M0.2,19.8v-6.9c0-0.3,0.1-0.6,0.2-0.7s0.3-0.2,0.6-0.2s0.4,0.1,0.6,0.2s0.2,0.4,0.2,0.7v6.9c0,0.3-0.1,0.6-0.2,0.7 S1.3,20.8,1,20.8c-0.2,0-0.4-0.1-0.6-0.3S0.2,20.2,0.2,19.8z"/><path d="M7.5,19.9c-0.4,0.3-0.8,0.5-1.1,0.7s-0.8,0.2-1.2,0.2c-0.4,0-0.8-0.1-1.1-0.2s-0.5-0.4-0.7-0.7S3.1,19.3,3.1,19 c0-0.4,0.1-0.8,0.4-1.1s0.7-0.5,1.1-0.6c0.1,0,0.4-0.1,0.8-0.2s0.7-0.2,1-0.2s0.6-0.2,0.9-0.2c0-0.4-0.1-0.7-0.3-0.9 s-0.5-0.3-0.9-0.3c-0.4,0-0.7,0.1-0.9,0.2s-0.4,0.3-0.5,0.5s-0.2,0.4-0.3,0.4s-0.2,0.1-0.4,0.1c-0.2,0-0.3-0.1-0.5-0.2 S3.4,16.2,3.4,16c0-0.3,0.1-0.6,0.3-0.8s0.5-0.5,0.9-0.7s0.9-0.3,1.6-0.3c0.7,0,1.3,0.1,1.7,0.2s0.7,0.4,0.9,0.8S9,16.2,9,16.8 c0,0.4,0,0.7,0,1s0,0.6,0,0.9c0,0.3,0,0.6,0.1,0.9s0.1,0.5,0.1,0.6c0,0.2-0.1,0.3-0.2,0.4s-0.3,0.2-0.5,0.2c-0.2,0-0.3-0.1-0.5-0.2 S7.7,20.2,7.5,19.9z M7.4,17.6c-0.2,0.1-0.6,0.2-1,0.3S5.7,18,5.5,18.1S5.1,18.2,5,18.3s-0.2,0.3-0.2,0.5c0,0.2,0.1,0.4,0.3,0.6 s0.4,0.3,0.7,0.3c0.3,0,0.6-0.1,0.9-0.2s0.5-0.3,0.6-0.5c0.1-0.2,0.2-0.6,0.2-1.2V17.6z"/><path d="M12.1,15.2v0.2c0.3-0.4,0.6-0.6,0.9-0.8s0.7-0.3,1.2-0.3c0.4,0,0.8,0.1,1.1,0.3s0.6,0.4,0.7,0.8c0.1,0.2,0.2,0.4,0.2,0.6 s0,0.5,0,0.9v3c0,0.3-0.1,0.6-0.2,0.7s-0.3,0.2-0.6,0.2c-0.2,0-0.4-0.1-0.6-0.3s-0.2-0.4-0.2-0.7v-2.7c0-0.5-0.1-0.9-0.2-1.2 s-0.4-0.4-0.9-0.4c-0.3,0-0.5,0.1-0.8,0.3s-0.4,0.4-0.5,0.7c-0.1,0.2-0.1,0.7-0.1,1.3v2c0,0.3-0.1,0.6-0.2,0.7s-0.3,0.2-0.6,0.2 c-0.2,0-0.4-0.1-0.6-0.3s-0.2-0.4-0.2-0.7v-4.6c0-0.3,0.1-0.5,0.2-0.7s0.3-0.2,0.5-0.2c0.1,0,0.3,0,0.4,0.1s0.2,0.2,0.3,0.3 S12.1,15,12.1,15.2z"/><path d="M23.8,15.5v4.6c0,0.5-0.1,1-0.2,1.4s-0.3,0.7-0.5,0.9s-0.6,0.4-1,0.6s-0.9,0.2-1.5,0.2c-0.6,0-1-0.1-1.5-0.2 s-0.8-0.4-1-0.6s-0.4-0.5-0.4-0.8c0-0.2,0.1-0.4,0.2-0.5s0.3-0.2,0.5-0.2c0.2,0,0.4,0.1,0.6,0.3c0.1,0.1,0.2,0.2,0.3,0.3 s0.2,0.2,0.3,0.3S19.8,22,20,22s0.3,0.1,0.5,0.1c0.4,0,0.7-0.1,1-0.2s0.4-0.3,0.5-0.5s0.1-0.4,0.2-0.7s0-0.6,0-1.1 c-0.2,0.3-0.5,0.6-0.9,0.8s-0.7,0.3-1.2,0.3c-0.5,0-1-0.1-1.4-0.4s-0.7-0.7-0.9-1.1s-0.3-1.1-0.3-1.7c0-0.5,0.1-0.9,0.2-1.3 s0.3-0.7,0.6-1s0.5-0.5,0.8-0.6s0.7-0.2,1-0.2c0.5,0,0.8,0.1,1.2,0.3s0.6,0.4,0.9,0.8v-0.2c0-0.3,0.1-0.5,0.2-0.6s0.3-0.2,0.5-0.2 c0.3,0,0.5,0.1,0.6,0.3S23.8,15.1,23.8,15.5z M19.1,17.5c0,0.6,0.1,1.1,0.4,1.5s0.6,0.5,1.1,0.5c0.3,0,0.5-0.1,0.8-0.2 s0.4-0.4,0.6-0.6s0.2-0.6,0.2-1c0-0.7-0.1-1.2-0.4-1.5s-0.7-0.5-1.1-0.5c-0.5,0-0.8,0.2-1.1,0.5S19.1,16.9,19.1,17.5z"/></g></svg>'
     );
 
-    self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
 
     const new_icon_name = self.editor.getParam("easylang_icon");
     if (new_icon_name) {
@@ -1903,29 +2070,8 @@ class LanguageSelect {
       }
     }
 
-    self.showCurrentLanguage = self.editor.getParam('easylang_show_current_language') === true;
-
-    self.enableKeyboardShortcuts = !(self.editor.getParam('easylang_enable_keyboard_shortcuts') === false);
     if (self.enableKeyboardShortcuts) {
       self.addKeyboardShortcuts();
-    }
-
-    const content_langs: Types.ContentLanguage[] | null = self.editor.getParam("content_langs");
-    if (content_langs && content_langs.length > 0) {
-      const newDefaultLanguages: string[] = [];
-      content_langs.forEach((language: Types.ContentLanguage) => {
-        if (LanguageSelect.isValidLang(language.code)) {
-          let newCode = language.code.toLowerCase();
-          newDefaultLanguages.push(newCode);
-          let newLanguageTitle = (language.title || "").trim();
-          if (newLanguageTitle && !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, newCode)) {
-            LanguageSelect.languageTags[newCode] = newLanguageTitle || newCode;
-          }
-        }
-      });
-      if (newDefaultLanguages.length > 0) {
-        self.defaultLanguages = newDefaultLanguages;
-      }
     }
 
     self.editor.ui.registry.addNestedMenuItem("easyLangMenu", {
@@ -1975,5 +2121,41 @@ class LanguageSelect {
       },
     });
   }
-}
 
+  public init() {
+    const self: LanguageSelect = this;
+    if (window && !!window.wp) this.isWordPress = true;
+    this.hasDashIcons = Array.from(document.styleSheets).some(s => (s.href || "").includes("dashicons"));
+
+    if (!(self.editor && self.editor.getParam)) throw new Error('No supported editor instance found');
+
+    self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
+    self.showCurrentLanguage = self.editor.getParam('easylang_show_current_language') === true;
+    self.enableKeyboardShortcuts = !(self.editor.getParam('easylang_enable_keyboard_shortcuts') === false);
+
+    const content_langs: Types.ContentLanguage[] | null = self.editor.getParam("content_langs");
+    if (content_langs && content_langs.length > 0) {
+      const newDefaultLanguages: string[] = [];
+      content_langs.forEach((language: Types.ContentLanguage) => {
+        if (LanguageSelect.isValidLang(language.code)) {
+          let newCode = language.code.toLowerCase();
+          newDefaultLanguages.push(newCode);
+          let newLanguageTitle = (language.title || "").trim();
+          if (newLanguageTitle && !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, newCode)) {
+            LanguageSelect.languageTags[newCode] = newLanguageTitle || newCode;
+          }
+        }
+      });
+      if (newDefaultLanguages.length > 0) {
+        self.defaultLanguages = newDefaultLanguages;
+      }
+    }
+
+    if (this.editor && tinymce && tinymce.majorVersion && tinymce.majorVersion === '4') {
+      this.initV4();
+    } else {
+      this.initPostV4();
+    } 
+  }
+
+}

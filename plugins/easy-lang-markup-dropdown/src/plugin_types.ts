@@ -3,14 +3,26 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
+declare global {
+  interface Window {
+    wp?: any;  // or a better type if you know it
+  }
+}
+
 export interface ElementAttributes {
   readonly [key: string]: string;
+}
+
+export type TinyMCEEditorButtonRegistry = {
+      addButton: (...args: any[]) => void;
+      addMenuItem: (...args: any[]) => void;
 }
 
 export type TinyMCEEditor = {
 
   addCommand?: (...args: any[]) => void;
   addShortcut?: (...args: any[]) => void;
+  addButton?: (...args: any[]) => void;
 
   container?: HTMLElement | null;
   dom?: unknown;

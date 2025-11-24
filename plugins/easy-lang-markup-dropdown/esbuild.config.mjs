@@ -70,6 +70,7 @@ const builds = [
     outfile: 'dist/plugins/languageSelect/plugin.min.js',
     format: 'cjs',
     minify: false,
+    treeShaking: false,
     banner: {
       js: `${bannerText}\n\n`
     },
@@ -92,7 +93,7 @@ tinymce.PluginManager.add('languageSelect', (editor, url) => {
 });
 `
     },
-    target: 'es2015'
+    target: 'es2022'
   }
 ];
 
@@ -105,7 +106,7 @@ Promise.all(
     build({
       entryPoints: [entryFile],
       bundle: true,
-      target: 'es2015',
+      target: 'es2022',
       platform: 'browser',
       ...opts,
     })
