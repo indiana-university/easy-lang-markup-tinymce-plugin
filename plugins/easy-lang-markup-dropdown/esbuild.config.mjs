@@ -76,7 +76,7 @@ const builds = [
     },
     footer: {
       js: `
-tinymce.PluginManager.add('languageSelect', (editor, url) => {
+tinymce.PluginManager.add('languageSelect', function (editor, url) {
   const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
   const script = document.createElement('script');
   script.src = url+'/langs/'+locale+'.js';

@@ -2040,6 +2040,44 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
           ctrl.state.data.menu = newMenu;
         }
 
+
+const editorContentChangeEventHandler = function () {
+      let currentNode: Element | null = null;
+      if (self.editor && self.editor.selection && self.editor.selection.getNode) {
+        currentNode = self.editor.selection.getNode();
+        let lastCurrentLang = '';
+        [lastCurrentLang] = self.getDocumentElementLang(currentNode);
+
+        // Update the visible label if you support “show current language” in V4
+        if (self.showCurrentLanguage) {
+          self.updateLanguageSelector(lastCurrentLang);
+        }
+
+        // Set the active state when a lang is present
+        ctrl.active(lastCurrentLang > "");
+      }
+    };
+
+    // Initial sync
+    editorContentChangeEventHandler();
+
+    // Hook editor events
+    if (self.editor && self.editor.on) {
+      self.editor.on('NodeChange', editorContentChangeEventHandler);
+      self.editor.on('SetContent', editorContentChangeEventHandler);
+      self.editor.on('Focus', editorContentChangeEventHandler);
+    }
+
+    // Clean up when the control is removed
+    ctrl.on('remove', function () {
+      if (self.editor && self.editor.off) {
+        self.editor.off('NodeChange', editorContentChangeEventHandler);
+        self.editor.off('SetContent', editorContentChangeEventHandler);
+        self.editor.off('Focus', editorContentChangeEventHandler);
+      }
+    });
+
+
         ctrl.on('mousedown', refreshMenu);
         ctrl.on('keydown', function (e: KeyboardEvent) {
           const key = e.key;
