@@ -46,7 +46,8 @@ Run the build:
 npm run build
 ```
 
-Outputs appear in:
+The build process makes two versions: one for production and one that exposes 
+functions for the tests. Outputs appear in:
 
 ```
 dist/
@@ -73,7 +74,7 @@ npm test
 
 ## Installation
 
-1. Copy the `languageSelect` folder to your TinyMCE plugins directory:
+1. Copy the `./dist/plugins/languageSelect` folder to your TinyMCE plugins directory:
 ```
 your-project/
   tinymce/
