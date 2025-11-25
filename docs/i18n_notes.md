@@ -2,7 +2,7 @@
 
 # **Internationalizing TinyMCE 7 Plugins: A Comprehensive Technical Guide**
 
-Created by Google Gemini Deep Reseach 2025-06-30
+Created by Google Gemini Deep Research 2025-06-30
 
 ## **I. Executive Summary**
 

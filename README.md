@@ -114,6 +114,11 @@ This plugin utilizes the following TinyMCE APIs:
     - Makes verifying language change markup easy by making them visually apparent 
       with optional highlighting
 
+## Internationalization (i18n) Notes
+
+We've included a localization file for `zh`, but please configure
+tinyMCE for either of the proper script-based codes (`zh-Hans` or `zh-Hant`) instead of the ambiguous `zh`. The `zh.js` included is a fallback (defaulting to simplified Chinese content).
+
 ## License
 
 [GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html)
