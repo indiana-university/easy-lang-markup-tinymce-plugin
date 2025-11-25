@@ -1133,8 +1133,10 @@ class LanguageSelect {
             this.translate('The language code you entered is not valid. Please enter a valid BCP 47 language tag.')
           );
           // Prevent the dialog from closing: TinyMCE 4 just keeps it open if we don’t call close()
-          e.preventDefault && e.preventDefault();
-          return;
+          if (e.preventDefault) {
+            e.preventDefault();
+          }
+          return false;
         }
 
         newLang = LanguageSelect.cleanLangAttr(newLang);
@@ -1367,7 +1369,7 @@ class LanguageSelect {
               if (e.preventDefault) {
                 e.preventDefault();
               }
-              return;
+              return false;
             }
             selectedLangs.push(LanguageSelect.cleanLangAttr(manual));
             continue;
