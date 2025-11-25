@@ -1776,18 +1776,18 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
   // --- Remove language markup submenu --------------------------------------
   items.push({
     text: self.translate('Remove Language Markup'),
-    icon: self.hasDashIcons ? 'dashicons-editor-removeformatting' : 'remove',
+    icon: self.hasDashIcons ? 'icon dashicons-editor-removeformatting' : 'remove',
     menu: [
       {
         text: self.translate('Remove current lang value'),
-        icon: self.hasDashIcons ? 'dashicons-editor-removeformatting' : 'remove',
+        icon: self.hasDashIcons ? 'icon dashicons-editor-removeformatting' : 'remove',
         onclick: function () {
           self.removeLangMarkupAtCursor();
         }
       },
       {
         text: self.translate('Remove All lang markup'),
-        icon: self.hasDashIcons ? 'dashicons-warning' : 'warning',
+        icon: self.hasDashIcons ? 'icon dashicons-warning' : 'warning',
         onclick: function () {
           self.removeAllLangSpans();
         }
@@ -1798,7 +1798,7 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
   // --- Configure languages --------------------------------------------------
   items.push({
     text: self.translate('Configure languages'),
-    icon: self.hasDashIcons ? 'dashicons-admin-generic' : 'preferences',
+    icon: self.hasDashIcons ? 'icon  dashicons-admin-generic' : 'preferences',
     onclick: function () {
       self.openConfigureLanguagesOnSelectbox(
         self.langMenuItems,
@@ -1812,7 +1812,7 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
   // --- Set default document language ---------------------------------------
   items.push({
     text: self.translate('Set default document language'),
-    icon: self.hasDashIcons ? 'dashicons-media-default' : 'document-properties',
+    icon: self.hasDashIcons ? 'icon  dashicons-media-default' : 'document-properties',
     onclick: function () {
       self.openChooseDefaultLangDialog((newLang: string) => {
         self.setDefaultDocumentLanguage(newLang);
@@ -1824,7 +1824,7 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
   // --- Toggle: Reveal lang markup ------------------------------------------
   items.push({
     text: self.translate('Reveal lang markup'),
-    icon: self.hasDashIcons ? 'dashicons-visibility' : 'preview',
+    icon: self.hasDashIcons ? 'icon  dashicons-visibility' : 'preview',
     onclick: function () {
       self.tsViewMarkup = !self.tsViewMarkup;
       if (self.tsViewMarkup) {
@@ -1844,7 +1844,7 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
   if (!self.showCurrentLanguage) {
     items.push({
       text: self.translate('Indicate current language'),
-      icon: self.hasDashIcons ? 'dashicons-admin-site-alt3' : 'language',
+      icon: self.hasDashIcons ? 'icon  dashicons-admin-site-alt3' : 'language',
       onclick: function () {
         self.showCurrentLanguage = !self.showCurrentLanguage;
         self.showCurrentLangCodeOnly = true;
@@ -2020,7 +2020,7 @@ private readonly buildEasyLangMenuItemsV4 = (): any[] => {
     if (LanguageSelect.isNotBlank(new_icon_name)) {
       self.iconName = new_icon_name.trim();
     } else if (self.isWordPress && self.hasDashIcons) {
-      self.iconName = 'dashicons-translation'
+      self.iconName = 'icon  dashicons-translation'
     } else {
       self.iconName = null;
     }
