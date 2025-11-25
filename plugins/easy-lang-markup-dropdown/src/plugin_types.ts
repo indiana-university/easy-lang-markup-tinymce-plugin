@@ -51,6 +51,7 @@ export type TinyMCEEditor = {
   addCommand?: (...args: any[]) => void;
   addShortcut?: (...args: any[]) => void;
   addButton?: (...args: any[]) => void;
+  addMenuItem?: (...args: any[]) => void;
 
   container?: HTMLElement | null;
   dom?: unknown;

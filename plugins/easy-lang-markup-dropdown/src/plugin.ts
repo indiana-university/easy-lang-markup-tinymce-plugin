@@ -2374,6 +2374,14 @@ class LanguageSelect {
     if (self.enableKeyboardShortcuts) {
       self.addKeyboardShortcuts();
     }
+
+    if (self.editor.addMenuItem) {
+      self.editor.addMenuItem('easyLangMenu', {
+        text: self.translate('Language'),
+        icon: self.iconName || null,
+        menu: self.buildEasyLangMenuItemsV4()
+      });
+    }
   }
 
   private initPostV4() {
