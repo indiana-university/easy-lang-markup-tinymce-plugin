@@ -2035,17 +2035,19 @@ class LanguageSelect {
     items.push({
       text: self.translate('Reveal lang markup'),
       icon: self.hasDashIcons ? 'icon dashicons-visibility' : 'preview',
-      onclick: function (this: Types.TinyMCE4MenuItem) {
+      onclick: function () {
+        const menuItem = this as Types.TinyMCE4MenuItem;
         self.tsViewMarkup = !self.tsViewMarkup;
         if (self.tsViewMarkup) {
           self.revealLangMarkUp();
         } else {
           self.hideLangMarkUp();
         }
-        this.active(self.tsViewMarkup);  // No more cast needed
+        menuItem.active(self.tsViewMarkup); 
       },
-      onPostRender: function (this: Types.TinyMCE4MenuItem) {
-        this.active(self.tsViewMarkup);  // No more cast needed
+      onPostRender: function () {
+        const menuItem = this as Types.TinyMCE4MenuItem;
+        menuItem.active(self.tsViewMarkup); 
       }
     });
 
@@ -2054,16 +2056,18 @@ class LanguageSelect {
       items.push({
         text: self.translate('Indicate current language'),
         icon: self.hasDashIcons ? 'icon dashicons-admin-site-alt3' : 'language',
-        onclick: function (this: Types.TinyMCE4MenuItem) {
+        onclick: function () {
+          const menuItem = this as Types.TinyMCE4MenuItem;
           self.showCurrentLanguage = !self.showCurrentLanguage;
           self.showCurrentLangCodeOnly = true;
           if (self.showCurrentLanguage) {
             self.updateLanguageSelector();
           }
-          this.active(self.showCurrentLanguage);  // No more cast needed
+          menuItem.active(self.showCurrentLanguage);
         },
-        onPostRender: function (this: Types.TinyMCE4MenuItem) {
-          this.active(self.showCurrentLanguage);  // No more cast needed
+        onPostRender: function () {
+          const menuItem = this as Types.TinyMCE4MenuItem;
+          menuItem.active(self.showCurrentLanguage); 
         }
       });
     }
@@ -2263,7 +2267,7 @@ class LanguageSelect {
                 if (!menusAreEqual(ai.menu, bi.menu)) return false;
               }
 
-              // NOTE: We intentionally ignore onclick, because two functions
+              // NOTE: Intentionally ignoring onclick, because two functions
               // always compare unequal by reference — but they do not matter
               // for the “shape” and would cause false changes every time.
             }
