@@ -2303,25 +2303,19 @@ class LanguageSelect {
           // Only update if changed otherwise menu will not toggle close on click
           if (!menusAreEqual(newMenu, currentMenu)) {
             self.menuIsRefreshing = true;
-            setTimeout(() => {
-              self.menuIsRefreshing = false;
-            }, 100);
-
-            ctrl.settings.menu = newMenu;
-            ctrl.state.data.menu = newMenu;
-
-            // Destroy existing TinyMCE 4 menu object so it regenerates
-            if (ctrl.menu) {
-              try {
-                ctrl.menu.remove();
-              } catch (e) {
-                // ignore
-              } finally {
+            try {
+              if(ctrl.settings) ctrl.settings.menu = newMenu;
+              if(ctrl.state && ctrl.state.data) ctrl.state.data.menu = newMenu;
+              if (ctrl.menu) {
+                try { if(ctrl.menu?.remove) ctrl.menu.remove(); } catch { /* ignore */ }
                 ctrl.menu = null;
               }
+            } finally {
+              setTimeout(() => {
+                self.menuIsRefreshing = false;
+              }, 100);
             }
           }
-          self.menuIsRefreshing = false;
         }
 
         const editorContentChangeEventHandler = function () {
