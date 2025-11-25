@@ -22,6 +22,7 @@ class LanguageSelect {
   } as const;
 
   private isTinyMCE4: boolean = false;
+  private menuIsRefreshing: boolean = false;
   private isWordPress: boolean = false;
   private hasDashIcons: boolean = false;
   private defaultLanguages: string[] = ["en", "es", "fr", "it", "de"];
@@ -1129,8 +1130,8 @@ class LanguageSelect {
 
         // Validate & normalise
         if (!LanguageSelect.isValidLang(newLang)) {
-          if (this.editor?.windowManager?.alert) this.editor.windowManager.alert(
-            this.translate('The language code you entered is not valid. Please enter a valid BCP 47 language tag.')
+          if (self.editor?.windowManager?.alert) self.editor.windowManager.alert(
+            self.translate('The language code you entered is not valid. Please enter a valid BCP 47 language tag.')
           );
           // Prevent the dialog from closing: TinyMCE 4 just keeps it open if we don’t call close()
           if (e.preventDefault) {
@@ -1161,49 +1162,49 @@ class LanguageSelect {
   private readonly openChooseDefaultLangDialogV5Plus = (callback: (newLang: string) => any) => {
     const self: LanguageSelect = this;
 
-    const initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || this.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
+    const initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || self.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
     const currentDefaultDocLang = self.getDocumentDefaultLanguage();
 
     // Keep track of the currently active tab
     let currentTab = "listTab1";
 
     // Initialize an array to hold language options
-    const languages = this.getSortedLanguagesList();
+    const languages = self.getSortedLanguagesList();
 
     // Open the dialog using TinyMCE's windowManager API
-    if (this.editor?.windowManager?.open) this.editor.windowManager.open({
-      title: this.translate(`Select the document's default language.`), // Dialog title
+    if (self.editor?.windowManager?.open) self.editor.windowManager.open({
+      title: self.translate(`Select the document's default language.`), // Dialog title
       body: {
         type: "tabpanel",
         tabs: [
           {
             name: "listTab1", // First tab for selecting a language from a list
-            title: this.translate('Choose from list'),
+            title: self.translate('Choose from list'),
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || this.translate('None')}</div>`,
+                html: `<div style="margin-bottom:10px">${self.translate('Current language:')} ${self.getLanguageCodeDescription(currentDefaultDocLang) || self.translate('None')}</div>`,
               },
               {
                 type: "selectbox",
                 name: "language",
-                label: this.translate('New Language:'),
+                label: self.translate('New Language:'),
                 items: languages, // Use the sorted languages array for options
               },
             ],
           },
           {
             name: "listTab2", // Second tab for manually entering a language code
-            title: this.translate('Manual language entry'),
+            title: self.translate('Manual language entry'),
             items: [
               {
                 type: "htmlpanel",
-                html: `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || this.translate('None')}</div>`,
+                html: `<div style="margin-bottom:10px">${self.translate('Current language:')} ${self.getLanguageCodeDescription(currentDefaultDocLang) || self.translate('None')}</div>`,
               },
               {
                 type: "input",
                 name: "manualLanguage",
-                label: this.translate('Enter new lang code (e.g., "en-US"):'),
+                label: self.translate('Enter new lang code (e.g., "en-US"):'),
               },
             ],
           },
@@ -1277,10 +1278,10 @@ class LanguageSelect {
     const self: LanguageSelect = this;
 
     // Build list of languages for the listbox
-    const languages = this.getSortedLanguagesList().slice(); // [{ value, text }]
+    const languages = self.getSortedLanguagesList().slice(); // [{ value, text }]
     // Add "Other" and "None" options
-    languages.unshift({ value: "-o-", text: this.translate("Other - Enter manually") });
-    languages.unshift({ value: "-n-", text: this.translate("None") });
+    languages.unshift({ value: "-o-", text: self.translate("Other - Enter manually") });
+    languages.unshift({ value: "-n-", text: self.translate("None") });
 
     const maxItems = LanguageSelect.CONFIG.MAX_MENU_ITEMS;
 
@@ -1306,7 +1307,7 @@ class LanguageSelect {
     const body: any[] = [
       {
         type: "container",
-        html: `<div style="margin-bottom:10px">${this.translate("Choose up to six languages")}</div>`
+        html: `<div style="margin-bottom:10px">${self.translate("Choose up to six languages")}</div>`
       }
     ];
 
@@ -1318,22 +1319,22 @@ class LanguageSelect {
         {
           type: "listbox",             // v4 control type
           name: selectName,
-          label: this.translateTemplate("Select language {{number}}:", { number: i }),
+          label: self.translateTemplate("Select language {{number}}:", { number: i }),
           values: languages,           // v4 uses "values" not "items"
           value: initialSelect[i] || "" // pre-select if we have one
         },
         {
           type: "textbox",             // v4 text input
           name: inputName,
-          label: this.translateTemplate("Manually enter language {{number}}:", { number: i }),
+          label: self.translateTemplate("Manually enter language {{number}}:", { number: i }),
           value: initialInput[i] || "" // pre-fill manual lang if relevant
         }
       );
     }
 
     // Open a legacy (v4-style) window. This works in TinyMCE 4 and 5.
-    if (this.editor?.windowManager?.open) this.editor.windowManager.open({
-      title: this.translate("Choose languages"),
+    if (self.editor?.windowManager?.open) self.editor.windowManager.open({
+      title: self.translate("Choose languages"),
       body,
 
       // v4 callback signature
@@ -1381,9 +1382,7 @@ class LanguageSelect {
           }
         }
 
-        if (self.editor && self.editor.focus) {
-          self.editor.focus();
-        }
+        if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
 
         if (callback) {
           callback(selectedLangs);
@@ -1403,15 +1402,15 @@ class LanguageSelect {
     const self: LanguageSelect = this;
 
     // Create an array for select box items, with "None" and "Other" options.
-    const languages = this.getSortedLanguagesList();
-    languages.unshift({ value: "-n-", text: this.translate('None') }); // Option to select "None"
-    languages.unshift({ value: "-o-", text: this.translate('Other - Enter manually') }); // Option to enter manually
+    const languages = self.getSortedLanguagesList();
+    languages.unshift({ value: "-n-", text: self.translate('None') }); // Option to select "None"
+    languages.unshift({ value: "-o-", text: self.translate('Other - Enter manually') }); // Option to enter manually
 
     // Create the list of items for the dialog's language selection section.
     const languageChoiceItems: any[] = [
       {
         type: "htmlpanel",
-        html: `<div style="margin-bottom:10px">${this.translate('Choose up to six languages')}</div>`,
+        html: `<div style="margin-bottom:10px">${self.translate('Choose up to six languages')}</div>`,
       },
     ];
 
@@ -1426,13 +1425,13 @@ class LanguageSelect {
           {
             type: "selectbox",
             name: `langSelect_${langCounter}`,
-            label: `${this.translateTemplate('Select language {{number}}:', { number: langCounter })}`,
+            label: `${self.translateTemplate('Select language {{number}}:', { number: langCounter })}`,
             items: languages, // Use the languages array for selection options
           },
           {
             type: "input",
             name: `langInput_${langCounter}`,
-            label: `${this.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
+            label: `${self.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
             disabled: Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined (pre v7)
             enabled: !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined
           },
@@ -1448,13 +1447,13 @@ class LanguageSelect {
           {
             type: "selectbox",
             name: `langSelect_${langCounter}`,
-            label: `${this.translateTemplate('Select language {{number}}:', { number: langCounter })}`,
+            label: `${self.translateTemplate('Select language {{number}}:', { number: langCounter })}`,
             items: languages,
           },
           {
             type: "input",
             name: `langInput_${langCounter}`,
-            label: `${this.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
+            label: `${self.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
             disabled: true, // Initially disabled as no manual input is expected. (pre v7)
             enabled: false,
           },
@@ -1475,8 +1474,8 @@ class LanguageSelect {
     });
 
     // Open the dialog for language configuration
-    if (this.editor?.windowManager?.open) this.editor.windowManager.open({
-      title: this.translate('Choose languages'), // Dialog title
+    if (self.editor?.windowManager?.open) self.editor.windowManager.open({
+      title: self.translate('Choose languages'), // Dialog title
       body: { type: "panel", items: languageChoiceItems }, // Populate dialog with language choice items
       buttons: [
         { type: "cancel", text: "Cancel" },
@@ -1557,7 +1556,8 @@ class LanguageSelect {
    * Applies different background colors and border styles to indicate language markup.
    */
   private revealLangMarkUp() {
-    const doc = this.getEditorDoc() || window.document;
+    const self: LanguageSelect = this;
+    const doc = self.getEditorDoc() || window.document;
     const languagesFound: Record<string, string> = {};
 
     // Remove any existing stylesheet for viewing lang markup
@@ -1565,7 +1565,7 @@ class LanguageSelect {
     if (existingStyle?.parentElement) existingStyle.parentElement.removeChild(existingStyle);
 
     // Initialize available colors for highlighting
-    const availableColors = [...this.colorsAvailable];
+    const availableColors = [...self.colorsAvailable];
     const defaultColor = "#e1f3f8";
 
     // Collect unique languages found in the document and assign colors
@@ -1579,8 +1579,8 @@ class LanguageSelect {
     });
 
     // Merge predefined language colors into the found languages
-    Object.keys(this.langColors).forEach((langCode) => {
-      languagesFound[LanguageSelect.cleanLangAttr(langCode)] = this.langColors[langCode];
+    Object.keys(self.langColors).forEach((langCode) => {
+      languagesFound[LanguageSelect.cleanLangAttr(langCode)] = self.langColors[langCode];
     });
 
     // Create and append a new stylesheet for language markup visualization
@@ -1607,6 +1607,7 @@ class LanguageSelect {
     });
 
     doc.head.appendChild(styleSheet);
+    if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
   }
 
   /**
@@ -1614,9 +1615,10 @@ class LanguageSelect {
    * Re-applies the styles if the LanguageSelect.CONFIG.LANG_ATTR_QA_ID stylesheet is present.
    */
   private refreshQaStyles() {
-    const qaStyleElement = (this.getEditorDoc() || window.document).getElementById(LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
+    const self: LanguageSelect = this;
+    const qaStyleElement = (self.getEditorDoc() || window.document).getElementById(LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
     if (qaStyleElement) {
-      this.revealLangMarkUp();
+      self.revealLangMarkUp();
     }
   }
 
@@ -1624,13 +1626,15 @@ class LanguageSelect {
    * Removes the language markup stylesheet from the TinyMCE editor document.
    */
   private hideLangMarkUp() {
-    const doc = this.getEditorDoc() || window.document;
+    const self: LanguageSelect = this;
+    const doc = self.getEditorDoc() || window.document;
 
     // Remove the stylesheet for viewing lang markup if it exists
     const styleElement = doc.getElementById(LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
     if (styleElement?.parentElement) {
       styleElement.parentElement.removeChild(styleElement);
     }
+    if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
   }
 
   /**
@@ -1640,12 +1644,13 @@ class LanguageSelect {
    * @param {string} langValue - The language code to set as the default document language.
    */
   private setDefaultDocumentLanguage(langValue: string) {
-    const editorDoc = this.getEditorDoc();
+    const self: LanguageSelect = this;
+    const editorDoc = self.getEditorDoc();
 
     if (editorDoc && LanguageSelect.isNotBlank(langValue)) {
 
-      if (this.editor?.undoManager?.transact) {
-        this.editor.undoManager.transact(() => {
+      if (self.editor?.undoManager?.transact) {
+        self.editor.undoManager.transact(() => {
 
           const dir = LanguageSelect.getTextDirection(langValue);
           langValue = LanguageSelect.cleanLangAttr(langValue);
@@ -1664,15 +1669,14 @@ class LanguageSelect {
           }
 
           // Move all sibling elements into the default language div
-          this.moveSiblingsIntoElement(defaultLangDiv);
+          self.moveSiblingsIntoElement(defaultLangDiv);
 
         });
       }
 
     }
 
-    // Focus the editor after making changes
-    if (this.editor?.focus) this.editor.focus();
+    if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
   }
 
   /**
@@ -1700,7 +1704,8 @@ class LanguageSelect {
    * Also removes any empty `span` elements with only the class `langMarkUp`.
    */
   private removeLangMarkupAtCursor(): void {
-    const doc: Document | null = this.getEditorDoc();
+    const self: LanguageSelect = this;
+    const doc: Document | null = self.getEditorDoc();
     if (!doc) return;
 
     const selection: Selection | null = doc.getSelection();
@@ -1727,9 +1732,9 @@ class LanguageSelect {
           // If the element is a span with only the `langMarkUp` class and no other attributes, unwrap it
           if (
             element.nodeName.toLowerCase() === "span" &&
-            this.spanIsRemovable(element)
+            self.spanIsRemovable(element)
           ) {
-            this.unwrapElement(element);
+            self.unwrapElement(element);
           }
         }
       }
@@ -1738,10 +1743,12 @@ class LanguageSelect {
     // Clean up any remaining empty `span.langMarkUp` elements
     const emptyLangSpans: NodeListOf<Element> = doc.querySelectorAll("span.langMarkUp:not([lang])");
     emptyLangSpans.forEach((langEl: Element): void => {
-      if (this.spanIsRemovable(langEl)) {
-        this.unwrapElement(langEl);
+      if (self.spanIsRemovable(langEl)) {
+        self.unwrapElement(langEl);
       }
     });
+
+    if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
   }
 
   /**
@@ -1776,29 +1783,31 @@ class LanguageSelect {
    * Unwraps and removes any `span` elements with only the `langMarkUp` class.
    */
   private removeAllLangSpans(): void {
-    if (!confirm(this.translate('Really remove all language markup from the document?')))
+    const self: LanguageSelect = this;
+    if (!confirm(self.translate('Really remove all language markup from the document?')))
       return;
 
-    const doc = this.getEditorDoc();
+    const doc = self.getEditorDoc();
 
     if (doc) {
       // Remove `lang` attributes from all elements and clean up if necessary
       const langElements = doc.querySelectorAll("*[lang]");
       langElements.forEach((langEl: Element) => {
         langEl.removeAttribute("lang");
-        if (this.spanIsRemovable(langEl)) {
-          this.unwrapElement(langEl);
+        if (self.spanIsRemovable(langEl)) {
+          self.unwrapElement(langEl);
         }
       });
 
       // Clean up any remaining empty `span.langMarkUp` elements
       const emptyLangSpans = doc.querySelectorAll("span.langMarkUp:not([lang])");
       emptyLangSpans.forEach((langEl: Element) => {
-        if (this.spanIsRemovable(langEl)) {
-          this.unwrapElement(langEl);
+        if (self.spanIsRemovable(langEl)) {
+          self.unwrapElement(langEl);
         }
       });
     }
+    if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
   }
 
   /**
@@ -1860,8 +1869,6 @@ class LanguageSelect {
       this.registerFormat(langValue);
     }
 
-    if (this.editor?.focus) this.editor.focus();
-
     // Apply the format within an undo transaction
     if (this.editor?.undoManager?.transact) {
       this.editor.undoManager.transact(() => {
@@ -1871,6 +1878,7 @@ class LanguageSelect {
 
     // Refresh the QA styles to reflect the new language format
     this.refreshQaStyles();
+    if (this.editor?.focus) this.editor.focus();
   }
 
   /**
@@ -1995,6 +2003,7 @@ class LanguageSelect {
           icon: self.hasDashIcons ? 'icon dashicons-editor-removeformatting' : 'remove',
           onclick: function () {
             self.removeLangMarkupAtCursor();
+            if (self?.editor?.focus) self.editor.focus();
           }
         },
         {
@@ -2002,6 +2011,7 @@ class LanguageSelect {
           icon: self.hasDashIcons ? 'icon dashicons-warning' : 'warning',
           onclick: function () {
             self.removeAllLangSpans();
+            if (self?.editor?.focus) self.editor.focus();
           }
         }
       ]
@@ -2018,6 +2028,7 @@ class LanguageSelect {
             self.langMenuItems = newLangMenuItems;
           }
         );
+        if (self?.editor?.focus) self.editor.focus();
       }
     });
 
@@ -2030,6 +2041,7 @@ class LanguageSelect {
           self.setDefaultDocumentLanguage(newLang);
           self.refreshQaStyles();
         });
+        if (self?.editor?.focus) self.editor.focus();
       }
     });
 
@@ -2046,6 +2058,7 @@ class LanguageSelect {
           self.hideLangMarkUp();
         }
         menuItem.active(self.tsViewMarkup); 
+        if (self?.editor?.focus) self.editor.focus();
       },
       onPostRender: function () {
         const menuItem = this as Types.TinyMCE4MenuItem;
@@ -2066,6 +2079,7 @@ class LanguageSelect {
             self.updateLanguageSelector();
           }
           menuItem.active(self.showCurrentLanguage);
+          if (self?.editor?.focus) self.editor.focus();
         },
         onPostRender: function () {
           const menuItem = this as Types.TinyMCE4MenuItem;
@@ -2108,6 +2122,7 @@ class LanguageSelect {
             icon: "remove",
             onAction: (event2: Event) => {
               self.removeLangMarkupAtCursor(); // Remove language markup at cursor
+              if (self?.editor?.focus) self.editor.focus();
             },
           },
           {
@@ -2116,6 +2131,7 @@ class LanguageSelect {
             icon: "warning",
             onAction: (event2: Event) => {
               self.removeAllLangSpans(); // Remove all language markup in the document
+              if (self?.editor?.focus) self.editor.focus();
             },
           },
         ];
@@ -2132,6 +2148,7 @@ class LanguageSelect {
         self.openConfigureLanguagesOnSelectbox(self.langMenuItems, (newLangMenuItems: string[]) => {
           self.langMenuItems = newLangMenuItems;
         });
+        if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
       },
     });
 
@@ -2146,6 +2163,7 @@ class LanguageSelect {
           self.setDefaultDocumentLanguage(newLang);
           self.refreshQaStyles(); // Refresh styles after language change
         });
+        if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
       },
     });
 
@@ -2161,6 +2179,7 @@ class LanguageSelect {
         } else {
           self.hideLangMarkUp(); // Hide language markup
         }
+        if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
       },
       onSetup: function (api: any) {
         api.setActive(self.tsViewMarkup); // Set active state based on current view
@@ -2182,6 +2201,7 @@ class LanguageSelect {
           } else {
             // self.updateLanguageSelector('');
           }
+          if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
         },
         onSetup: function (api: any) {
           api.setActive(self.showCurrentLanguage); // Set active state based on current view
@@ -2244,6 +2264,7 @@ class LanguageSelect {
         var ctrl = this;
 
         function refreshMenu() {
+          if (self.menuIsRefreshing) return;
           const newMenu = self.buildEasyLangMenuItemsV4();
 
           // Compare only structural parts: text + submenu shapes.
@@ -2281,6 +2302,11 @@ class LanguageSelect {
 
           // Only update if changed otherwise menu will not toggle close on click
           if (!menusAreEqual(newMenu, currentMenu)) {
+            self.menuIsRefreshing = true;
+            setTimeout(() => {
+              self.menuIsRefreshing = false;
+            }, 100);
+
             ctrl.settings.menu = newMenu;
             ctrl.state.data.menu = newMenu;
 
@@ -2290,10 +2316,12 @@ class LanguageSelect {
                 ctrl.menu.remove();
               } catch (e) {
                 // ignore
+              } finally {
+                ctrl.menu = null;
               }
-              ctrl.menu = null;
             }
           }
+          self.menuIsRefreshing = false;
         }
 
         const editorContentChangeEventHandler = function () {
