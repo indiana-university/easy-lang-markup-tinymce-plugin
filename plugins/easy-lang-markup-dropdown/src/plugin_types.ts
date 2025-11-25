@@ -30,6 +30,9 @@ export interface TinyMCE4MenuButtonControl {
   } | null;
   active: (state: boolean) => void;
   on: (event: string, handler: Function) => void;
+  getEl?: () => HTMLElement | null;  // Get the DOM element
+  disabled?: (state: boolean) => void;  // Disable/enable control
+  visible?: (state: boolean) => void;   // Show/hide control
 }
 
 export interface TinyMCE4MenuItem {
