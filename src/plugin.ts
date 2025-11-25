@@ -22,15 +22,22 @@ class LanguageSelect {
   private isTinyMCE4: boolean = false;
   private menuIsRefreshing: boolean = false;
   private isWordPress: boolean = false;
+  private reservedShortcutLettersInWordPress: string = "acdhjklmoqruwxz";
+  private reservedShortcutLetters:  string = "";
   private hasDashIcons: boolean = false;
   private defaultLanguages: string[] = ["en", "es", "fr", "it", "de"];
 
   private iconName: string | null = "easyLangIcon";
   private showCurrentLanguage: boolean = false;
   private showCurrentLangCodeOnly: boolean = false;
-  private enableKeyboardShortcuts: boolean = true;
 
-  private keyboardShortCuts: string[] = ["meta+Shift+1", "meta+Shift+2", "meta+Shift+3", "meta+Shift+4", "meta+Shift+5", "meta+Shift+6"];
+  private enableKeyboardShortcuts: boolean = true;
+  private usedShortcutLetters: Record<string, boolean> = {};
+  private keyboardShortCuts: string[] = [];
+  private shortcutLetterForLang: Record<string, string> = {};
+  private langForShortcutLetter: Record<string, string> = {};
+  private commandRegisteredForLetter: Record<string, boolean> = {};
+  private shortcutRegisteredForLetter: Record<string, boolean> = {};
 
   private langColors: Record<string, string> = {
     "en-us": "#ddd",
@@ -68,6 +75,144 @@ class LanguageSelect {
    */
   static isNotBlank(value: any): value is string {
     return typeof value === 'string' && value.trim().length > 0;
+  }
+
+  /**
+   * Detect whether we're running on macOS / iOS.
+   */
+  private isMacOS(): boolean {
+    try {
+      if (typeof navigator === 'undefined') return false;
+      const platform = (navigator.platform || navigator.userAgent || '').toString();
+      return /Mac|iPhone|iPad|iPod/.test(platform);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Turn a TinyMCE shortcut pattern like "meta+Shift+1"
+   * into a human-friendly label, e.g.:
+   *   - macOS: "⌘⇧1"
+   *   - Windows/Linux: "Ctrl+Shift+1"
+   */
+  private formatShortcutForDisplay(shortcut: string): string | null {
+    if (!shortcut) return null;
+
+    const isMac = this.isMacOS();
+    const parts = shortcut
+      .split('+')
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+
+    if (!parts.length) return null;
+
+    const mapped = parts.map((part) => {
+      const lower = part.toLowerCase();
+
+      switch (lower) {
+        case 'meta':
+        case 'cmd':
+        case 'command':
+          return isMac ? '⌘' : 'Ctrl';
+
+        case 'ctrl':
+        case 'control':
+          return 'Ctrl';
+
+        case 'shift':
+          return isMac ? '⇧' : 'Shift';
+
+        case 'alt':
+        case 'option':
+          return isMac ? '⌥' : 'Alt';
+
+        default:
+          // Non-modifier keys: make single letters/numbers uppercase
+          return part.length === 1 ? part.toUpperCase() : part;
+      }
+    });
+
+    // On macOS we usually omit plus signs, on others we keep "Ctrl+Shift+1"
+    return isMac ? mapped.join('') : mapped.join('+');
+  }
+
+    private findFirstAvailableLetter(): string | null {
+    if (!this.usedShortcutLetters) this.usedShortcutLetters = {};
+    for (let i = 0; i < 26; i++) {
+      const letter = String.fromCharCode(97 + i); // 'a' = 97
+      if (!this.usedShortcutLetters[letter]) {
+        this.usedShortcutLetters[letter] = true;
+        return letter;
+      }
+    }
+    return null;
+  }
+
+  private determineShortCutLetter(langValue: string, preferredShortCutLetter: string | null = null): string | null {
+    if (!this.usedShortcutLetters) this.usedShortcutLetters = {};
+
+    const tryLetter = (ch: string | null | undefined): string | null => {
+      if (!ch) return null;
+      const letter = ch.toLowerCase();
+      if (!/^[a-z]$/.test(letter)) return null;
+      if (this.usedShortcutLetters[letter]) return null;
+      this.usedShortcutLetters[letter] = true;
+      return letter;
+    };
+
+    // 1) Honor preferred letter if possible
+    const preferred = tryLetter(preferredShortCutLetter);
+    if (preferred) return preferred;
+
+    // 2) Try letters from the language *name* (e.g., “French”, “Spanish”)
+    const languageName = this.getLanguageNameForLocale(langValue)?.toLowerCase().trim();
+    if (languageName) {
+      for (const char of [...languageName]) {
+        const candidate = tryLetter(char);
+        if (candidate) return candidate;
+      }
+    }
+
+    // 3) Fallback: any remaining letter
+    return this.findFirstAvailableLetter();
+  }
+
+  private determineShortCut(langValue: string, preferredShortCutLetter: string | null = null): string {
+    const self: LanguageSelect = this;
+
+    const letter = self.determineShortCutLetter(langValue, preferredShortCutLetter);
+    return letter ? `ctrl+alt+${letter}` : "";
+  }
+
+  private rebuildKeyboardShortcutsFromLangMenu(): void {
+    const self: LanguageSelect = this;
+
+    // Reset maps
+    self.usedShortcutLetters = {};
+    self.shortcutLetterForLang = {};
+    self.langForShortcutLetter = {};
+    
+    let reservedLetters = self.reservedShortcutLetters || "";
+     if (self.isWordPress) {
+      reservedLetters += self.reservedShortcutLettersInWordPress;
+     }
+    // Letters we cannot use for our own shortcuts in Pressbooks/WP context
+    if (!self.usedShortcutLetters) self.usedShortcutLetters = {};
+    for (const letter of reservedLetters) {
+      self.usedShortcutLetters[letter] = true;
+    }
+    
+    // Rebuild shortcut data from current langMenuItems
+      self.keyboardShortCuts = self.langMenuItems.map((langValue) => {
+        const shortcut = self.determineShortCut(langValue); // your function: "ctrl+alt+<letter>" or ""
+        if (!shortcut) return "";
+
+        const letter = shortcut.slice(-1).toLowerCase(); // last char in "ctrl+alt+x"
+        self.shortcutLetterForLang[langValue] = letter;
+        self.langForShortcutLetter[letter] = langValue;
+        return shortcut;
+      });
   }
 
   /**
@@ -1983,19 +2128,27 @@ class LanguageSelect {
     const items: any[] = [];
 
     self.initializeLanguageMenuEntriesList();
+    self.addKeyboardShortcuts()
+    
+    // --- Language selection items -------------------------------------------
 
     // Per-language items (top level)
     self.langMenuItems.forEach((lang: string, index: number) => {
       const label =
-        self.getShortLanguageCodeDescription(lang.toLowerCase()) ||
+        self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
+        `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${lang})` :
         LanguageSelect.cleanLangAttr(lang);
+
+      const shortCutLetter = self.shortcutLetterForLang[lang] || '';
+      const shortcutLabel =  shortCutLetter ? `Ctrl+Alt+${shortCutLetter.toUpperCase()}` : undefined;
 
       items.push({
         text: label,
+        // TinyMCE 4 accepts a `shortcut` property for display in the menu, if supported.
+        // If TinyMCE ignores it, the menu still works fine.
+        shortcut: shortcutLabel,
         // TinyMCE 4 uses `onclick` instead of `onAction`
         onclick: function () {
-          // shortcuts are handled elsewhere in v4; menu items themselves
-          // don't need shortcut metadata
           self.setDocLangTo(lang);
         }
       });
@@ -2103,13 +2256,22 @@ class LanguageSelect {
     const items: Types.LanguageMenuItem[] = []; // Array to hold menu items
 
     self.initializeLanguageMenuEntriesList();
-
+    self.addKeyboardShortcuts()
+    
     // Create menu items for each language in langMenuItems
     self.langMenuItems.forEach((lang: string, index: number) => {
+      const label =
+        self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
+        `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${lang})` :
+        LanguageSelect.cleanLangAttr(lang);
+
+      const shortCutLetter = self.shortcutLetterForLang[lang] || '';
+      const shortcutLabel =  shortCutLetter ? `Ctrl+Alt+${shortCutLetter.toUpperCase()}` : undefined;
+
       items.push({
         type: "menuitem",
-        text: self.getShortLanguageCodeDescription(lang.toLowerCase()) || LanguageSelect.cleanLangAttr(lang), // Display language name
-        shortcut: self.enableKeyboardShortcuts ? `meta+Shift+${index + 1}` : undefined,
+        text: label, // Display language name
+        shortcut: shortcutLabel,
         onAction: function () {
           self.setDocLangTo(lang); // Set document language to selected value
         },
@@ -2226,26 +2388,41 @@ class LanguageSelect {
   };
 
   private readonly addKeyboardShortcuts = () => {
-    if (this.enableKeyboardShortcuts && this.keyboardShortCuts && this.keyboardShortCuts.length > 0) {
-      this.keyboardShortCuts.forEach((shortcut, index) => {
-        shortcut = shortcut.trim();
-        if (shortcut > "") {
-          const langNumber = index + 1;
-          const commandName = `setLanguageShortcut${langNumber}`;
-          // Define a custom command
-          if (this.editor?.addCommand) {
-            this.editor.addCommand(commandName, () => {
-              if (this.langMenuItems.length <= index) return; // No language defined for this shortcut
-              this.setDocLangTo(this.langMenuItems[index]);   // Set document language to selected value
-            });
-          }
+    const self: LanguageSelect = this;
+    if (!self.enableKeyboardShortcuts) return;
+    if (!self.editor || !self.editor.addCommand || !self.editor.addShortcut) return;
 
-          // Assign the keyboard shortcut Ctrl+Shift+1 to the command
-          if (this.editor?.addShortcut) this.editor.addShortcut(shortcut, `Apply Language ${langNumber}`, commandName);
-        }
-      });
-    }
-  }
+    // Make sure we have up-to-date maps for the current menu
+    self.rebuildKeyboardShortcutsFromLangMenu();
+
+    Object.keys(self.langForShortcutLetter).forEach((letter) => {
+      const langValue = self.langForShortcutLetter[letter];
+      if (!langValue) return;
+
+      const shortcut = `ctrl+alt+${letter}`;
+      const commandName = `setLanguageShortcut_${letter}`;
+
+      // 1) Register the command once per letter.
+      if (!self.commandRegisteredForLetter[letter] && self.editor.addCommand) {
+        self.editor.addCommand(commandName, () => {
+          // Lookup the *current* language for this letter
+          const currentLang = self.langForShortcutLetter[letter];
+          if (!currentLang) return;
+          self.setDocLangTo(currentLang);
+        });
+
+        self.commandRegisteredForLetter[letter] = true;
+      }
+
+      // 2) Register the shortcut once per letter.
+      if (!self.shortcutRegisteredForLetter[letter] && shortcut.trim() > "" && self.editor.addShortcut) {
+        // Optional: nicer label – you can use your formatShortcutForDisplay helper here
+        const label = `Apply language ${langValue}`;
+        self.editor.addShortcut(shortcut, label, commandName);
+        self.shortcutRegisteredForLetter[letter] = true;
+      }
+    });
+  };
 
   // TODO: the types for the editor probably need adjusted to handle version 4 vs version 5+
   // Initialize settings specific to TinyMCE version 4 as needed by WP/Pressbooks
@@ -2335,7 +2512,7 @@ class LanguageSelect {
             let lastCurrentLang = '';
             [lastCurrentLang] = self.getDocumentElementLang(currentNode);
 
-            // Update the visible label if you support “show current language” in V4
+            // Update the visible label if you support “show current language” 
             if (self.showCurrentLanguage) {
               self.updateLanguageSelector(lastCurrentLang);
             }
@@ -2363,7 +2540,6 @@ class LanguageSelect {
             self.editor.off('Focus', editorContentChangeEventHandler);
           }
         });
-
 
         ctrl.on('mousedown', refreshMenu);
         ctrl.on('keydown', function (e: KeyboardEvent) {
@@ -2463,12 +2639,12 @@ class LanguageSelect {
    */
   public init() {
     const self: LanguageSelect = this;
+    if (!(self.editor && self.editor.getParam)) throw new Error('No supported editor instance found');
 
     this.isTinyMCE4 = /^4/.test(String((tinymce && (tinymce.majorVersion || tinymce.version)) || ''));
     self.isWordPress = typeof window !== "undefined" && !!(window as any).wp;
 
     let hasDash = false;
-
     if (typeof document !== "undefined" && document.styleSheets) {
       try {
         hasDash = Array.from(document.styleSheets).some(
@@ -2476,14 +2652,12 @@ class LanguageSelect {
         );
       } catch (_) {}
     }
-
     self.hasDashIcons = hasDash;
-
-    if (!(self.editor && self.editor.getParam)) throw new Error('No supported editor instance found');
 
     self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
     self.showCurrentLanguage = self.editor.getParam('easylang_show_current_language') === true;
     self.enableKeyboardShortcuts = !(self.editor.getParam('easylang_enable_keyboard_shortcuts') === false);
+    self.reservedShortcutLetters = self.editor.getParam('easylang_reserved_shortcut_letters') || "";
 
     const content_langs: Types.ContentLanguage[] | null = self.editor.getParam("content_langs");
     if (content_langs && content_langs.length > 0) {
