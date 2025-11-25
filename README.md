@@ -104,17 +104,31 @@ This plugin utilizes the following TinyMCE APIs:
 
 ## Accessibility Features
 
-This plugin helps maintain WCAG compliance by:
+- This plugin helps tinyMCE acchieve [ATAG](https://www.w3.org/WAI/standards-guidelines/atag/) 
+  compliance by helping authors produce accessible multilingual content.
+- This plugin helps authors produce [WCAG](https://www.w3.org/WAI/standards-guidelines/wcag/) 
+  compliant content by:
+    - Ensuring proper language attribute (`lang`) usage which supports screen reading 
+      software with correct language pronunciation
+    - Optionally provides keyboard shortcuts for common operations
+    - Makes verifying language change markup easy by making them visually apparent 
+      with optional highlighting
 
-- Ensuring proper language attribute (`lang`) usage which supports screen reading software with correct language pronunciation
-- Optionally provides keyboard shortcuts for common operations
-- Makes verifying language change markup easy by making them visually apparent with optional highlighting
+## Internationalization (i18n) Notes
+
+We've included a localization file for `zh`, but please configure
+tinyMCE for either of the proper script-based codes (`zh-Hans` or `zh-Hant`) instead of the ambiguous `zh`. The `zh.js` included is a fallback (defaulting to simplified Chinese content).
 
 ## License
 
 [GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-Copyright (C) 2018 The Trustees of Indiana University
+Copyright (C) 2012 The Trustees of Indiana University
+
+## 🤝 Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for 
+guidelines.
 
 ## Support
 
