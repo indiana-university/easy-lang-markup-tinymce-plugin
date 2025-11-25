@@ -82,6 +82,7 @@ export type TinyMCEEditor = {
 
   windowManager?: {
     open?: (...args: any[]) => any;
+    alert?: (...args: any[]) => any; // TODO Verify it exists
   }
 
   [key: string]: unknown; // fallback for any dynamic access

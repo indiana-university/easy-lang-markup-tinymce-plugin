@@ -1007,20 +1007,20 @@ class LanguageSelect {
     // Iterate through all language tags
     for (const [langCode, nativeName] of Object.entries(LanguageSelect.languageTags)) {
       // Get the localized name for this language in the current editor locale
-      const localizedName = this.translate(`langName.${langCode.toLowerCase()}`);
+      const localizedName = this.getLanguageNameForLocale(langCode);
       
       // Skip if translation is missing (fallback to avoid broken entries)
-      if (!localizedName || localizedName === `langName.${langCode.toLowerCase()}`) {
-        continue;
+      if (!localizedName || localizedName === langCode || localizedName === nativeName) {
+        languages.push({
+          value: langCode.toLowerCase(),
+          text: `${nativeName} (${langCode.toLowerCase()})`
+        });        
+      } else {
+        languages.push({
+          value: langCode.toLowerCase(),
+          text: `${localizedName} - ${nativeName} (${langCode.toLowerCase()})`
+        });
       }
-      
-      // Build the display text: "Localized Name - Native Name (code)"
-      const displayText = `${localizedName} - ${nativeName} (${langCode.toLowerCase()})`;
-      
-      languages.push({
-        value: langCode.toLowerCase(),
-        text: displayText
-      });
     }
     
     // Sort alphabetically by the localized language name (first part before the dash)
@@ -1048,12 +1048,96 @@ class LanguageSelect {
     return this._cachedLanguagesList;
   }
 
+
+openChooseDefaultLangDialog = (callback: (newLang: string) => any) => {
+  const self: LanguageSelect = this;
+
+  const initialLanguageValue =
+    self.getTinymceDefaultDocumentLanguage?.() || this.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
+  const currentDefaultDocLang = self.getDocumentDefaultLanguage();
+
+  const languages = this.getSortedLanguagesList(); // [{ value, text }]
+  console.log('Languages for dialog:', languages);
+
+  // Build a little “current default” text block
+  const currentDefaultHtml =
+    `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || this.translate('None')}</div>`;
+
+  // TinyMCE 4 windowManager.open uses body/bodyType instead of body:{type:"panel"/"tabpanel",…}
+  if (this.editor?.windowManager?.open) this.editor.windowManager.open({
+    title: this.translate(`Select the document's default language.`),
+
+    // One simple form (no v5-style tabpanel); TinyMCE 4 will create OK/Cancel buttons for us
+    body: [
+      // v4 doesn’t have "htmlpanel", use "container" with html instead
+      {
+        type: 'container',
+        html: currentDefaultHtml
+      },
+      // v4 doesn’t have "selectbox", use "listbox"
+      {
+        type: 'listbox',
+        name: 'language',
+        label: this.translate('New Language:'),
+        values: languages,        // [{ text, value }]
+        value: initialLanguageValue
+      },
+      // v4 doesn’t have "input", use "textbox"
+      {
+        type: 'textbox',
+        name: 'manualLanguage',
+        label: this.translate('Or enter a new lang code (e.g., "en-US"):'),
+        value: ''
+      }],
+
+    /**
+     * TinyMCE 4 uses "onsubmit" instead of "onSubmit" and passes an event with "data".
+     */
+    onsubmit: (e: any) => {
+      const data = e.data || {};
+      let newLang: string = '';
+
+      // If the user typed something, prefer that; otherwise use the listbox value.
+      if (data.manualLanguage && data.manualLanguage.trim().length > 0) {
+        newLang = data.manualLanguage.trim();
+      } else if (data.language && data.language.trim().length > 0) {
+        newLang = data.language.trim();
+      } else {
+        newLang = initialLanguageValue;
+      }
+
+      // Validate & normalise
+      if (!LanguageSelect.isValidLang(newLang)) {
+        if (this.editor?.windowManager?.alert) this.editor.windowManager.alert(
+          this.translate('The language code you entered is not valid. Please enter a valid BCP 47 language tag.')
+        );
+        // Prevent the dialog from closing: TinyMCE 4 just keeps it open if we don’t call close()
+        e.preventDefault && e.preventDefault();
+        return;
+      }
+
+      newLang = LanguageSelect.cleanLangAttr(newLang);
+
+      if (self?.editor?.focus) {
+        self.editor.focus();
+      }
+
+      // Do whatever you already do in your callback (set doc lang, update elements, etc.)
+      callback(newLang);
+
+      // The dialog will close automatically after onsubmit returns.
+    }
+  });
+};
+
+
+
   /**
    * Opens a dialog for selecting or entering a default language for the document.
    *
    * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
    */
-  private readonly openChooseDefaultLangDialog = (callback: (newLang: string) => any) => {
+  private readonly openChooseDefaultLangDialogV5Plus = (callback: (newLang: string) => any) => {
     const self: LanguageSelect = this;
 
     const initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || this.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
@@ -1421,24 +1505,32 @@ class LanguageSelect {
     const editorDoc = this.getEditorDoc();
 
     if (editorDoc && LanguageSelect.isNotBlank(langValue)) {
-      const dir = LanguageSelect.getTextDirection(langValue);
-      langValue = LanguageSelect.cleanLangAttr(langValue);
-      let defaultLangDiv = editorDoc.getElementById(LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID);
 
-      // Create or update the language holder div
-      if (defaultLangDiv) {
-        defaultLangDiv.setAttribute("lang", langValue);
-        if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
-      } else {
-        defaultLangDiv = editorDoc.createElement("div");
-        defaultLangDiv.id = LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID;
-        defaultLangDiv.setAttribute("lang", langValue);
-        if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
-        editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
+      if (this.editor?.undoManager?.transact) {
+        this.editor.undoManager.transact(() => {
+
+        const dir = LanguageSelect.getTextDirection(langValue);
+        langValue = LanguageSelect.cleanLangAttr(langValue);
+        let defaultLangDiv = editorDoc.getElementById(LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID);
+
+        // Create or update the language holder div
+        if (defaultLangDiv) {
+          defaultLangDiv.setAttribute("lang", langValue);
+          if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
+        } else {
+          defaultLangDiv = editorDoc.createElement("div");
+          defaultLangDiv.id = LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID;
+          defaultLangDiv.setAttribute("lang", langValue);
+          if(LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
+          editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
+        }
+
+        // Move all sibling elements into the default language div
+        this.moveSiblingsIntoElement(defaultLangDiv);
+
+        });
       }
 
-      // Move all sibling elements into the default language div
-      this.moveSiblingsIntoElement(defaultLangDiv);
     }
 
     // Focus the editor after making changes
