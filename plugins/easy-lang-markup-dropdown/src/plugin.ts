@@ -7,8 +7,6 @@
 "use strict";
 
 import * as Types from './plugin_types';
-declare const tinymce: any;
-declare const tinyMCE: any;
 
 class LanguageSelect {
   constructor(private editor: Types.TinyMCEEditor, private url: string) { }
@@ -110,30 +108,37 @@ class LanguageSelect {
     return bcp47Regex.test(trimmedLang);
   }
 
-  // Helper function to get translation string
-  // editor.translate returns key if key not found
-  // editor.translate returns "" if the key's value is ""
-  translate(key: string): string {
-    const translated: string = this.editor.translate(key) || key;
-    return translated;
+  /**
+   * Translates a given key using the TinyMCE editor's translation function if available. 
+   * Falls back to returning the key itself if no translation function is present.
+   * @param key - The translation key
+   * @returns The translated string or the original key if no translation is found
+   */  
+  public translate(key: string): string {
+    const self: LanguageSelect = this;
+    if(self.editor && self.editor.translate) {
+      return self.editor.translate(key) || key;
+    }
+    return key;
   }
 
   /**
-   * Helper function to translate strings with named parameters {{name}}, {{number}}, etc.
-   * @param key - The translation key
+   * Helper function to evaluate template strings with named parameters {{name}}, {{number}}, etc.
+   * @param key - The translated key
    * @param replacements - Object with parameter names and values
-   * @returns Translated string with parameters substituted
+   * @returns The string with parameters substituted
    */
-  translateTemplate(key: string, replacements: Record<string, string | number>): string {
-    let translated = this.translate(key) || key;
-
+  public evalTemplate(s: string, replacements: Record<string, string | number>): string {
+    if (!s || !replacements) {
+      return s;
+    }
     // Replace {{key}} with values from replacements object
     Object.entries(replacements).forEach(([placeholder, value]) => {
       const regex = new RegExp(`\\{\\{${placeholder}\\}\\}`, 'g');
-      translated = translated.replace(regex, String(value));
+      s = s.replace(regex, String(value));
     });
 
-    return translated;
+    return s;
   }
 
   /**
@@ -572,7 +577,7 @@ class LanguageSelect {
   /**
    * Keep language keys in langAtts all lower case for string comparison purposes.
    * The key will get correctly cased when used as an attribute value.
-   * Language names are in the native language.
+   * Language names are in the native language. Do not translate!
    */
   private static readonly languageTags: Record<string, string> = {
     "af": "Afrikaans",
@@ -752,7 +757,9 @@ class LanguageSelect {
    * @returns String with the localized language name, or the code itself if not found
    */
   public getTranslatedLanguageName(code: string): string {
-    if (!code || !LanguageSelect.isNotBlank(code)) {
+    const self: LanguageSelect = this;
+
+    if (!code || !LanguageSelect.isNotBlank(code) || !self.editor || !self.editor.translate) {
       return "";
     }
 
@@ -762,173 +769,173 @@ class LanguageSelect {
     // The English text is both the key and the default fallback value
     let localized: string;
     switch (code) {
-      case "af": localized = this.translate("Afrikaans"); break;
-      case "af-za": localized = this.translate("Afrikaans"); break;
-      case "ak": localized = this.translate("Akan"); break;
-      case "am": localized = this.translate("Amharic"); break;
-      case "ar": localized = this.translate("Arabic"); break;
-      case "ar-eg": localized = this.translate("Arabic (Egypt)"); break;
-      case "ar-ma": localized = this.translate("Arabic (Morocco)"); break;
-      case "ar-sa": localized = this.translate("Arabic (Saudi Arabia)"); break;
-      case "az": localized = this.translate("Azerbaijani"); break;
-      case "be": localized = this.translate("Belarusian"); break;
-      case "bg": localized = this.translate("Bulgarian"); break;
-      case "bg-bg": localized = this.translate("Bulgarian (Bulgaria)"); break;
-      case "bho": localized = this.translate("Bhojpuri"); break;
-      case "bm": localized = this.translate("Bambara"); break;
-      case "bn": localized = this.translate("Bangla"); break;
-      case "bo": localized = this.translate("Tibetan"); break;
-      case "bs": localized = this.translate("Bosnian"); break;
-      case "ca": localized = this.translate("Catalan"); break;
-      case "cop": localized = this.translate("Coptic"); break;
-      case "cr": localized = this.translate("Cree"); break;
-      case "cs": localized = this.translate("Czech"); break;
-      case "cu": localized = this.translate("Church Slavic"); break;
-      case "cy": localized = this.translate("Welsh"); break;
-      case "da": localized = this.translate("Danish"); break;
-      case "de": localized = this.translate("German"); break;
-      case "de-at": localized = this.translate("German (Austria)"); break;
-      case "de-ch": localized = this.translate("German (Switzerland)"); break;
-      case "de-de": localized = this.translate("German (Germany)"); break;
-      case "dv": localized = this.translate("Divehi"); break;
-      case "el": localized = this.translate("Greek"); break;
-      case "en": localized = this.translate("English"); break;
-      case "en-au": localized = this.translate("English (Australia)"); break;
-      case "en-ca": localized = this.translate("English (Canada)"); break;
-      case "en-gb": localized = this.translate("English (United Kingdom)"); break;
-      case "en-ie": localized = this.translate("English (Ireland)"); break;
-      case "en-in": localized = this.translate("English (India)"); break;
-      case "en-tt": localized = this.translate("English (Trinidad)"); break;
-      case "en-us": localized = this.translate("English (United States)"); break;
-      case "en-za": localized = this.translate("English (South Africa)"); break;
-      case "eo": localized = this.translate("Esperanto"); break;
-      case "es": localized = this.translate("Spanish"); break;
-      case "es-ar": localized = this.translate("Spanish (Argentina)"); break;
-      case "es-cl": localized = this.translate("Spanish (Chile)"); break;
-      case "es-co": localized = this.translate("Spanish (Colombia)"); break;
-      case "es-cr": localized = this.translate("Spanish (Costa Rica)"); break;
-      case "es-es": localized = this.translate("Spanish (Spain)"); break;
-      case "es-mx": localized = this.translate("Spanish (Mexico)"); break;
-      case "es-pe": localized = this.translate("Spanish (Peru)"); break;
-      case "et": localized = this.translate("Estonian"); break;
-      case "eu": localized = this.translate("Basque"); break;
-      case "fa": localized = this.translate("Persian"); break;
-      case "fa-af": localized = this.translate("Dari"); break;
-      case "fa-ir": localized = this.translate("Persian (Iran)"); break;
-      case "ff": localized = this.translate("Fula"); break;
-      case "fi": localized = this.translate("Finnish"); break;
-      case "fi-fi": localized = this.translate("Finnish (Finland)"); break;
-      case "fil": localized = this.translate("Filipino"); break;
-      case "fr": localized = this.translate("French"); break;
-      case "fr-be": localized = this.translate("French (Belgium)"); break;
-      case "fr-ca": localized = this.translate("French (Canada)"); break;
-      case "fr-ch": localized = this.translate("French (Switzerland)"); break;
-      case "ga": localized = this.translate("Irish"); break;
-      case "gl": localized = this.translate("Galician"); break;
-      case "grc": localized = this.translate("Greek (Ancient)"); break;
-      case "ha": localized = this.translate("Hausa"); break;
-      case "he": localized = this.translate("Hebrew"); break;
-      case "he-il": localized = this.translate("Hebrew (Israel)"); break;
-      case "hi": localized = this.translate("Hindi"); break;
-      case "hr": localized = this.translate("Croatian"); break;
-      case "hr-hr": localized = this.translate("Croatian (Croatia)"); break;
-      case "ht": localized = this.translate("Haitian Creole"); break;
-      case "hu": localized = this.translate("Hungarian"); break;
-      case "hu-hu": localized = this.translate("Hungarian (Hungary)"); break;
-      case "hy": localized = this.translate("Armenian"); break;
-      case "id": localized = this.translate("Indonesian"); break;
-      case "ig": localized = this.translate("Igbo"); break;
-      case "is": localized = this.translate("Icelandic"); break;
-      case "it": localized = this.translate("Italian"); break;
-      case "it-it": localized = this.translate("Italian (Italy)"); break;
-      case "iu": localized = this.translate("Inuktitut"); break;
-      case "ja": localized = this.translate("Japanese"); break;
-      case "ja-jp": localized = this.translate("Japanese (Japan)"); break;
-      case "ka": localized = this.translate("Georgian"); break;
-      case "kab": localized = this.translate("Kabyle"); break;
-      case "kk": localized = this.translate("Kazakh"); break;
-      case "km": localized = this.translate("Khmer"); break;
-      case "kn": localized = this.translate("Kannada"); break;
-      case "ko": localized = this.translate("Korean"); break;
-      case "ko-kr": localized = this.translate("Korean (Korea)"); break;
-      case "la": localized = this.translate("Latin"); break;
-      case "lkt": localized = this.translate("Lakota"); break;
-      case "lo": localized = this.translate("Lao"); break;
-      case "lt": localized = this.translate("Lithuanian"); break;
-      case "lv": localized = this.translate("Latvian"); break;
-      case "mi": localized = this.translate("Māori"); break;
-      case "mn": localized = this.translate("Mongolian"); break;
-      case "mr": localized = this.translate("Marathi"); break;
-      case "ms": localized = this.translate("Malay"); break;
-      case "mt": localized = this.translate("Maltese"); break;
-      case "my": localized = this.translate("Burmese"); break;
-      case "nb": localized = this.translate("Norwegian (Bokmål)"); break;
-      case "nb-no": localized = this.translate("Norwegian (Bokmål, Norway)"); break;
-      case "ne": localized = this.translate("Nepali"); break;
-      case "nl": localized = this.translate("Dutch"); break;
-      case "nl-be": localized = this.translate("Flemish"); break;
-      case "nn": localized = this.translate("Norwegian (Nynorsk)"); break;
-      case "nv": localized = this.translate("Navajo"); break;
-      case "ota": localized = this.translate("Turkish (Ottoman)"); break;
-      case "pa": localized = this.translate("Punjabi"); break;
-      case "peo": localized = this.translate("Persian (Old)"); break;
-      case "pl": localized = this.translate("Polish"); break;
-      case "ps": localized = this.translate("Pashto"); break;
-      case "pt": localized = this.translate("Portuguese"); break;
-      case "pt-br": localized = this.translate("Portuguese (Brazil)"); break;
-      case "pt-pt": localized = this.translate("Portuguese (Portugal)"); break;
-      case "qu": localized = this.translate("Quechua"); break;
-      case "ro": localized = this.translate("Romanian"); break;
-      case "ru": localized = this.translate("Russian"); break;
-      case "rw": localized = this.translate("Kinyarwanda"); break;
-      case "sa": localized = this.translate("Sanskrit"); break;
-      case "se": localized = this.translate("Sami (Northern)"); break;
-      case "si": localized = this.translate("Sinhala"); break;
-      case "sk": localized = this.translate("Slovak"); break;
-      case "sk-sk": localized = this.translate("Slovak (Slovakia)"); break;
-      case "sl": localized = this.translate("Slovenian"); break;
-      case "sl-si": localized = this.translate("Slovenian (Slovenia)"); break;
-      case "sma": localized = this.translate("Sami (Southern)"); break;
-      case "sme": localized = this.translate("Sami (Northern)"); break;
-      case "smj": localized = this.translate("Sami (Lule)"); break;
-      case "sn": localized = this.translate("Shona"); break;
-      case "sr": localized = this.translate("Serbian"); break;
-      case "sr-latn": localized = this.translate("Serbian (Latin)"); break;
-      case "sv": localized = this.translate("Swedish"); break;
-      case "sv-se": localized = this.translate("Swedish (Sweden)"); break;
-      case "sw": localized = this.translate("Swahili"); break;
-      case "sw-ke": localized = this.translate("Swahili (Kenya)"); break;
-      case "sw-tz": localized = this.translate("Swahili (Tanzania)"); break;
-      case "syc": localized = this.translate("Syriac (Classical)"); break;
-      case "ta": localized = this.translate("Tamil"); break;
-      case "te": localized = this.translate("Telugu"); break;
-      case "tg": localized = this.translate("Tajik"); break;
-      case "th": localized = this.translate("Thai"); break;
-      case "th-th": localized = this.translate("Thai (Thailand)"); break;
-      case "tk": localized = this.translate("Turkmen"); break;
-      case "tl": localized = this.translate("Tagalog"); break;
-      case "tr": localized = this.translate("Turkish"); break;
-      case "tr-tr": localized = this.translate("Turkish (Turkey)"); break;
-      case "tt": localized = this.translate("Tatar"); break;
-      case "ug": localized = this.translate("Uyghur"); break;
-      case "uk": localized = this.translate("Ukrainian"); break;
-      case "ur": localized = this.translate("Urdu"); break;
-      case "uz": localized = this.translate("Uzbek"); break;
-      case "vi": localized = this.translate("Vietnamese"); break;
-      case "wo": localized = this.translate("Wolof"); break;
-      case "xh": localized = this.translate("Xhosa"); break;
-      case "yi": localized = this.translate("Yiddish"); break;
-      case "yo": localized = this.translate("Yoruba"); break;
-      case "yua": localized = this.translate("Maya (Yucatec)"); break;
-      case "zh": localized = this.translate("Chinese"); break;
-      case "zh-cn": localized = this.translate("Chinese (Simplified)"); break;
-      case "zh-hans": localized = this.translate("Chinese (Simplified)"); break;
-      case "zh-hant": localized = this.translate("Chinese (Traditional)"); break;
-      case "zh-hk": localized = this.translate("Chinese (Hong Kong)"); break;
-      case "zh-sg": localized = this.translate("Chinese (Singapore)"); break;
-      case "zh-tw": localized = this.translate("Chinese (Traditional)"); break;
-      case "zu": localized = this.translate("Zulu"); break;
-      case "zu-za": localized = this.translate("Zulu"); break;
+      case "af": localized = self.translate("Afrikaans"); break;
+      case "af-za": localized = self.translate("Afrikaans"); break;
+      case "ak": localized = self.translate("Akan"); break;
+      case "am": localized = self.translate("Amharic"); break;
+      case "ar": localized = self.translate("Arabic"); break;
+      case "ar-eg": localized = self.translate("Arabic (Egypt)"); break;
+      case "ar-ma": localized = self.translate("Arabic (Morocco)"); break;
+      case "ar-sa": localized = self.translate("Arabic (Saudi Arabia)"); break;
+      case "az": localized = self.translate("Azerbaijani"); break;
+      case "be": localized = self.translate("Belarusian"); break;
+      case "bg": localized = self.translate("Bulgarian"); break;
+      case "bg-bg": localized = self.translate("Bulgarian (Bulgaria)"); break;
+      case "bho": localized = self.translate("Bhojpuri"); break;
+      case "bm": localized = self.translate("Bambara"); break;
+      case "bn": localized = self.translate("Bangla"); break;
+      case "bo": localized = self.translate("Tibetan"); break;
+      case "bs": localized = self.translate("Bosnian"); break;
+      case "ca": localized = self.translate("Catalan"); break;
+      case "cop": localized = self.translate("Coptic"); break;
+      case "cr": localized = self.translate("Cree"); break;
+      case "cs": localized = self.translate("Czech"); break;
+      case "cu": localized = self.translate("Church Slavic"); break;
+      case "cy": localized = self.translate("Welsh"); break;
+      case "da": localized = self.translate("Danish"); break;
+      case "de": localized = self.translate("German"); break;
+      case "de-at": localized = self.translate("German (Austria)"); break;
+      case "de-ch": localized = self.translate("German (Switzerland)"); break;
+      case "de-de": localized = self.translate("German (Germany)"); break;
+      case "dv": localized = self.translate("Divehi"); break;
+      case "el": localized = self.translate("Greek"); break;
+      case "en": localized = self.translate("English"); break;
+      case "en-au": localized = self.translate("English (Australia)"); break;
+      case "en-ca": localized = self.translate("English (Canada)"); break;
+      case "en-gb": localized = self.translate("English (United Kingdom)"); break;
+      case "en-ie": localized = self.translate("English (Ireland)"); break;
+      case "en-in": localized = self.translate("English (India)"); break;
+      case "en-tt": localized = self.translate("English (Trinidad)"); break;
+      case "en-us": localized = self.translate("English (United States)"); break;
+      case "en-za": localized = self.translate("English (South Africa)"); break;
+      case "eo": localized = self.translate("Esperanto"); break;
+      case "es": localized = self.translate("Spanish"); break;
+      case "es-ar": localized = self.translate("Spanish (Argentina)"); break;
+      case "es-cl": localized = self.translate("Spanish (Chile)"); break;
+      case "es-co": localized = self.translate("Spanish (Colombia)"); break;
+      case "es-cr": localized = self.translate("Spanish (Costa Rica)"); break;
+      case "es-es": localized = self.translate("Spanish (Spain)"); break;
+      case "es-mx": localized = self.translate("Spanish (Mexico)"); break;
+      case "es-pe": localized = self.translate("Spanish (Peru)"); break;
+      case "et": localized = self.translate("Estonian"); break;
+      case "eu": localized = self.translate("Basque"); break;
+      case "fa": localized = self.translate("Persian"); break;
+      case "fa-af": localized = self.translate("Dari"); break;
+      case "fa-ir": localized = self.translate("Persian (Iran)"); break;
+      case "ff": localized = self.translate("Fula"); break;
+      case "fi": localized = self.translate("Finnish"); break;
+      case "fi-fi": localized = self.translate("Finnish (Finland)"); break;
+      case "fil": localized = self.translate("Filipino"); break;
+      case "fr": localized = self.translate("French"); break;
+      case "fr-be": localized = self.translate("French (Belgium)"); break;
+      case "fr-ca": localized = self.translate("French (Canada)"); break;
+      case "fr-ch": localized = self.translate("French (Switzerland)"); break;
+      case "ga": localized = self.translate("Irish"); break;
+      case "gl": localized = self.translate("Galician"); break;
+      case "grc": localized = self.translate("Greek (Ancient)"); break;
+      case "ha": localized = self.translate("Hausa"); break;
+      case "he": localized = self.translate("Hebrew"); break;
+      case "he-il": localized = self.translate("Hebrew (Israel)"); break;
+      case "hi": localized = self.translate("Hindi"); break;
+      case "hr": localized = self.translate("Croatian"); break;
+      case "hr-hr": localized = self.translate("Croatian (Croatia)"); break;
+      case "ht": localized = self.translate("Haitian Creole"); break;
+      case "hu": localized = self.translate("Hungarian"); break;
+      case "hu-hu": localized = self.translate("Hungarian (Hungary)"); break;
+      case "hy": localized = self.translate("Armenian"); break;
+      case "id": localized = self.translate("Indonesian"); break;
+      case "ig": localized = self.translate("Igbo"); break;
+      case "is": localized = self.translate("Icelandic"); break;
+      case "it": localized = self.translate("Italian"); break;
+      case "it-it": localized = self.translate("Italian (Italy)"); break;
+      case "iu": localized = self.translate("Inuktitut"); break;
+      case "ja": localized = self.translate("Japanese"); break;
+      case "ja-jp": localized = self.translate("Japanese (Japan)"); break;
+      case "ka": localized = self.translate("Georgian"); break;
+      case "kab": localized = self.translate("Kabyle"); break;
+      case "kk": localized = self.translate("Kazakh"); break;
+      case "km": localized = self.translate("Khmer"); break;
+      case "kn": localized = self.translate("Kannada"); break;
+      case "ko": localized = self.translate("Korean"); break;
+      case "ko-kr": localized = self.translate("Korean (Korea)"); break;
+      case "la": localized = self.translate("Latin"); break;
+      case "lkt": localized = self.translate("Lakota"); break;
+      case "lo": localized = self.translate("Lao"); break;
+      case "lt": localized = self.translate("Lithuanian"); break;
+      case "lv": localized = self.translate("Latvian"); break;
+      case "mi": localized = self.translate("Māori"); break;
+      case "mn": localized = self.translate("Mongolian"); break;
+      case "mr": localized = self.translate("Marathi"); break;
+      case "ms": localized = self.translate("Malay"); break;
+      case "mt": localized = self.translate("Maltese"); break;
+      case "my": localized = self.translate("Burmese"); break;
+      case "nb": localized = self.translate("Norwegian (Bokmål)"); break;
+      case "nb-no": localized = self.translate("Norwegian (Bokmål, Norway)"); break;
+      case "ne": localized = self.translate("Nepali"); break;
+      case "nl": localized = self.translate("Dutch"); break;
+      case "nl-be": localized = self.translate("Flemish"); break;
+      case "nn": localized = self.translate("Norwegian (Nynorsk)"); break;
+      case "nv": localized = self.translate("Navajo"); break;
+      case "ota": localized = self.translate("Turkish (Ottoman)"); break;
+      case "pa": localized = self.translate("Punjabi"); break;
+      case "peo": localized = self.translate("Persian (Old)"); break;
+      case "pl": localized = self.translate("Polish"); break;
+      case "ps": localized = self.translate("Pashto"); break;
+      case "pt": localized = self.translate("Portuguese"); break;
+      case "pt-br": localized = self.translate("Portuguese (Brazil)"); break;
+      case "pt-pt": localized = self.translate("Portuguese (Portugal)"); break;
+      case "qu": localized = self.translate("Quechua"); break;
+      case "ro": localized = self.translate("Romanian"); break;
+      case "ru": localized = self.translate("Russian"); break;
+      case "rw": localized = self.translate("Kinyarwanda"); break;
+      case "sa": localized = self.translate("Sanskrit"); break;
+      case "se": localized = self.translate("Sami (Northern)"); break;
+      case "si": localized = self.translate("Sinhala"); break;
+      case "sk": localized = self.translate("Slovak"); break;
+      case "sk-sk": localized = self.translate("Slovak (Slovakia)"); break;
+      case "sl": localized = self.translate("Slovenian"); break;
+      case "sl-si": localized = self.translate("Slovenian (Slovenia)"); break;
+      case "sma": localized = self.translate("Sami (Southern)"); break;
+      case "sme": localized = self.translate("Sami (Northern)"); break;
+      case "smj": localized = self.translate("Sami (Lule)"); break;
+      case "sn": localized = self.translate("Shona"); break;
+      case "sr": localized = self.translate("Serbian"); break;
+      case "sr-latn": localized = self.translate("Serbian (Latin)"); break;
+      case "sv": localized = self.translate("Swedish"); break;
+      case "sv-se": localized = self.translate("Swedish (Sweden)"); break;
+      case "sw": localized = self.translate("Swahili"); break;
+      case "sw-ke": localized = self.translate("Swahili (Kenya)"); break;
+      case "sw-tz": localized = self.translate("Swahili (Tanzania)"); break;
+      case "syc": localized = self.translate("Syriac (Classical)"); break;
+      case "ta": localized = self.translate("Tamil"); break;
+      case "te": localized = self.translate("Telugu"); break;
+      case "tg": localized = self.translate("Tajik"); break;
+      case "th": localized = self.translate("Thai"); break;
+      case "th-th": localized = self.translate("Thai (Thailand)"); break;
+      case "tk": localized = self.translate("Turkmen"); break;
+      case "tl": localized = self.translate("Tagalog"); break;
+      case "tr": localized = self.translate("Turkish"); break;
+      case "tr-tr": localized = self.translate("Turkish (Turkey)"); break;
+      case "tt": localized = self.translate("Tatar"); break;
+      case "ug": localized = self.translate("Uyghur"); break;
+      case "uk": localized = self.translate("Ukrainian"); break;
+      case "ur": localized = self.translate("Urdu"); break;
+      case "uz": localized = self.translate("Uzbek"); break;
+      case "vi": localized = self.translate("Vietnamese"); break;
+      case "wo": localized = self.translate("Wolof"); break;
+      case "xh": localized = self.translate("Xhosa"); break;
+      case "yi": localized = self.translate("Yiddish"); break;
+      case "yo": localized = self.translate("Yoruba"); break;
+      case "yua": localized = self.translate("Maya (Yucatec)"); break;
+      case "zh": localized = self.translate("Chinese"); break;
+      case "zh-cn": localized = self.translate("Chinese (Simplified)"); break;
+      case "zh-hans": localized = self.translate("Chinese (Simplified)"); break;
+      case "zh-hant": localized = self.translate("Chinese (Traditional)"); break;
+      case "zh-hk": localized = self.translate("Chinese (Hong Kong)"); break;
+      case "zh-sg": localized = self.translate("Chinese (Singapore)"); break;
+      case "zh-tw": localized = self.translate("Chinese (Traditional)"); break;
+      case "zu": localized = self.translate("Zulu"); break;
+      case "zu-za": localized = self.translate("Zulu"); break;
       default: localized = code; break;
     }
 
@@ -1083,11 +1090,11 @@ class LanguageSelect {
 
     // Build a little “current default” text block
     const currentDefaultHtml =
-      `<div style="margin-bottom:10px">${this.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || this.translate('None')}</div>`;
+      `<div style="margin-bottom:10px">${self.translate('Current language:')} ${this.getLanguageCodeDescription(currentDefaultDocLang) || self.translate('None')}</div>`;
 
     // TinyMCE 4 windowManager.open uses body/bodyType instead of body:{type:"panel"/"tabpanel",…}
     if (this.editor?.windowManager?.open) this.editor.windowManager.open({
-      title: this.translate(`Select the document's default language.`),
+      title: self.translate(`Select the document's default language.`),
 
       // One simple form (no v5-style tabpanel); TinyMCE 4 will create OK/Cancel buttons for us
       body: [
@@ -1100,7 +1107,7 @@ class LanguageSelect {
         {
           type: 'listbox',
           name: 'language',
-          label: this.translate('New Language:'),
+          label: self.translate('New Language:'),
           values: languages,        // [{ text, value }]
           value: initialLanguageValue
         },
@@ -1108,7 +1115,7 @@ class LanguageSelect {
         {
           type: 'textbox',
           name: 'manualLanguage',
-          label: this.translate('Or enter a new lang code (e.g., "en-US"):'),
+          label: self.translate('Or enter a new lang code (e.g., "en-US"):'),
           value: ''
         }],
 
@@ -1319,14 +1326,14 @@ class LanguageSelect {
         {
           type: "listbox",             // v4 control type
           name: selectName,
-          label: self.translateTemplate("Select language {{number}}:", { number: i }),
+          label: self.evalTemplate(self.translate("Select language {{number}}:"), { number: i }),
           values: languages,           // v4 uses "values" not "items"
           value: initialSelect[i] || "" // pre-select if we have one
         },
         {
           type: "textbox",             // v4 text input
           name: inputName,
-          label: self.translateTemplate("Manually enter language {{number}}:", { number: i }),
+          label: self.evalTemplate(self.translate("Manually enter language {{number}}:"), { number: i }),
           value: initialInput[i] || "" // pre-fill manual lang if relevant
         }
       );
@@ -1425,13 +1432,13 @@ class LanguageSelect {
           {
             type: "selectbox",
             name: `langSelect_${langCounter}`,
-            label: `${self.translateTemplate('Select language {{number}}:', { number: langCounter })}`,
+            label: `${self.evalTemplate(self.translate('Select language {{number}}:'), { number: langCounter })}`,
             items: languages, // Use the languages array for selection options
           },
           {
             type: "input",
             name: `langInput_${langCounter}`,
-            label: `${self.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
+            label: `${self.evalTemplate(self.translate('Manually enter language {{number}}:'), { number: langCounter })}`,
             disabled: Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined (pre v7)
             enabled: !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined
           },
@@ -1447,13 +1454,13 @@ class LanguageSelect {
           {
             type: "selectbox",
             name: `langSelect_${langCounter}`,
-            label: `${self.translateTemplate('Select language {{number}}:', { number: langCounter })}`,
+            label: `${self.evalTemplate(self.translate('Select language {{number}}:'), { number: langCounter })}`,
             items: languages,
           },
           {
             type: "input",
             name: `langInput_${langCounter}`,
-            label: `${self.translateTemplate('Manually enter language {{number}}:', { number: langCounter })}`,
+            label: `${self.evalTemplate(self.translate('Manually enter language {{number}}:'), { number: langCounter })}`,
             disabled: true, // Initially disabled as no manual input is expected. (pre v7)
             enabled: false,
           },
@@ -1889,6 +1896,7 @@ class LanguageSelect {
    * @param {string} newLang - The new language code to display on the button.
    */
   private updateLanguageSelector(newLang: string | null = null) {
+    const self: LanguageSelect = this;
     try {
       // If the button pointer is not yet set, search for the language button in the DOM
       if (!this.myButtonTextPtr) {
@@ -1901,8 +1909,8 @@ class LanguageSelect {
           // Loop through buttons to find the one with the correct aria-label or title
           buttons.forEach((button: Element) => {
             const isTextLanguageButton =
-              button.getAttribute("aria-label") === this.translate('Set text language') ||
-              button.getAttribute("title") === this.translate('Set text language');
+              button.getAttribute("aria-label") === self.translate('Set text language') ||
+              button.getAttribute("title") === self.translate('Set text language');
 
             if (isTextLanguageButton && button.firstElementChild) {
               // Store the reference to the text node inside the button
@@ -1928,9 +1936,9 @@ class LanguageSelect {
         } else {
           if (LanguageSelect.isNotBlank(newLang)) {
             this.myButtonTextPtr.innerText =
-              this.getShortLanguageCodeDescription(newLang.toLowerCase()) || newLang || this.translate('-Language Not Set-');
+              this.getShortLanguageCodeDescription(newLang.toLowerCase()) || newLang || self.translate('-Language Not Set-');
           } else {
-            this.myButtonTextPtr.innerText = this.translate('-Language Not Set-');
+            this.myButtonTextPtr.innerText = self.translate('-Language Not Set-');
           }
         }
       }
@@ -2090,7 +2098,7 @@ class LanguageSelect {
     return items;
   };
 
-  private readonly buildEasyLangMenuItems = (callback: Function | null = null) => {
+  private readonly buildEasyLangMenuItemsPostV4 = (callback: Function | null = null) => {
     const self: LanguageSelect = this;
     const items: Types.LanguageMenuItem[] = []; // Array to hold menu items
 
@@ -2114,13 +2122,13 @@ class LanguageSelect {
       text: self.translate('Remove Language Markup'),
       icon: "remove",
       disabled: false,
-      getSubmenuItems: (event1: Event) => {
+      getSubmenuItems: () => {
         return [
           {
             type: "menuitem",
             text: self.translate('Remove current lang value'),
             icon: "remove",
-            onAction: (event2: Event) => {
+            onAction: () => {
               self.removeLangMarkupAtCursor(); // Remove language markup at cursor
               if (self?.editor?.focus) self.editor.focus();
             },
@@ -2129,7 +2137,7 @@ class LanguageSelect {
             type: "menuitem",
             text: self.translate('Remove All lang markup'),
             icon: "warning",
-            onAction: (event2: Event) => {
+            onAction: () => {
               self.removeAllLangSpans(); // Remove all language markup in the document
               if (self?.editor?.focus) self.editor.focus();
             },
@@ -2143,7 +2151,7 @@ class LanguageSelect {
       type: "menuitem",
       icon: "preferences",
       text: self.translate('Configure languages'),
-      onAction: (event: Event) => {
+      onAction: () => {
         // Open the configuration dialog for languages
         self.openConfigureLanguagesOnSelectbox(self.langMenuItems, (newLangMenuItems: string[]) => {
           self.langMenuItems = newLangMenuItems;
@@ -2157,7 +2165,7 @@ class LanguageSelect {
       type: "menuitem",
       icon: "document-properties",
       text: self.translate('Set default document language'),
-      onAction: (event: Event) => {
+      onAction: () => {
         // Open the default language dialog
         self.openChooseDefaultLangDialog((newLang: string) => {
           self.setDefaultDocumentLanguage(newLang);
@@ -2172,7 +2180,7 @@ class LanguageSelect {
       type: "togglemenuitem",
       text: self.translate('Reveal lang markup'),
       icon: "preview",
-      onAction: (event: Event) => {
+      onAction: () => {
         self.tsViewMarkup = !self.tsViewMarkup;
         if (self.tsViewMarkup) {
           self.revealLangMarkUp(); // Reveal language markup
@@ -2225,10 +2233,12 @@ class LanguageSelect {
           const langNumber = index + 1;
           const commandName = `setLanguageShortcut${langNumber}`;
           // Define a custom command
-          if (this.editor?.addCommand) this.editor.addCommand(commandName, (event: Event): void => {
-            if (this.langMenuItems.length <= index) return; // No language defined for this shortcut
-            this.setDocLangTo(this.langMenuItems[index]); // Set document language to selected value
-          });
+          if (this.editor?.addCommand) {
+            this.editor.addCommand(commandName, () => {
+              if (this.langMenuItems.length <= index) return; // No language defined for this shortcut
+              this.setDocLangTo(this.langMenuItems[index]);   // Set document language to selected value
+            });
+          }
 
           // Assign the keyboard shortcut Ctrl+Shift+1 to the command
           if (this.editor?.addShortcut) this.editor.addShortcut(shortcut, `Apply Language ${langNumber}`, commandName);
@@ -2242,7 +2252,7 @@ class LanguageSelect {
   private initV4() {
     const self: LanguageSelect = this;
 
-    if (!(self.editor && self.editor.getParam && self.editor.addButton)) throw new Error('No supported editor instance found');
+    if (!self.editor || !self.editor.getParam || !self.editor.addButton) throw new Error('No supported editor instance found');
 
     const new_icon_name = self.editor.getParam("easylang_icon");
 
@@ -2301,7 +2311,7 @@ class LanguageSelect {
           const currentMenu = ctrl.settings.menu;
 
           // Only update if changed otherwise menu will not toggle close on click
-          if (!menusAreEqual(newMenu, currentMenu)) {
+          if (!currentMenu || !menusAreEqual(newMenu, currentMenu)) {
             self.menuIsRefreshing = true;
             try {
               if(ctrl.settings) ctrl.settings.menu = newMenu;
@@ -2381,7 +2391,7 @@ class LanguageSelect {
   private initPostV4() {
     const self: LanguageSelect = this;
 
-    if (!(self.editor && self.editor.getParam && self.editor.ui?.registry?.addIcon)) throw new Error('No supported editor instance found');
+    if (!self.editor || !self.editor.getParam || !self.editor.ui?.registry?.addIcon) throw new Error('No supported editor instance found');
 
     self.editor.ui.registry.addIcon(
       "easyLangIcon",
@@ -2404,7 +2414,7 @@ class LanguageSelect {
     self.editor.ui.registry.addNestedMenuItem("easyLangMenu", {
       text: "Language",
       getSubmenuItems: function () {
-        return self.buildEasyLangMenuItems();
+        return self.buildEasyLangMenuItemsPostV4();
       },
     });
 
@@ -2414,7 +2424,7 @@ class LanguageSelect {
       icon: self.showCurrentLanguage ? null : (self.iconName || "easyLangIcon"),
       tooltip: self.translate('Set text language'), // Tooltip for the button
       fetch: function (callback: Function) {
-        self.buildEasyLangMenuItems(callback);
+        self.buildEasyLangMenuItemsPostV4(callback);
       },
 
       // Setup event listeners for the button
