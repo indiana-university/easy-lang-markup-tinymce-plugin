@@ -1966,8 +1966,6 @@ class LanguageSelect {
     }
   };
 
-  // Inside class LanguageSelect
-  // TinyMCE 4-style menu builder
   private readonly buildEasyLangMenuItemsV4 = (): any[] => {
     const self: LanguageSelect = this;
     const items: any[] = [];
@@ -1986,7 +1984,6 @@ class LanguageSelect {
         onclick: function () {
           // shortcuts are handled elsewhere in v4; menu items themselves
           // don't need shortcut metadata
-          console.log(`langMenuItem onclick (v4): ${lang}`);
           self.setDocLangTo(lang);
         }
       });
@@ -2017,7 +2014,7 @@ class LanguageSelect {
     // --- Configure languages --------------------------------------------------
     items.push({
       text: self.translate('Configure languages'),
-      icon: self.hasDashIcons ? 'icon  dashicons-admin-generic' : 'preferences',
+      icon: self.hasDashIcons ? 'icon dashicons-admin-generic' : 'preferences',
       onclick: function () {
         self.openConfigureLanguagesOnSelectbox(
           self.langMenuItems,
@@ -2031,7 +2028,7 @@ class LanguageSelect {
     // --- Set default document language ---------------------------------------
     items.push({
       text: self.translate('Set default document language'),
-      icon: self.hasDashIcons ? 'icon  dashicons-media-default' : 'document-properties',
+      icon: self.hasDashIcons ? 'icon dashicons-media-default' : 'document-properties',
       onclick: function () {
         self.openChooseDefaultLangDialog((newLang: string) => {
           self.setDefaultDocumentLanguage(newLang);
@@ -2210,6 +2207,7 @@ class LanguageSelect {
           const commandName = `setLanguageShortcut${langNumber}`;
           // Define a custom command
           if (this.editor?.addCommand) this.editor.addCommand(commandName, (event: Event): void => {
+            if (this.langMenuItems.length <= index) return; // No language defined for this shortcut
             this.setDocLangTo(this.langMenuItems[index]); // Set document language to selected value
           });
 
@@ -2233,7 +2231,7 @@ class LanguageSelect {
     if (LanguageSelect.isNotBlank(new_icon_name)) {
       self.iconName = new_icon_name.trim();
     } else if (self.isWordPress && self.hasDashIcons) {
-      self.iconName = 'icon  dashicons-translation'
+      self.iconName = 'icon dashicons-translation'
     } else {
       self.iconName = null;
     }
@@ -2285,21 +2283,20 @@ class LanguageSelect {
 
           // Only update if changed otherwise menu will not toggle close on click
           if (!menusAreEqual(newMenu, currentMenu)) {
-            console.log("Menu changed. Updating menu with items:", newMenu);
-
             ctrl.settings.menu = newMenu;
             ctrl.state.data.menu = newMenu;
 
             // Destroy existing TinyMCE 4 menu object so it regenerates
             if (ctrl.menu) {
-              ctrl.menu.remove();
+              try {
+                ctrl.menu.remove();
+              } catch (e) {
+                // ignore
+              }
               ctrl.menu = null;
             }
-          } else {
-            console.log("Menu unchanged — no update needed.");
           }
         }
-
 
         const editorContentChangeEventHandler = function () {
           let currentNode: Element | null = null;
@@ -2347,6 +2344,10 @@ class LanguageSelect {
         });
       }
     });
+
+    if (self.enableKeyboardShortcuts) {
+      self.addKeyboardShortcuts();
+    }
   }
 
   private initPostV4() {
