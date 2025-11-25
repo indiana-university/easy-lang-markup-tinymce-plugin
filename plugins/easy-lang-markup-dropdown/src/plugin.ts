@@ -2449,12 +2449,25 @@ class LanguageSelect {
     });
   }
 
+  /* Common init for all TinyMCE versions 
+   */
   public init() {
     const self: LanguageSelect = this;
 
-    self.isTinyMCE4 = tinymce && tinymce.majorVersion && tinymce.majorVersion === '4';
-    if (window && !!window.wp) self.isWordPress = true;
-    self.hasDashIcons = Array.from(document.styleSheets).some(s => (s.href || "").includes("dashicons"));
+    this.isTinyMCE4 = /^4/.test(String((tinymce && (tinymce.majorVersion || tinymce.version)) || ''));
+    self.isWordPress = typeof window !== "undefined" && !!(window as any).wp;
+
+    let hasDash = false;
+
+    if (typeof document !== "undefined" && document.styleSheets) {
+      try {
+        hasDash = Array.from(document.styleSheets).some(
+          s => (s.href || "").includes("dashicons")
+        );
+      } catch (_) {}
+    }
+
+    self.hasDashIcons = hasDash;
 
     if (!(self.editor && self.editor.getParam)) throw new Error('No supported editor instance found');
 
