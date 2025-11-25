@@ -5,12 +5,31 @@
 
 declare global {
   interface Window {
-    wp?: any;  // or a better type if you know it
+    wp?: any;  // WordPress global object
   }
 }
 
 export interface ElementAttributes {
   readonly [key: string]: string;
+}
+
+export interface TinyMCE4MenuButtonControl {
+  settings: {
+    menu: any[];
+    [key: string]: unknown;
+  };
+  state: {
+    data: {
+      menu: any[];
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  menu?: {
+    remove: () => void;
+  } | null;
+  active: (state: boolean) => void;
+  on: (event: string, handler: Function) => void;
 }
 
 export type TinyMCEEditorButtonRegistry = {

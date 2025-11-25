@@ -2250,7 +2250,7 @@ class LanguageSelect {
       icon: self.iconName ? self.iconName : null,
       tooltip: self.translate('Set text language'), // Tooltip for the button
       menu: self.buildEasyLangMenuItemsV4(),    // now includes a submenu
-      onPostRender: function () {
+      onPostRender: function (this: Types.TinyMCE4MenuButtonControl) {
         var ctrl = this;
 
         function refreshMenu() {
