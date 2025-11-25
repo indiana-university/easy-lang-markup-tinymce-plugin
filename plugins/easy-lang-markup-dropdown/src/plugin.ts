@@ -21,6 +21,7 @@ class LanguageSelect {
     DEFAULT_LANG_HOLDER_ID: 'defaultContentLangHolder'
   } as const;
 
+  private isTinyMCE4: boolean = false;
   private isWordPress: boolean = false;
   private hasDashIcons: boolean = false;
   private defaultLanguages: string[] = ["en", "es", "fr", "it", "de"];
@@ -959,7 +960,14 @@ class LanguageSelect {
     return languageName;
   }
 
-  static getNativeLanguageName(langCode: string | null): string {
+  /* Get the native language name for a given language code.
+   * The native name is the name of the language in that language itself.
+   * E.g., "Deutsch" for "de", "Español" for "es", "日本語" for "ja".
+   * 
+   * @param langCode - The language code (e.g., "de", "es", "ja")
+   * @returns String with the native language name, or empty string if not found
+   */
+  public static getNativeLanguageName(langCode: string | null): string {
     if (!LanguageSelect.isNotBlank(langCode)) return '';
     langCode = langCode.trim().toLowerCase();
     const nativeLangName: string = Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode) ? LanguageSelect.languageTags[langCode] : langCode;
@@ -1009,7 +1017,6 @@ class LanguageSelect {
       // Get the localized name for this language in the current editor locale
       const localizedName = this.getLanguageNameForLocale(langCode);
 
-      // Skip if translation is missing (fallback to avoid broken entries)
       if (!localizedName || localizedName === langCode || localizedName === nativeName) {
         languages.push({
           value: langCode.toLowerCase(),
@@ -1036,9 +1043,6 @@ class LanguageSelect {
     return languages;
   }
 
-  /**
-   * Alternative approach if you want to cache the languages list for performance
-   */
   private _cachedLanguagesList: Array<{ value: string; text: string }> | null = null;
 
   private getSortedLanguagesList(): Array<{ value: string; text: string }> {
@@ -1048,8 +1052,26 @@ class LanguageSelect {
     return this._cachedLanguagesList;
   }
 
+  /**
+   * Opens a dialog for selecting or entering a default language for the document.
+   *
+   * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
+   */
+  private readonly openChooseDefaultLangDialog = (callback: (newLang: string) => any) => {
+    const self: LanguageSelect = this;
+    if(!self.isTinyMCE4) {
+      self.openChooseDefaultLangDialogV5Plus(callback);
+    } else {
+      self.openChooseDefaultLangDialogV4(callback);
+    }
+  };
 
-  openChooseDefaultLangDialog = (callback: (newLang: string) => any) => {
+  /**
+   * Opens a dialog for selecting or entering a default language for the document.
+   *
+   * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
+   */
+  private readonly openChooseDefaultLangDialogV4 = (callback: (newLang: string) => any) => {
     const self: LanguageSelect = this;
 
     const initialLanguageValue =
@@ -1129,8 +1151,6 @@ class LanguageSelect {
       }
     });
   };
-
-
 
   /**
    * Opens a dialog for selecting or entering a default language for the document.
@@ -1232,9 +1252,26 @@ class LanguageSelect {
     });
   };
 
-  openConfigureLanguagesOnSelectbox = (
+  /**
+   * Opens a dialog for selecting languages in the menu
+   *
+   * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
+   */
+  private readonly openConfigureLanguagesOnSelectbox = (
     langMenuItems: string[] = [],
-    callback: ((langs: string[]) => void) | null = null
+    callback: ((langs: string[]) => void)
+) => {
+    const self: LanguageSelect = this;
+    if(!self.isTinyMCE4) {
+      self.openConfigureLanguagesOnSelectboxV5Plus(langMenuItems, callback);
+    } else {
+      self.openConfigureLanguagesOnSelectboxV4(langMenuItems, callback);
+    }
+  };
+
+  private readonly openConfigureLanguagesOnSelectboxV4 = (
+    langMenuItems: string[] = [],
+    callback: ((langs: string[]) => void)
   ) => {
     const self: LanguageSelect = this;
 
@@ -1357,15 +1394,13 @@ class LanguageSelect {
     });
   };
 
-
-
   /**
    * Opens a dialog to configure up to six languages, allowing the user to either select from a list or enter manually.
    *
    * @param {Array} langMenuItems - An array of pre-selected language codes (up to 6). If empty, no languages are pre-selected.
    * @param {Function} callback - A callback function that is invoked with the updated list of languages after submission.
    */
-  private readonly openConfigureLanguagesOnSelectboxV5Plus = (langMenuItems: string[] = [], callback: Function | null = null) => {
+  private readonly openConfigureLanguagesOnSelectboxV5Plus = (langMenuItems: string[] = [], callback: ((langs: string[]) => void)) => {
     const self: LanguageSelect = this;
 
     // Create an array for select box items, with "None" and "Other" options.
@@ -1373,30 +1408,7 @@ class LanguageSelect {
     languages.unshift({ value: "-n-", text: this.translate('None') }); // Option to select "None"
     languages.unshift({ value: "-o-", text: this.translate('Other - Enter manually') }); // Option to enter manually
 
-    /*     const languages = [
-          { value: "-n-", text: this.translate('None') }, // Option to select "None"
-          { value: "-o-", text: this.translate('Other - Enter manually') }, // Option to enter manually
-        ];
-     */
-    /*     // Populate the language options by sorting langAtts alphabetically by description.
-        Object.entries(LanguageSelect.languageTags)
-          .sort(([codeA, descA], [codeB, descB]) =>
-            descA.toLowerCase().localeCompare(descB.toLowerCase())
-          )
-          .forEach(([langCode, langDesc]) => {
-            if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode)) {
-              let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
-              if (langCodeLanguageNameForLocale && langCodeLanguageNameForLocale !== langDesc) {
-                langDesc = `${langCodeLanguageNameForLocale} (${langDesc})`
-              }
-              languages.push({
-                value: langCode,
-                text: `${langDesc} - (${LanguageSelect.cleanLangAttr(langCode)})`, // Show description and cleaned language code
-              });
-            }
-          });
-    
-     */    // Create the list of items for the dialog's language selection section.
+    // Create the list of items for the dialog's language selection section.
     const languageChoiceItems: any[] = [
       {
         type: "htmlpanel",
@@ -2225,7 +2237,6 @@ class LanguageSelect {
 
     if (!(self.editor && self.editor.getParam && self.editor.addButton)) throw new Error('No supported editor instance found');
 
-    self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
     const new_icon_name = self.editor.getParam("easylang_icon");
 
     if (LanguageSelect.isNotBlank(new_icon_name)) {
@@ -2311,7 +2322,7 @@ class LanguageSelect {
             }
 
             // Set the active state when a lang is present
-            ctrl.active(lastCurrentLang > "");
+            ctrl.active(LanguageSelect.isNotBlank(lastCurrentLang));
           }
         };
 
@@ -2423,8 +2434,10 @@ class LanguageSelect {
 
   public init() {
     const self: LanguageSelect = this;
-    if (window && !!window.wp) this.isWordPress = true;
-    this.hasDashIcons = Array.from(document.styleSheets).some(s => (s.href || "").includes("dashicons"));
+
+    self.isTinyMCE4 = tinymce && tinymce.majorVersion && tinymce.majorVersion === '4';
+    if (window && !!window.wp) self.isWordPress = true;
+    self.hasDashIcons = Array.from(document.styleSheets).some(s => (s.href || "").includes("dashicons"));
 
     if (!(self.editor && self.editor.getParam)) throw new Error('No supported editor instance found');
 
@@ -2450,10 +2463,10 @@ class LanguageSelect {
       }
     }
 
-    if (this.editor && tinymce && tinymce.majorVersion && tinymce.majorVersion === '4') {
-      this.initV4();
+    if (self.isTinyMCE4) {
+      self.initV4();
     } else {
-      this.initPostV4();
+      self.initPostV4();
     }
   }
 
