@@ -2043,19 +2043,18 @@ class LanguageSelect {
     // --- Toggle: Reveal lang markup ------------------------------------------
     items.push({
       text: self.translate('Reveal lang markup'),
-      icon: self.hasDashIcons ? 'icon  dashicons-visibility' : 'preview',
-      onclick: function () {
+      icon: self.hasDashIcons ? 'icon dashicons-visibility' : 'preview',
+      onclick: function (this: Types.TinyMCE4MenuItem) {
         self.tsViewMarkup = !self.tsViewMarkup;
         if (self.tsViewMarkup) {
           self.revealLangMarkUp();
         } else {
           self.hideLangMarkUp();
         }
-        // In TinyMCE 4, menu item instances expose `active()`
-        (this as any).active(self.tsViewMarkup);
+        this.active(self.tsViewMarkup);  // No more cast needed
       },
-      onPostRender: function () {
-        (this as any).active(self.tsViewMarkup);
+      onPostRender: function (this: Types.TinyMCE4MenuItem) {
+        this.active(self.tsViewMarkup);  // No more cast needed
       }
     });
 
@@ -2063,25 +2062,20 @@ class LanguageSelect {
     if (!self.showCurrentLanguage) {
       items.push({
         text: self.translate('Indicate current language'),
-        icon: self.hasDashIcons ? 'icon  dashicons-admin-site-alt3' : 'language',
-        onclick: function () {
+        icon: self.hasDashIcons ? 'icon dashicons-admin-site-alt3' : 'language',
+        onclick: function (this: Types.TinyMCE4MenuItem) {
           self.showCurrentLanguage = !self.showCurrentLanguage;
           self.showCurrentLangCodeOnly = true;
-
           if (self.showCurrentLanguage) {
             self.updateLanguageSelector();
-          } else {
-            // could clear selector here if desired
-            // self.updateLanguageSelector('');
           }
-          (this as any).active(self.showCurrentLanguage);
+          this.active(self.showCurrentLanguage);  // No more cast needed
         },
-        onPostRender: function () {
-          (this as any).active(self.showCurrentLanguage);
+        onPostRender: function (this: Types.TinyMCE4MenuItem) {
+          this.active(self.showCurrentLanguage);  // No more cast needed
         }
       });
     }
-
     return items;
   };
 

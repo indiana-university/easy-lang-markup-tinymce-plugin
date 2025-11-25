@@ -32,6 +32,12 @@ export interface TinyMCE4MenuButtonControl {
   on: (event: string, handler: Function) => void;
 }
 
+export interface TinyMCE4MenuItem {
+  active: (state: boolean) => void;
+  disabled: (state: boolean) => void;
+  visible: (state: boolean) => void;
+}
+
 export type TinyMCEEditorButtonRegistry = {
       addButton: (...args: any[]) => void;
       addMenuItem: (...args: any[]) => void;
