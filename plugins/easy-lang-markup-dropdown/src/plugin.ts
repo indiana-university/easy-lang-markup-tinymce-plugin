@@ -1079,7 +1079,6 @@ class LanguageSelect {
     const currentDefaultDocLang = self.getDocumentDefaultLanguage();
 
     const languages = this.getSortedLanguagesList(); // [{ value, text }]
-    console.log('Languages for dialog:', languages);
 
     // Build a little “current default” text block
     const currentDefaultHtml =
@@ -1384,9 +1383,7 @@ class LanguageSelect {
           self.editor.focus();
         }
 
-        console.log('Selected languages from dialog:', selectedLangs);
         if (callback) {
-          console.log('Invoking callback with selected languages.');
           callback(selectedLangs);
         }
         // In v4 the dialog closes automatically after onsubmit returns
@@ -1815,13 +1812,10 @@ class LanguageSelect {
     if (!langValue || typeof langValue != 'string') return;
 
     // Clean and standardize the language attribute value
-    console.log(`registerFormat: received "${langValue}"`);
     langValue = LanguageSelect.cleanLangAttr(langValue);
-    console.log(`registerFormat: cleaned to "${langValue}"`);
 
     // Define a unique format name based on the language code
     const formatToApply: string = "setLangTo_" + langValue;
-    console.log(`registerFormat: formatToApply is "${formatToApply}", now register it`);
     const dir = LanguageSelect.getTextDirection(langValue);
 
     // Register the new format with TinyMCE
@@ -1843,7 +1837,6 @@ class LanguageSelect {
         },
       });
     }
-    console.log(`registerFormat: registered "${formatToApply}"`);
 
     // Track the registered format to avoid duplicate registrations
     this.langFormatsRegistered[formatToApply] = true;
@@ -1856,37 +1849,26 @@ class LanguageSelect {
    * @param {string} langValue - The language code to apply to the document.
    */
   private setDocLangTo(langValue: string): void {
-    console.log(`setDocLangTo: received lang: ${langValue}`);
     langValue = LanguageSelect.cleanLangAttr(langValue);
-    console.log(`setDocLangTo: cleaned lang: ${langValue}`);
     const formatToApply = `setLangTo_${langValue}`;
 
-    console.log(`setDocLangTo: formatToApply: ${formatToApply}`);
 
     // Ensure the format is registered before applying
     if (!this.langFormatsRegistered.hasOwnProperty(formatToApply)) {
-      console.log(`setDocLangTo: registerFormat: ${langValue}`);
       this.registerFormat(langValue);
     }
 
-    console.log(`setDocLangTo: editor.focus`);
     if (this.editor?.focus) this.editor.focus();
-
-    console.log(`setDocLangTo: enter undo transaction`);
 
     // Apply the format within an undo transaction
     if (this.editor?.undoManager?.transact) {
       this.editor.undoManager.transact(() => {
-        console.log(`setDocLangTo: apply format ${formatToApply}`);
         if (this.editor?.formatter?.apply) this.editor.formatter.apply(formatToApply);
       });
     }
 
-    console.log(`setDocLangTo: post apply, refreshQaStyles`);
-
     // Refresh the QA styles to reflect the new language format
     this.refreshQaStyles();
-    console.log(`setDocLangTo: post refreshQaStyles, exit`);
   }
 
   /**
@@ -2101,7 +2083,6 @@ class LanguageSelect {
         text: self.getShortLanguageCodeDescription(lang.toLowerCase()) || LanguageSelect.cleanLangAttr(lang), // Display language name
         shortcut: self.enableKeyboardShortcuts ? `meta+Shift+${index + 1}` : undefined,
         onAction: function () {
-          console.log(`langMenuItem onAction: ${lang}`);
           self.setDocLangTo(lang); // Set document language to selected value
         },
       });
