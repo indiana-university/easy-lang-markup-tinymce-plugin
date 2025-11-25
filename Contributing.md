@@ -9,7 +9,7 @@ below to get started.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 1. **Fork the repository** on GitHub.
 2. **Clone your fork** locally and navigate to the project directory:
@@ -44,7 +44,7 @@ below to get started.
    
 ---
 
-## 🛠️ Development Workflow
+## Development Workflow
 
 ### Run the type checker:
 
@@ -75,7 +75,7 @@ npm run build
 
 ---
 
-## 🧪 Testing
+## Testing
 
 - Test files are located in the `__tests__/` directory.
 - Test coverage includes utility functions, language detection, 
@@ -96,7 +96,7 @@ Add tests when submitting a fix or new feature whenever possible.
 
 ---
 
-## 🧹 Coding Standards
+## Coding Standards
 
 - Use **TypeScript**.
 - Follow the existing file structure and modular design.
@@ -107,7 +107,7 @@ Add tests when submitting a fix or new feature whenever possible.
 
 ---
 
-## ✅ Pull Request Checklist
+## Pull Request Checklist
 
 Before submitting your pull request, please ensure the following:
 
@@ -119,7 +119,7 @@ Before submitting your pull request, please ensure the following:
 
 ---
 
-## 🐞 Reporting Issues
+## Reporting Issues
 
 Please open an issue in GitHub if you:
 
@@ -136,7 +136,7 @@ Provide:
 
 ---
 
-## 📄 Licensing and Conduct
+## Licensing and Conduct
 
 All contributions are assumed to be submitted under the same license as the 
 project.
@@ -145,4 +145,4 @@ Please be respectful of others.
 
 ---
 
-Thanks again for contributing! 💛
+Thanks again for contributing! 

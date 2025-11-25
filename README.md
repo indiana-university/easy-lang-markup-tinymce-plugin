@@ -1,6 +1,8 @@
 # TinyMCE Language Selector Plugin
 
-This plugin provides an easy-to-use interface for managing language attributes (`lang="[lang_code]"`) in TinyMCE editors. It helps content authors meet WCAG accessibility requirements for indicating document language and language changes within content.
+This plugin provides an easy-to-use interface for users to add/edit language attributes (`lang="[lang_code]"`) 
+in TinyMCE editor content. It helps content authors meet WCAG accessibility requirements for indicating 
+document language and language changes within content.
 
 ## Features
 
@@ -8,11 +10,9 @@ This plugin provides an easy-to-use interface for managing language attributes (
 - Apply language attributes to selected text
 - Quick access to commonly used languages and languages available are user configurable
 - Automatically scans existing documents for languages used within it
-- Visual highlighting of language-marked sections
-- Keyboard shortcuts for frequent language selections
+- Provides visual highlighting of language-marked sections for easy verification
+- Keyboard shortcuts for applying language markup
 - Remove language markup from selections or entire document
-- Validation of language codes
-- Help documentation for proper language attribute usage
 
 ## Demo
 
@@ -20,18 +20,72 @@ To see the plugin in action, see the [TinyMCE Language Plugin Development (TinyM
 
 ## Build
 
-Use your favorite tool to minify the plugin.js file to plugin.min.js.
+To build the TinyMCE Language Selector plugin from source:
+
+### 1. Clone the repository
+
+```
+git clone https://github.com/indiana-university/easy-lang-markup-tinymce-plugin.git
+cd easy-lang-markup-tinymce-plugin
+```
+
+### 2. Install dependencies
+
+Install all dependencies listed in package.json. The dependencies are only
+needed for the build process:
+
+```
+npm install
+```
+
+### 3. Build the plugin
+
+Run the build:
+
+```
+npm run build
+```
+
+Outputs appear in:
+
+```
+dist/
+
+├── plugin_for_tests
+│   ├── plugin_types.ts
+│   └── plugin-for-tests.ts
+└── plugins
+    └── languageSelect
+        ├── langs
+        │   ├── ar_SA.js
+        │   ├── ar.js
+...
+        │   ├── zh_TW.js
+        │   └── zh.js
+        └── plugin.min.js
+```
+
+### 4. Optional: Run tests
+
+```
+npm test
+```
 
 ## Installation
 
-1. Copy the `languageSelect` plugin to your TinyMCE plugins directory:
+1. Copy the `languageSelect` folder to your TinyMCE plugins directory:
 ```
 your-project/
   tinymce/
     plugins/
       languageSelect/
-        plugin.js
-        plugin.min.js
+        ├── langs
+        │   ├── ar_SA.js
+        │   ├── ar.js
+...
+        │   ├── zh_TW.js
+        │   └── zh.js
+        └── plugin.min.js
 ```
 
 2. Add the plugin, toolbar button, and menu entry to your TinyMCE configuration:
@@ -116,8 +170,8 @@ This plugin utilizes the following TinyMCE APIs:
 
 ## Internationalization (i18n) Notes
 
-We've included a localization file for `zh`, but please configure
-tinyMCE for either of the proper script-based codes (`zh-Hans` or `zh-Hant`) instead of the ambiguous `zh`. The `zh.js` included is a fallback (defaulting to simplified Chinese content).
+All of the translation keys are discoverable by searching `./src/plugin.ts` for `.translate(key)`.
+See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
 
 ## License
 
