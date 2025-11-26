@@ -1,7 +1,7 @@
 # TinyMCE Language Selector Plugin
 
-This plugin provides an easy-to-use interface for users to add/edit language attributes (`lang="[lang_code]"`) 
-in TinyMCE editor content. It helps content authors meet WCAG accessibility requirements for indicating 
+This plugin provides an easy-to-use interface for users to add/edit language attributes (`lang="[lang_code]"`)
+in TinyMCE editor content. It helps content authors meet WCAG accessibility requirements for indicating
 document language and language changes within content.
 
 ## Features
@@ -13,6 +13,17 @@ document language and language changes within content.
 - Provides visual highlighting of language-marked sections for easy verification
 - Keyboard shortcuts for applying language markup
 - Remove language markup from selections or entire document
+- Support for WordPerfect
+  - Autodetection of dashicons
+  - Support for tinyMCE 4
+  - Support for WP translation services via wp_localize_script and PB_LanguageSelectorToken object
+  - ./utils/build_wp_localize_script_block.js will auto-build wp_localize_script call
+- All translation keys are literal strings that go through .translate(key) to support auto-localization tools
+
+## AI Utilization
+
+- Plugin is AI code free
+- Provided localization file translations were provided by AI. Some were proofed by humans. See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
 
 ## Demo
 
@@ -24,7 +35,7 @@ To build the TinyMCE Language Selector plugin from source:
 
 ### 1. Clone the repository
 
-```
+```sh
 git clone https://github.com/indiana-university/easy-lang-markup-tinymce-plugin.git
 cd easy-lang-markup-tinymce-plugin
 ```
@@ -34,7 +45,7 @@ cd easy-lang-markup-tinymce-plugin
 Install all dependencies listed in package.json. The dependencies are only
 needed for the build process:
 
-```
+```sh
 npm install
 ```
 
@@ -42,40 +53,41 @@ npm install
 
 Run the build:
 
-```
+```sh
 npm run build
 ```
 
-The build process makes two versions: one for production and one that exposes 
-functions for the tests. Outputs appear in:
+The build process makes two versions: one for production and one that exposes
+functions for the tests. Outputs appear under the ./dist folder. The
+production version of the plugin is in ./dist/plugins/languageSelect
 
-```
-dist/
-
-├── plugin_for_tests
+```txt
+├── dist/
+│   ├── plugin_for_tests
 │   ├── plugin_types.ts
 │   └── plugin-for-tests.ts
-└── plugins
-    └── languageSelect
-        ├── langs
-        │   ├── ar_SA.js
-        │   ├── ar.js
+├── plugins
+│   └── languageSelect
+│       ├── langs
+│       │   ├── ar_SA.js
+│       │   ├── ar.js
 ...
-        │   ├── zh_TW.js
-        │   └── zh.js
-        └── plugin.min.js
+│       │   ├── zh_TW.js
+│       │   └── zh.js
+│       └── plugin.min.js
 ```
 
 ### 4. Optional: Run tests
 
-```
+```sh
 npm test
 ```
 
 ## Installation
 
 1. Copy the `./dist/plugins/languageSelect` folder to your TinyMCE plugins directory:
-```
+
+```txt
 your-project/
   tinymce/
     plugins/
@@ -90,6 +102,7 @@ your-project/
 ```
 
 2. Add the plugin, toolbar button, and menu entry to your TinyMCE configuration:
+
 ```javascript
 tinymce.init({
   selector: 'textarea',  // change to match your selector
@@ -159,15 +172,15 @@ This plugin utilizes the following TinyMCE APIs:
 
 ## Accessibility Features
 
-- This plugin helps tinyMCE acchieve [ATAG](https://www.w3.org/WAI/standards-guidelines/atag/) 
+- This plugin helps tinyMCE acchieve [ATAG](https://www.w3.org/WAI/standards-guidelines/atag/)
   compliance by helping authors produce accessible multilingual content.
-- This plugin helps authors produce [WCAG](https://www.w3.org/WAI/standards-guidelines/wcag/) 
+- This plugin helps authors produce [WCAG](https://www.w3.org/WAI/standards-guidelines/wcag/)
   compliant content by:
-    - Ensuring proper language attribute (`lang`) usage which supports screen reading 
-      software with correct language pronunciation
-    - Optionally provides keyboard shortcuts for common operations
-    - Makes verifying language change markup easy by making them visually apparent 
-      with optional highlighting
+  - Ensuring proper language attribute (`lang`) usage which supports screen reading
+    software with correct language pronunciation
+  - Optionally provides keyboard shortcuts for common operations
+  - Makes verifying language change markup easy by making them visually apparent
+    with optional highlighting
 
 ## Internationalization (i18n) Notes
 
@@ -184,9 +197,9 @@ See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
 
 Copyright (C) 2012 The Trustees of Indiana University
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for 
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for
 guidelines.
 
 ## Support
