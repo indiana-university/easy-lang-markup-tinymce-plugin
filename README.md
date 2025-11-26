@@ -248,46 +248,6 @@ tinymce.init({
 
 ---
 
-### easylang_shortcut_modifier_display: "text" | "symbols"
-
-### `easylang_menu_shortcut_modifier_display`: "text" | "symbols"
-
-Controls how keyboard shortcut modifiers are **displayed in the plugin's language selection menu**.  
-This setting affects *only the visual representation* of shortcuts in the UI — it does **not** change the actual keyboard shortcuts used by the editor.
-
-**Type:** `"text"` | `"symbols"`  
-**Default:** `"symbols"` (platform-appropriate symbols such as `⌃`, `⌥`, `⇧` on macOS)
-
-#### **Accepted Values**
-
-- **`"text"`**  
-  Displays modifier keys using text labels:  
-  - `Ctrl+Alt+E`  
-  - `Shift+Ctrl+S`
-
-- **`"symbols"`** *(default)*  
-  Displays modifier keys using platform-specific symbols when available (macOS):  
-  - `⌃⌥E`  
-  - `⇧⌃S`
-
-#### **Example**
-
-```js
-tinymce.init({
-  "selector": "textarea",
-  "plugins": "languageSelect",
-  "easylang_shortcut_modifier_display": "text"
-});
-```
-
-#### Notes
-
-- This option affects only the menu labels shown to the user.
-- The underlying shortcut logic and key bindings remain unchanged.
-- Useful if screen readers do not pronounce the symbols meaningfully.
-
----
-
 ### `easylang_reserved_shortcut_letters`
 
 Defines letters that cannot be used when generating keyboard shortcuts.
