@@ -146,7 +146,7 @@ class LanguageSelect {
       }
     });
 
-    // On macOS we usually omit plus signs, on others we keep "Ctrl+Shift+1"
+    // On macOS shortcuts usually omit plus signs, on others OSs keep "Ctrl+Shift+1"
     return isMac ? mapped.join('') : mapped.join('+');
   }
 
@@ -287,7 +287,7 @@ class LanguageSelect {
   }
 
   /**
-   * Helper function to evaluate template strings with named parameters {{name}}, {{number}}, etc.
+   * Evaluate template strings with named parameters {{name}}, {{number}}, etc.
    * @param key - The translated key
    * @param replacements - Object with parameter names and values
    * @returns The string with parameters substituted
@@ -1058,7 +1058,7 @@ class LanguageSelect {
     return localized;
   }
 
-  // Helper function to get translation string with fallback hierarchy
+  // Get translation string with fallback hierarchy
   getLanguageNameForLocale(langCode: string | null): string {
 
     if (!LanguageSelect.isNotBlank(langCode)) return '';
@@ -1440,14 +1440,14 @@ class LanguageSelect {
 
       body.push(
         {
-          type: "listbox",             // v4 control type
+          type: "listbox", 
           name: selectName,
           label: self.evalTemplate(self.translate("Select language {{number}}:"), { number: i }),
           values: languages,           // v4 uses "values" not "items"
           value: initialSelect[i] || "" // pre-select if we have one
         },
         {
-          type: "textbox",             // v4 text input
+          type: "textbox",
           name: inputName,
           label: self.evalTemplate(self.translate("Manually enter language {{number}}:"), { number: i }),
           value: initialInput[i] || "" // pre-fill manual lang if relevant
@@ -1562,7 +1562,7 @@ class LanguageSelect {
       });
     });
 
-    // Add additional empty language selectors up to the maximum (6 total).
+    // Add additional empty language selectors up to the maximum
     for (langCounter++; langCounter <= LanguageSelect.CONFIG.MAX_MENU_ITEMS; langCounter++) {
       languageChoiceItems.push({
         type: "bar",
@@ -2064,7 +2064,6 @@ class LanguageSelect {
   }
 
   private readonly initializeLanguageMenuEntriesList = () => {
-    console.log("🚀 initializeLanguageMenuEntriesList called; current langMenuItems:", this.langMenuItems);
     const self: LanguageSelect = this;
     // Initialize language menu items if they are not already populated
     if (self.langMenuItems.length > 0 && self.updatedLanguageDefaultsUsed) {
@@ -2388,7 +2387,6 @@ class LanguageSelect {
 
       // 2) Register the shortcut once per letter.
       if (!self.shortcutRegisteredForLetter[letter] && shortcut.trim() > "" && self.editor.addShortcut) {
-        // Optional: nicer label – you can use your formatShortcutForDisplay helper here
         const label = `Apply language ${langValue}`;
         self.editor.addShortcut(shortcut, label, commandName);
         self.shortcutRegisteredForLetter[letter] = true;
@@ -2396,7 +2394,6 @@ class LanguageSelect {
     });
   };
 
-  // TODO: the types for the editor probably need adjusted to handle version 4 vs version 5+
   // Initialize settings specific to TinyMCE version 4 as needed by WP/Pressbooks
   private initV4() {
     const self: LanguageSelect = this;
@@ -2582,7 +2579,7 @@ class LanguageSelect {
           self.editor.on("Focus", editorContentChangeEventHandler);
         }
 
-        // Teardown event listeners when the button is removed
+        // Remove event listeners when the button is removed
         return function (buttonApi: Types.ButtonApi) {
           if (self.editor?.off) {
             self.editor.off("NodeChange", editorContentChangeEventHandler);
@@ -2740,7 +2737,6 @@ class LanguageSelect {
       self.iconName = 'icon dashicons dashicons-translation';
       self.useDashIcons = true;
     } else {
-      // Use null here so your SVG icon registration can take over
       self.iconName = null;
     }
 
@@ -2778,10 +2774,9 @@ class LanguageSelect {
     }
   };
 
-
-    /**
+  /**
    * Scan the TinyMCE editor document and return a cleaned, de-duplicated list
-   * of language codes used, similar to the bookmarklet's getTinyMCELanguages().
+   * of language codes used.
    *
    * - Reads [lang] attributes inside the editor iframe
    * - Adds the editor's default document language
@@ -2888,6 +2883,7 @@ class LanguageSelect {
       return;
     }
     self.documentHasBeenScanned = true;
+    self.updatedLanguageDefaultsUsed = false;
 
     const langs = self.getEditorDocumentLanguages();
     if (!langs || langs.length === 0) {
@@ -2897,8 +2893,21 @@ class LanguageSelect {
     const max = LanguageSelect.CONFIG.MAX_MENU_ITEMS;
     self.defaultLanguages = langs.slice(0, max);
 
-    // Optional: log once so you can see that it worked
-    console.log('🌍 Using document languages as defaults:', self.defaultLanguages);
+    if(LanguageSelect.isValidLang(self.editorLanguage)) {
+      // Make sure editor language is included (or a region variant)
+      const editorLangBase = self.editorLanguage.split('-')[0].toLowerCase();
+      const hasEditorLang = self.defaultLanguages.some((code) => {
+        return code.split('-')[0] === editorLangBase;
+      });
+      if (!hasEditorLang && LanguageSelect.isValidLang(self.editorLanguage)) {
+        if (self.defaultLanguages.length < max) {
+          self.defaultLanguages.push(self.editorLanguage.toLowerCase());
+        } else {
+          // Replace the least frequent language with the editor language
+          self.defaultLanguages[max - 1] = self.editorLanguage.toLowerCase();
+        }
+      }
+    }
   }
 
   /* Common init for all TinyMCE versions 
@@ -2921,7 +2930,6 @@ class LanguageSelect {
     self.cssHasDashIcons = hasDash;
 
     self.processEditorConfigParameters();
-
 
     // When TinyMCE signals that the editor is ready, wait a tick and
     // then update defaultLanguages based on the actual document content.
