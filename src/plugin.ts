@@ -110,6 +110,9 @@ class LanguageSelect {
    *   - Windows/Linux: "Ctrl+Shift+1"
    */
   private formatShortcutForDisplay(shortcut: string): string | undefined {
+    console.log('Formatting shortcut for display:', shortcut);
+    const self: LanguageSelect = this;
+
     if (!shortcut) return undefined;
 
     const isMac = this.isMacOS();
@@ -127,18 +130,18 @@ class LanguageSelect {
         case 'meta':
         case 'cmd':
         case 'command':
-          return isMac ? '⌘' : 'Ctrl';
+          return isMac && !self.displayShortcutsAsText ? '⌘' : 'Ctrl';
 
         case 'ctrl':
         case 'control':
-          return isMac ? '⌃' : 'Ctrl';
+          return isMac && !self.displayShortcutsAsText ? '⌃' : isMac ? 'Control' : 'Ctrl';
 
         case 'shift':
-          return isMac ? '⇧' : 'Shift';
+          return isMac && !self.displayShortcutsAsText ? '⇧' : 'Shift';
 
         case 'alt':
         case 'option':
-          return isMac ? '⌥' : 'Alt';
+          return isMac && !self.displayShortcutsAsText ? '⌥' : 'Alt';
 
         default:
           // Non-modifier keys: make single letters/numbers uppercase
@@ -147,7 +150,9 @@ class LanguageSelect {
     });
 
     // On macOS shortcuts usually omit plus signs, on others OSs keep "Ctrl+Shift+1"
-    return isMac ? mapped.join('') : mapped.join('+');
+    const displayShortcut = isMac && !self.displayShortcutsAsText  ? mapped.join('') : mapped.join('+');
+    console.log('Display shortcut:', displayShortcut);
+    return displayShortcut;
   }
 
     private findFirstAvailableLetter(): string | null {
@@ -1710,6 +1715,26 @@ class LanguageSelect {
     const styleSheet = doc.createElement("style");
     styleSheet.setAttribute("id", LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
 
+    styleSheet.appendChild(
+      doc.createTextNode(`
+        /* Elements with a dir attribute but NO lang attribute */
+        *[dir]:not([lang]) {
+          padding: 3px;
+          margin: 2px;
+          background-color: #f0f0f0 !important; /* light gray */
+          border: thin solid #555;
+        }
+
+        *[dir]:not([lang]):before {
+          content: "[dir=" attr(dir) "]";
+        }
+
+        *[dir]:not([lang]):after {
+          content: "[/dir]";
+        }
+      `)
+    );
+
     Object.entries(languagesFound).forEach(([langCode, color]) => {
       styleSheet.appendChild(
         doc.createTextNode(`
@@ -1719,12 +1744,30 @@ class LanguageSelect {
             background-color: ${color} !important;
             border: thin solid black;
           }
+
+          /* Default label when no dir attribute is set */
           *[lang="${langCode}"]:before {
             content: "[${langCode}]";
           }
+
+          /* More specific rule: when dir *is* present, show it */
+          *[lang="${langCode}"][dir]:before {
+            content: "[${langCode} | dir=" attr(dir) "]";
+          }
+
           *[lang="${langCode}"]:after {
             content: "[/${langCode}]";
           }
+
+          /* More specific rule: when dir *is* present, show it */
+          *[lang="${langCode}"][dir="rtl"]:before {
+            content: "[${langCode}/]";
+          }
+
+          *[lang="${langCode}"][dir="rtl"]:after {
+            content: "[${langCode} | dir=" attr(dir) "]";
+          }
+          
         `)
       );
     });
@@ -2699,6 +2742,9 @@ class LanguageSelect {
 
     self.shortcutModifiers = shortcutModifiers;
 
+    self.displayShortcutsAsText = 
+      self.getEditorConfigParameter('easylang_shortcut_modifier_display', "symbols").toLowerCase() === "text";
+    
     // --- Add to TinyMCE 4 "Format" menu (or other menu) ---
     const addToV4MenuRaw = self.getEditorConfigParameter(
       'easylang_add_to_v4menu',
