@@ -189,6 +189,9 @@ The `content_langs` option can also be used for the same purpose. Both options a
 
 The `easylang_add_to_v4menu` option controls whether the language selector menu is added to TinyMCE 4's main menu bar and specifies which menu context it should appear in.
 
+<img width="766" height="547" alt="image" src="https://github.com/user-attachments/assets/746061c0-2cde-488b-ae19-3c3d2ee0620f" />
+
+
 #### Default behavior
 
 When not specified, the language menu is not automatically added to the TinyMCE 4 menu bar.
