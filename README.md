@@ -16,14 +16,19 @@ document language and language changes within content.
 - Support for WordPerfect
   - Autodetection of dashicons
   - Support for tinyMCE 4
-  - Support for WP translation services via wp_localize_script and PB_LanguageSelectorToken object
+  - Support for WP translation services via [wp_localize_script](https://developer.wordpress.org/reference/functions/wp_localize_script/) and PB_LanguageSelectorToken object
   - ./utils/build_wp_localize_script_block.js will auto-build wp_localize_script call
 - All translation keys are literal strings that go through .translate(key) to support auto-localization tools
 
+## Security
+
+- The plugin code does not have any external dependencies beyond a supported tinyMCE instance and optionally WP
+- The only user inputs are to be a BCP 47 language tag and are santized by the bcp47Regex in isValidLang(lang: string)
+
 ## AI Utilization
 
-- Plugin is AI code free
-- Provided localization file translations were provided by AI. Some were proofed by humans. See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
+- Plugin code is AI code free. No code was directly copied from AI.
+- Provided localization file translations were provided by AI. Some were proofed by humans. See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details. Prompts used are listed in ./utils/prompts.txt
 
 ## Demo
 
@@ -195,7 +200,7 @@ See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
 
 [GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-Copyright (C) 2012 The Trustees of Indiana University
+Copyright (C) 2012-2025 The Trustees of Indiana University
 
 ## Contributing
 
