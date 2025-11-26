@@ -25,9 +25,12 @@ class LanguageSelect {
   private isTinyMCE4: boolean = false;
   private menuIsRefreshing: boolean = false;
   private isWordPress: boolean = false;
-  private cssHasDashIcons: boolean = false;
   private defaultLanguages: string[] = ["en", "es", "fr", "it", "de"];
+  private scanDocumentOnLoad: boolean = true;
+  private documentHasBeenScanned: boolean = false;
+  private updatedLanguageDefaultsUsed: boolean = false;
 
+  private cssHasDashIcons: boolean = false;
   private iconName: string | null = LanguageSelect.CONFIG.DEFAULT_TOOLBAR_ICON;
   private useDashIcons: boolean = false;
   private blockDashIconUsage: boolean = false;
@@ -659,54 +662,6 @@ class LanguageSelect {
       return LanguageSelect.getValidLangAttribute(parent.children[0]);
     }
     return null;
-  }
-
-  /**
-   * Analyzes the usage of language attributes in the editor's document.
-   * It returns a sorted array of detected language codes based on their frequency of use.
-   *
-   * @returns {string[]} - An array of language codes sorted by frequency of occurrence.
-   */
-  private analyzeEditorDocumentLangUsage() {
-    const topDocument = window?.top?.document;
-    const editorDocument = this.getEditorDoc();
-
-    let docContainer = null;
-
-    // Determine the document container to analyze
-    if (editorDocument && editorDocument.body) {
-      docContainer = editorDocument.body;
-    } else if (this.editor && this.editor.settings && this.editor.settings.selector) {
-      const editorSelector: string | null = this.editor.settings.selector;
-      docContainer = document.querySelector(editorSelector);
-    } else {
-      docContainer = topDocument?.body;
-    }
-
-    // Track the usage of languages in the document
-    const langsUsed: Record<string, number> = {};
-
-    // Include the default language if it is valid
-    if (LanguageSelect.isValidLang(this.editorLanguage)) {
-      langsUsed[this.editorLanguage] = 1;
-    }
-
-    if (docContainer && docContainer.querySelectorAll) {
-      // Find all elements with a lang attribute
-      const langElements = docContainer.querySelectorAll("[lang]");
-
-      langElements.forEach((el: Element) => {
-        const foundLang = LanguageSelect.cleanLangAttr(el.getAttribute("lang"));
-        if (LanguageSelect.isValidLang(foundLang)) {
-          langsUsed[foundLang] = (langsUsed[foundLang] || 0) + 1;
-        }
-      });
-    }
-
-    // Sort languages by frequency of occurrence and return them
-    return Object.entries(langsUsed)
-      .sort((a, b) => b[1] - a[1])
-      .map(([langCode]) => langCode);
   }
 
   /**
@@ -2109,34 +2064,35 @@ class LanguageSelect {
   }
 
   private readonly initializeLanguageMenuEntriesList = () => {
+    console.log("🚀 initializeLanguageMenuEntriesList called; current langMenuItems:", this.langMenuItems);
+    const self: LanguageSelect = this;
     // Initialize language menu items if they are not already populated
-    if (this.langMenuItems.length < 1) {
-      const sortedArrayOfLangs = this.analyzeEditorDocumentLangUsage(); // Analyze current language usage in the document
-
-      // Add the default language of the page holding the editor if valid
-      if (
-        LanguageSelect.isValidLang(this.editorLanguage) &&
-        !this.langMenuItems.includes(this.editorLanguage.toLowerCase())
-      ) {
-        this.langMenuItems.push(this.editorLanguage.toLowerCase());
-      }
-
-      // Populate the menu with up to 6 most-used languages in the document
-      sortedArrayOfLangs.forEach((lang: string) => {
-        lang = lang.toLowerCase();
-        if (this.langMenuItems.length < LanguageSelect.CONFIG.MAX_MENU_ITEMS && !this.langMenuItems.includes(lang)) {
-          this.langMenuItems.push(lang);
-        }
-      });
-
-      // Add configured default languages if not already in the list
-      this.defaultLanguages.forEach((lang: string) => {
-        lang = lang.toLowerCase();
-        if (this.langMenuItems.length < LanguageSelect.CONFIG.MAX_MENU_ITEMS && !this.langMenuItems.includes(lang)) {
-          this.langMenuItems.push(lang);
-        }
-      });
+    if (self.langMenuItems.length > 0 && self.updatedLanguageDefaultsUsed) {
+      return;
     }
+
+    if (self.documentHasBeenScanned && !self.updatedLanguageDefaultsUsed) {
+      self.langMenuItems = [];
+      self.updatedLanguageDefaultsUsed = true;
+    }
+
+    // Add configured default languages if not already in the list
+    self.defaultLanguages.forEach((lang: string) => {
+      const lower = lang.toLowerCase();
+      if (
+        self.langMenuItems.length < LanguageSelect.CONFIG.MAX_MENU_ITEMS &&
+        !self.langMenuItems.includes(lower)
+      ) {
+        self.langMenuItems.push(lower);
+      }
+    });
+
+    // Sort the langMenuItems by their language descriptions
+    self.langMenuItems.sort((a: string, b: string) => {
+      const descA = self.getShortLanguageCodeDescription(a.toLowerCase()) || a;
+      const descB = self.getShortLanguageCodeDescription(b.toLowerCase()) || b;
+      return descA.localeCompare(descB);
+    });
   };
 
   private readonly buildEasyLangMenuItemsV4 = (): any[] => {
@@ -2788,11 +2744,15 @@ class LanguageSelect {
       self.iconName = null;
     }
 
+     // --- Scan document on load for languages 
+    self.scanDocumentOnLoad = !!self.getEditorConfigParameter('easylang_scan_document_on_load', true);
+
     // --- content_langs override for defaultLanguages ---
     const contentLangs = self.getEditorConfigParameter(
       'content_langs',
       null
     ) as Types.ContentLanguage[] | null;
+
 
     if (Array.isArray(contentLangs) && contentLangs.length > 0) {
       const newDefaultLanguages: string[] = [];
@@ -2818,6 +2778,129 @@ class LanguageSelect {
     }
   };
 
+
+    /**
+   * Scan the TinyMCE editor document and return a cleaned, de-duplicated list
+   * of language codes used, similar to the bookmarklet's getTinyMCELanguages().
+   *
+   * - Reads [lang] attributes inside the editor iframe
+   * - Adds the editor's default document language
+   * - Normalizes to BCP-47 via cleanLangAttr
+   * - Applies "hyphenated override": if both "es" and "es-MX" exist, keep
+   *   "es-MX" and drop plain "es" (also moves any base color to the region code)
+   */
+  private getEditorDocumentLanguages(): string[] {
+  const self: LanguageSelect = this;
+  if (!(self.editor && (self.editor as any).getDoc)) {
+    console.warn('LanguageSelect: no editor.getDoc available');
+    return [];
+  }
+
+  try {
+    const editorDocument = self.getEditorDoc();
+    if (!editorDocument) return [];
+
+    const elementsWithLang = editorDocument.querySelectorAll('[lang]');
+    const rawLangs: string[] = [];
+
+    elementsWithLang.forEach((el: Element) => {
+      const v = (el.getAttribute('lang') || '').trim();
+      if (LanguageSelect.isValidLang(v)) rawLangs.push(v);
+    });
+
+    // Also include the editor's default document language if valid
+    if (LanguageSelect.isValidLang(self.editorLanguage)) {
+      rawLangs.push(self.editorLanguage);
+    }
+
+    // Build frequency map of cleaned, valid lang codes
+    const freq: Record<string, number> = {};
+    rawLangs.forEach((v) => {
+      const cleaned = LanguageSelect.cleanLangAttr(v);
+      if (!LanguageSelect.isValidLang(cleaned)) return;
+
+      const lower = cleaned.toLowerCase();
+      freq[lower] = (freq[lower] || 0) + 1;
+    });
+
+    // No valid langs found
+    const cleanedUnique = Object.keys(freq);
+    if (!cleanedUnique.length) return [];
+
+    // Sort by frequency (desc), then lexicographically for stability
+    cleanedUnique.sort((a, b) => {
+      const diff = freq[b] - freq[a];
+      return diff !== 0 ? diff : a.localeCompare(b);
+    });
+
+    // Hyphenated override: prefer region/script-specific tags over bare base
+    const finalLangs: string[] = [];
+
+    cleanedUnique.forEach((code) => {
+      const lower = code.toLowerCase();
+      const base = lower.split('-')[0];
+
+      // If this is a region/script variant, remove any existing bare base
+      if (lower.includes('-')) {
+        const idx = finalLangs.findIndex(
+          (c) => c.split('-')[0] === base && !c.includes('-')
+        );
+        if (idx >= 0) {
+          finalLangs.splice(idx, 1);
+        }
+      }
+
+      if (!finalLangs.includes(lower)) {
+        finalLangs.push(lower);
+      }
+    });
+/*
+    // Move langColors from base → region if needed (bookmarklet behavior)
+    finalLangs.forEach((code) => {
+      if (code.includes('-')) {
+        const base = code.split('-')[0];
+        const baseLower = base.toLowerCase();
+        const codeLower = code.toLowerCase();
+
+        if (self.langColors[baseLower] && !self.langColors[codeLower]) {
+          self.langColors[codeLower] = self.langColors[baseLower];
+          delete self.langColors[baseLower];
+        }
+      }
+    });
+*/
+    return finalLangs;
+  } catch (err) {
+    console.warn('LanguageSelect: error scanning editor document languages', err);
+    return [];
+  }
+}
+
+  /**
+   * If the current document already uses language tags, replace the stock
+   * defaultLanguages list with those codes (up to MAX_MENU_ITEMS).
+   * This is the “bookmarklet” behavior: document-used languages override
+   * the generic defaults.
+   */
+  private updateDefaultLanguagesFromDocument(): void {
+    const self: LanguageSelect = this;
+    if(self.documentHasBeenScanned) {
+      return;
+    }
+    self.documentHasBeenScanned = true;
+
+    const langs = self.getEditorDocumentLanguages();
+    if (!langs || langs.length === 0) {
+      return;
+    }
+
+    const max = LanguageSelect.CONFIG.MAX_MENU_ITEMS;
+    self.defaultLanguages = langs.slice(0, max);
+
+    // Optional: log once so you can see that it worked
+    console.log('🌍 Using document languages as defaults:', self.defaultLanguages);
+  }
+
   /* Common init for all TinyMCE versions 
    */
   public init() {
@@ -2838,56 +2921,23 @@ class LanguageSelect {
     self.cssHasDashIcons = hasDash;
 
     self.processEditorConfigParameters();
-    
-    /*
-    self.iconName = LanguageSelect.CONFIG.DEFAULT_TOOLBAR_ICON;
-    const new_icon_name = self.editor.getParam("easylang_toolbar_icon");
-    if (LanguageSelect.isNotBlank(new_icon_name)) {
-      self.iconName = new_icon_name.trim();
-    } else if ((self.isWordPress || self.useDashIcons) && self.cssHasDashIcons && !(self.blockDashIconUsage===true)) {
-      self.iconName = 'icon dashicons dashicons-translation'
-    } else {
-      self.iconName = null;
-    }
 
-    self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
-    self.showCurrentLanguage = !!self.editor.getParam('easylang_show_current_language');
-    self.enableKeyboardShortcuts = !(self.editor.getParam('easylang_enable_keyboard_shortcuts')===false);
-    self.reservedShortcutLetters = (self.editor.getParam('easylang_reserved_shortcut_letters') || "").toLowerCase().replace(/[^a-z]/g, '').split('');
-    self.useDashIcons = self.editor.getParam('easylang_use_dashicons') === true;
-    self.blockDashIconUsage = self.editor.getParam('easylang_use_dashicons') === false;
-    self.shortcutModifiers = self.editor.getParam('easylang_shortcut_modifiers') || LanguageSelect.CONFIG.DEFAULT_SHORTCUT_MODIFIERS;
-    if(LanguageSelect.isNotBlank(self.shortcutModifiers)) {
-      if(self.shortcutModifiers.at(-1) !== '+') {
-        self.shortcutModifiers += '+';
-      }
-      self.shortcutModifiers = self.shortcutModifiers.toLowerCase().replace(/[^a-z\+\-]/g, '');
-    }
-    self.displayShortcutsAsText = !!self.editor.getParam('easylang_display_shortcuts_as_text');
 
-    self.addToV4Menu = !(self.editor.getParam('easylang_add_to_v4menu') === false);
-    if(typeof self.editor.getParam('easylang_add_to_v4menu') === "string") {
-      self.addToV4MenuContext = self.editor.getParam('easylang_add_to_v4menu').trim() || "format";
-    };
-
-    const content_langs: Types.ContentLanguage[] | null = self.editor.getParam("content_langs");
-    if (content_langs && content_langs.length > 0) {
-      const newDefaultLanguages: string[] = [];
-      content_langs.forEach((language: Types.ContentLanguage) => {
-        if (LanguageSelect.isValidLang(language.code)) {
-          let newCode = language.code.toLowerCase();
-          newDefaultLanguages.push(newCode);
-          let newLanguageTitle = (language.title || "").trim();
-          if (newLanguageTitle && !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, newCode)) {
-            LanguageSelect.languageTags[newCode] = newLanguageTitle || newCode;
-          }
-        }
+    // When TinyMCE signals that the editor is ready, wait a tick and
+    // then update defaultLanguages based on the actual document content.
+    if (self.editor && self.editor.on) {
+      self.editor.on('init', () => {
+        setTimeout(() => {
+          self.updateDefaultLanguagesFromDocument();
+        }, 50);
       });
-      if (newDefaultLanguages.length > 0) {
-        self.defaultLanguages = newDefaultLanguages;
-      }
-    } */
-
+    } else {
+      // If we can't hook into init, schedule a one-time update shortly.
+      setTimeout(() => {
+        self.updateDefaultLanguagesFromDocument();
+      }, 50);
+    }
+  
     if (self.isTinyMCE4) {
       self.initV4();
     } else {
