@@ -16,16 +16,19 @@ class LanguageSelect {
     DEFAULT_LANG: 'en',
     SET_DIR_WHEN_SETTING_LANG: true,
     LANG_ATTR_QA_ID: 'langAttrQA',
-    DEFAULT_LANG_HOLDER_ID: 'defaultContentLangHolder'
+    DEFAULT_LANG_HOLDER_ID: 'defaultContentLangHolder',
+    DEFAULT_TOOLBAR_ICON: 'easyLangIcon',
+    DEFAULT_SHORTCUT_MODIFIERS: 'ctrl+alt+',
+    SHOW_SHORTCUTS_AS_TEXT: false,
   } as const;
 
   private isTinyMCE4: boolean = false;
   private menuIsRefreshing: boolean = false;
   private isWordPress: boolean = false;
-  private hasDashIcons: boolean = false;
+  private cssHasDashIcons: boolean = false;
   private defaultLanguages: string[] = ["en", "es", "fr", "it", "de"];
 
-  private iconName: string | null = "easyLangIcon";
+  private iconName: string | null = LanguageSelect.CONFIG.DEFAULT_TOOLBAR_ICON;
   private useDashIcons: boolean = false;
   private blockDashIconUsage: boolean = false;
 
@@ -35,11 +38,12 @@ class LanguageSelect {
   private addToV4Menu: boolean = true;
   private addToV4MenuContext: string = "format"
 
+  private shortcutModifiers: string = LanguageSelect.CONFIG.DEFAULT_SHORTCUT_MODIFIERS;
+  private displayShortcutsAsText: boolean = LanguageSelect.CONFIG.SHOW_SHORTCUTS_AS_TEXT;
   private reservedShortcutLettersInWordPress: string = "acdhjklmoqruwxz";
   private reservedShortcutLetters:  string = "";
   private enableKeyboardShortcuts: boolean = true;
   private usedShortcutLetters: Record<string, boolean> = {};
-  private keyboardShortCuts: string[] = [];
   private shortcutLetterForLang: Record<string, string> = {};
   private langForShortcutLetter: Record<string, string> = {};
   private commandRegisteredForLetter: Record<string, boolean> = {};
@@ -102,8 +106,8 @@ class LanguageSelect {
    *   - macOS: "⌘⇧1"
    *   - Windows/Linux: "Ctrl+Shift+1"
    */
-  private formatShortcutForDisplay(shortcut: string): string | null {
-    if (!shortcut) return null;
+  private formatShortcutForDisplay(shortcut: string): string | undefined {
+    if (!shortcut) return undefined;
 
     const isMac = this.isMacOS();
     const parts = shortcut
@@ -111,7 +115,7 @@ class LanguageSelect {
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
 
-    if (!parts.length) return null;
+    if (!parts.length) return undefined;
 
     const mapped = parts.map((part) => {
       const lower = part.toLowerCase();
@@ -124,7 +128,7 @@ class LanguageSelect {
 
         case 'ctrl':
         case 'control':
-          return 'Ctrl';
+          return isMac ? '⌃' : 'Ctrl';
 
         case 'shift':
           return isMac ? '⇧' : 'Shift';
@@ -188,7 +192,8 @@ class LanguageSelect {
     const self: LanguageSelect = this;
 
     const letter = self.determineShortCutLetter(langValue, preferredShortCutLetter);
-    return letter ? `ctrl+alt+${letter}` : "";
+
+    return letter ? `${self.shortcutModifiers}${letter}` : "";
   }
 
   private rebuildKeyboardShortcutsFromLangMenu(): void {
@@ -210,15 +215,14 @@ class LanguageSelect {
     }
     
     // Rebuild shortcut data from current langMenuItems
-      self.keyboardShortCuts = self.langMenuItems.map((langValue) => {
-        const shortcut = self.determineShortCut(langValue); // your function: "ctrl+alt+<letter>" or ""
-        if (!shortcut) return "";
+    self.langMenuItems.forEach((langValue) => {
+      const shortcut = self.determineShortCut(langValue); // "ctrl+alt+<letter>" or ""
+      if (!shortcut) return; // skip if no shortcut
 
-        const letter = shortcut.slice(-1).toLowerCase(); // last char in "ctrl+alt+x"
-        self.shortcutLetterForLang[langValue] = letter;
-        self.langForShortcutLetter[letter] = langValue;
-        return shortcut;
-      });
+      const letter = shortcut.slice(-1).toLowerCase(); // last char in "ctrl+alt+x"
+      self.shortcutLetterForLang[langValue] = letter;
+      self.langForShortcutLetter[letter] = langValue;
+    });
   }
 
   /**
@@ -2152,7 +2156,7 @@ class LanguageSelect {
         LanguageSelect.cleanLangAttr(lang);
 
       const shortCutLetter = self.shortcutLetterForLang[lang] || '';
-      const shortcutLabel =  shortCutLetter ? `Ctrl+Alt+${shortCutLetter.toUpperCase()}` : undefined;
+      const shortcutLabel =  shortCutLetter ? self.formatShortcutForDisplay(`${self.shortcutModifiers}${shortCutLetter.toUpperCase()}`) : undefined;
 
       items.push({
         text: label,
@@ -2169,11 +2173,11 @@ class LanguageSelect {
     // --- Remove language markup submenu --------------------------------------
     items.push({
       text: self.translate('Remove Language Markup'),
-      icon: self.hasDashIcons ? 'icon dashicons-editor-removeformatting' : 'remove',
+      icon: self.useDashIcons ? 'icon dashicons dashicons-editor-removeformatting' : 'remove',
       menu: [
         {
           text: self.translate('Remove current lang value'),
-          icon: self.hasDashIcons ? 'icon dashicons-editor-removeformatting' : 'remove',
+          icon: self.useDashIcons ? 'icon dashicons dashicons-editor-removeformatting' : 'remove',
           onclick: function () {
             self.removeLangMarkupAtCursor();
             if (self?.editor?.focus) self.editor.focus();
@@ -2181,7 +2185,7 @@ class LanguageSelect {
         },
         {
           text: self.translate('Remove All lang markup'),
-          icon: self.hasDashIcons ? 'icon dashicons-warning' : 'warning',
+          icon: self.useDashIcons ? 'icon dashicons dashicons-warning' : 'warning',
           onclick: function () {
             self.removeAllLangSpans();
             if (self?.editor?.focus) self.editor.focus();
@@ -2193,7 +2197,7 @@ class LanguageSelect {
     // --- Configure languages --------------------------------------------------
     items.push({
       text: self.translate('Configure languages'),
-      icon: self.hasDashIcons ? 'icon dashicons-admin-generic' : 'preferences',
+      icon: self.useDashIcons ? 'icon dashicons dashicons-admin-generic' : 'preferences',
       onclick: function () {
         self.openConfigureLanguagesOnSelectbox(
           self.langMenuItems,
@@ -2208,7 +2212,7 @@ class LanguageSelect {
     // --- Set default document language ---------------------------------------
     items.push({
       text: self.translate('Set default document language'),
-      icon: self.hasDashIcons ? 'icon dashicons-media-default' : 'document-properties',
+      icon: self.useDashIcons ? 'icon dashicons dashicons-media-default' : 'document-properties',
       onclick: function () {
         self.openChooseDefaultLangDialog((newLang: string) => {
           self.setDefaultDocumentLanguage(newLang);
@@ -2221,7 +2225,7 @@ class LanguageSelect {
     // --- Toggle: Reveal lang markup ------------------------------------------
     items.push({
       text: self.translate('Reveal lang markup'),
-      icon: self.hasDashIcons ? 'icon dashicons-visibility' : 'preview',
+      icon: self.useDashIcons ? 'icon dashicons dashicons-visibility' : 'preview',
       onclick: function () {
         const menuItem = this as Types.TinyMCE4MenuItem;
         self.tsViewMarkup = !self.tsViewMarkup;
@@ -2243,7 +2247,7 @@ class LanguageSelect {
     if (!self.showCurrentLanguage) {
       items.push({
         text: self.translate('Indicate current language'),
-        icon: self.hasDashIcons ? 'icon dashicons-admin-site-alt3' : 'language',
+        icon: self.useDashIcons ? 'icon dashicons dashicons-admin-site-alt3' : 'language',
         onclick: function () {
           const menuItem = this as Types.TinyMCE4MenuItem;
           self.showCurrentLanguage = !self.showCurrentLanguage;
@@ -2278,7 +2282,7 @@ class LanguageSelect {
         LanguageSelect.cleanLangAttr(lang);
 
       const shortCutLetter = self.shortcutLetterForLang[lang] || '';
-      const shortcutLabel =  shortCutLetter ? `Ctrl+Alt+${shortCutLetter.toUpperCase()}` : undefined;
+      const shortcutLabel: string | undefined =  shortCutLetter ? self.formatShortcutForDisplay(`${self.shortcutModifiers}${shortCutLetter.toUpperCase()}`) : undefined;
 
       items.push({
         type: "menuitem",
@@ -2411,7 +2415,7 @@ class LanguageSelect {
       const langValue = self.langForShortcutLetter[letter];
       if (!langValue) return;
 
-      const shortcut = `ctrl+alt+${letter}`;
+      const shortcut = `${self.shortcutModifiers}${letter}`;
       const commandName = `setLanguageShortcut_${letter}`;
 
       // 1) Register the command once per letter.
@@ -2443,16 +2447,6 @@ class LanguageSelect {
 
     if (!self.editor || !self.editor.getParam || !self.editor.addButton) throw new Error('No supported editor instance found');
 
-    const new_icon_name = self.editor.getParam("easylang_icon");
-
-    if (LanguageSelect.isNotBlank(new_icon_name)) {
-      self.iconName = new_icon_name.trim();
-    } else if ((self.isWordPress || self.useDashIcons) && self.hasDashIcons) {
-      self.iconName = 'icon dashicons-translation'
-    } else {
-      self.iconName = null;
-    }
-
     self.editor.addButton('languageSelector', {
       type: 'menubutton',
       text: self.iconName ? null : 'Language',
@@ -2460,7 +2454,7 @@ class LanguageSelect {
       tooltip: self.translate('Set text language'), // Tooltip for the button
       menu: self.buildEasyLangMenuItemsV4(),    // now includes a submenu
       onPostRender: function (this: Types.TinyMCE4MenuButtonControl) {
-        var ctrl = this;
+        const ctrl = this;
 
         function refreshMenu() {
           if (self.menuIsRefreshing) return;
@@ -2644,11 +2638,191 @@ class LanguageSelect {
     });
   }
 
+  private readonly getEditorConfigParameter = (paramName: string, defaultValue: any = null): any => {
+    const editor: any = this.editor;
+
+    if (!editor) {
+      throw new Error('No supported editor instance found');
+    }
+
+    // --- TinyMCE 6+ Options API (preferred when available) ---
+    // Only works for *registered* options, so we guard carefully and
+    // fall back if the option isn't registered or set.
+    const opts = editor.options;
+    if (opts && typeof opts.get === 'function') {
+      try {
+        const hasIsRegistered = typeof opts.isRegistered === 'function';
+        const hasIsSet = typeof opts.isSet === 'function';
+
+        const isRegistered = !hasIsRegistered || opts.isRegistered(paramName);
+        const isSet = !hasIsSet || opts.isSet(paramName);
+
+        if (isRegistered && isSet) {
+          const value = opts.get(paramName);
+          if (value !== undefined) {
+            return value;
+          }
+        }
+      } catch {
+        // If anything goes wrong, silently fall back to older mechanisms
+      }
+    }
+
+    // --- TinyMCE 4/5 style: editor.getParam() ---
+    if (typeof editor.getParam === 'function') {
+      // Use `undefined` as the default so we can tell whether TinyMCE
+      // actually resolved a value (including built-in defaults).
+      const value = editor.getParam(paramName, undefined);
+      if (value !== undefined) {
+        return value;
+      }
+    }
+
+    // --- Raw settings object (available in 4–8) ---
+    const settings = editor.settings;
+    if (settings && Object.prototype.hasOwnProperty.call(settings, paramName)) {
+      return settings[paramName];
+    }
+
+    return defaultValue;
+  };
+
+
+  private readonly processEditorConfigParameters = (): void => {
+    const self: LanguageSelect = this;
+
+    // --- Language detection for content ---
+    // Same behavior as your current init() line, but centralized here.
+    self.editorLanguage =
+      self.getLanguageFromEditorSettings() ||
+      self.getLanguageFromTopDocument() ||
+      LanguageSelect.CONFIG.DEFAULT_LANG;
+
+    // --- Show current language in toolbar label ---
+    // Truthy value means "show"; default is false.
+    self.showCurrentLanguage = !!self.getEditorConfigParameter(
+      'easylang_show_current_language',
+      false
+    );
+
+    // --- Keyboard shortcuts on/off ---
+    // Default is true; explicitly setting `false` disables shortcuts.
+    const enableShortcuts = self.getEditorConfigParameter(
+      'easylang_enable_keyboard_shortcuts',
+      true
+    );
+    self.enableKeyboardShortcuts = (enableShortcuts !== false);
+
+    // --- Reserved shortcut letters (plugin-specific) ---
+    const reservedLettersRaw =
+      self.getEditorConfigParameter('easylang_reserved_shortcut_letters', '') || '';
+    self.reservedShortcutLetters = String(reservedLettersRaw).toLowerCase().replace(/[^a-z]/g, '');
+
+    // --- Dashicons usage flags ---
+    // Single option `easylang_use_dashicons`:
+    //   true  -> use Dashicons if available
+    //   false -> explicitly block Dashicons
+    //   unset -> "auto" use dashicons if WordPress + hasDashIcons
+    const dashiconsOpt = self.getEditorConfigParameter('easylang_use_dashicons', null);
+    self.useDashIcons = (dashiconsOpt === true);
+    self.blockDashIconUsage = (dashiconsOpt === false);
+
+    // --- Shortcut modifiers (e.g. "ctrl+alt+") ---
+    let shortcutModifiers: string =
+      self.getEditorConfigParameter(
+        'easylang_shortcut_modifiers',
+        LanguageSelect.CONFIG.DEFAULT_SHORTCUT_MODIFIERS
+      ) || '';
+
+    if (LanguageSelect.isNotBlank(shortcutModifiers)) {
+      // Normalize: always end in "+" and scrub to allowed characters.
+      if (shortcutModifiers.slice(-1) !== '+') {
+        shortcutModifiers += '+';
+      }
+      shortcutModifiers = shortcutModifiers
+        .toLowerCase()
+        .replace(/[^a-z+\-]/g, '');
+    }
+
+    self.shortcutModifiers = shortcutModifiers;
+
+    // --- Add to TinyMCE 4 "Format" menu (or other menu) ---
+    const addToV4MenuRaw = self.getEditorConfigParameter(
+      'easylang_add_to_v4menu',
+      true
+    );
+
+    // Default: true unless explicitly set to false.
+    self.addToV4Menu = (addToV4MenuRaw !== false);
+
+    // If a string is given, treat it as the menu context ("format", "tools", etc.)
+    if (typeof addToV4MenuRaw === 'string') {
+      self.addToV4MenuContext = addToV4MenuRaw.trim() || 'format';
+    } else {
+      // Default context if not provided as a string
+      self.addToV4MenuContext = 'format';
+    }
+
+    // --- Toolbar icon logic ---
+    // Priority:
+    //   1. explicit easylang_toolbar_icon (string)
+    //   2. Dashicons translation icon (if WP or forced & available)
+    //   3. null (no icon class; rely on default SVG icon registered elsewhere)
+    const toolbarIconRaw = self.getEditorConfigParameter(
+      'easylang_toolbar_icon',
+      null
+    );
+
+    if (LanguageSelect.isNotBlank(toolbarIconRaw)) {
+      self.iconName = String(toolbarIconRaw).trim();
+    } else if (
+      (self.isWordPress || self.useDashIcons) &&
+      self.cssHasDashIcons &&
+      !self.blockDashIconUsage
+    ) {
+      // WordPress-style icon class
+      self.iconName = 'icon dashicons dashicons-translation';
+      self.useDashIcons = true;
+    } else {
+      // Use null here so your SVG icon registration can take over
+      self.iconName = null;
+    }
+
+    // --- content_langs override for defaultLanguages ---
+    const contentLangs = self.getEditorConfigParameter(
+      'content_langs',
+      null
+    ) as Types.ContentLanguage[] | null;
+
+    if (Array.isArray(contentLangs) && contentLangs.length > 0) {
+      const newDefaultLanguages: string[] = [];
+
+      contentLangs.forEach((language: Types.ContentLanguage) => {
+        if (LanguageSelect.isValidLang(language.code)) {
+          const newCode = language.code.toLowerCase();
+          newDefaultLanguages.push(newCode);
+
+          const newLanguageTitle = (language.title || '').trim();
+          if (
+            newLanguageTitle &&
+            !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, newCode)
+          ) {
+            LanguageSelect.languageTags[newCode] = newLanguageTitle || newCode;
+          }
+        }
+      });
+
+      if (newDefaultLanguages.length > 0) {
+        self.defaultLanguages = newDefaultLanguages;
+      }
+    }
+  };
+
   /* Common init for all TinyMCE versions 
    */
   public init() {
     const self: LanguageSelect = this;
-    if (!(self.editor && self.editor.getParam)) throw new Error('No supported editor instance found');
+    if (!self.editor) throw new Error('No supported editor instance found');
 
     this.isTinyMCE4 = /^4/.test(String((tinymce && (tinymce.majorVersion || tinymce.version)) || ''));
     self.isWordPress = typeof window !== "undefined" && !!(window as any).wp;
@@ -2661,14 +2835,35 @@ class LanguageSelect {
         );
       } catch (_) {}
     }
-    self.hasDashIcons = hasDash;
+    self.cssHasDashIcons = hasDash;
+
+    self.processEditorConfigParameters();
+    
+    /*
+    self.iconName = LanguageSelect.CONFIG.DEFAULT_TOOLBAR_ICON;
+    const new_icon_name = self.editor.getParam("easylang_toolbar_icon");
+    if (LanguageSelect.isNotBlank(new_icon_name)) {
+      self.iconName = new_icon_name.trim();
+    } else if ((self.isWordPress || self.useDashIcons) && self.cssHasDashIcons && !(self.blockDashIconUsage===true)) {
+      self.iconName = 'icon dashicons dashicons-translation'
+    } else {
+      self.iconName = null;
+    }
 
     self.editorLanguage = self.getLanguageFromEditorSettings() || self.getLanguageFromTopDocument() || LanguageSelect.CONFIG.DEFAULT_LANG;
     self.showCurrentLanguage = !!self.editor.getParam('easylang_show_current_language');
-    self.enableKeyboardShortcuts = !!self.editor.getParam('easylang_enable_keyboard_shortcuts');
-    self.reservedShortcutLetters = self.editor.getParam('easylang_reserved_shortcut_letters') || "";
+    self.enableKeyboardShortcuts = !(self.editor.getParam('easylang_enable_keyboard_shortcuts')===false);
+    self.reservedShortcutLetters = (self.editor.getParam('easylang_reserved_shortcut_letters') || "").toLowerCase().replace(/[^a-z]/g, '').split('');
     self.useDashIcons = self.editor.getParam('easylang_use_dashicons') === true;
     self.blockDashIconUsage = self.editor.getParam('easylang_use_dashicons') === false;
+    self.shortcutModifiers = self.editor.getParam('easylang_shortcut_modifiers') || LanguageSelect.CONFIG.DEFAULT_SHORTCUT_MODIFIERS;
+    if(LanguageSelect.isNotBlank(self.shortcutModifiers)) {
+      if(self.shortcutModifiers.at(-1) !== '+') {
+        self.shortcutModifiers += '+';
+      }
+      self.shortcutModifiers = self.shortcutModifiers.toLowerCase().replace(/[^a-z\+\-]/g, '');
+    }
+    self.displayShortcutsAsText = !!self.editor.getParam('easylang_display_shortcuts_as_text');
 
     self.addToV4Menu = !(self.editor.getParam('easylang_add_to_v4menu') === false);
     if(typeof self.editor.getParam('easylang_add_to_v4menu') === "string") {
@@ -2691,7 +2886,7 @@ class LanguageSelect {
       if (newDefaultLanguages.length > 0) {
         self.defaultLanguages = newDefaultLanguages;
       }
-    }
+    } */
 
     if (self.isTinyMCE4) {
       self.initV4();
