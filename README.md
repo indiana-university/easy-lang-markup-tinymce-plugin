@@ -144,6 +144,19 @@ tinymce.init({
 });
 ```
 
+### Overview Table
+
+| Option | Type | Default | Purpose |
+|-------|------|---------|---------|
+| easylang_langs / content_langs | array | default set | Defines initial languages in menu |
+| easylang_add_to_v4menu | string | format | Adds easylang menu to specified TinyMCE 4 menu |
+| easylang_enable_keyboard_shortcuts | boolean | true | Enables keyboard shortcuts for languages |
+| easylang_reserved_shortcut_letters | array | [] | Letters excluded from shortcuts |
+| easylang_scan_document_on_load | boolean | true | Scan document on load for existing langs |
+| easylang_show_current_language | boolean | false | Show current lang in toolbar control |
+| easylang_toolbar_icon | string | plugin default | Force toolbar icon class name |
+| easylang_use_dashicons | boolean | false | Use WP Dashicons icons |
+
 ### easylang_langs (or content_langs)
 
 The `easylang_langs` option allows you to specify which languages appear in the language selector menu. This is useful for providing the language choices relevant to your content or audience.
@@ -187,43 +200,206 @@ The `content_langs` option can also be used for the same purpose. Both options a
 
 ### easylang_add_to_v4menu
 
-The `easylang_add_to_v4menu` option controls whether the language selector menu is added to TinyMCE 4's main menu bar and specifies which menu context it should appear in.
-
-<img width="766" height="547" alt="image" src="https://github.com/user-attachments/assets/746061c0-2cde-488b-ae19-3c3d2ee0620f" />
-
+The `easylang_add_to_v4menu` option controls whether the language selector menu is added to TinyMCE 4's main menu bar and specifies which menu context it should appear in. 
 
 #### Default behavior
 
-When not specified, the language menu is not automatically added to the TinyMCE 4 menu bar.
+When not specified, the language selector menu will be added to the bottom of the Format menu.
 
-**Usage**:
+<img width="766" height="273" alt="" src="https://github.com/user-attachments/assets/746061c0-2cde-488b-ae19-3c3d2ee0620f" />
+
+#### Usage
 
 ```javascript
 tinymce.init({
   selector: 'textarea',
   plugins: 'languageSelect',
-  
-  // Enable the menu (adds to "format" menu by default)
-  easylang_add_to_v4menu: true,
-  
-  // Or specify a custom menu context
   easylang_add_to_v4menu: 'insert'  // Adds to the "insert" menu
 });
 ```
 
+#### Accepted values
+
+- true (boolean): Adds the language menu to the default "format" menu
+- false (boolean): Easy lang does not appear in any tinyMCE menu
+- A string value: Specifies the menu context where the language menu should appear (e.g., "format", "insert", "view", "table")
+
+#### Note
+
+This option is specifically for TinyMCE 4 compatibility. For TinyMCE 5+, use the menu configuration option with the easyLangMenu nested menu item.
 
 
-### easylang_enable_keyboard_shortcuts
+### `easylang_enable_keyboard_shortcuts`
 
-### easylang_reserved_shortcut_letters
+Enables automatically generated keyboard shortcuts for applying language markup.  
+Shortcuts use Ctrl/^ + Alt/Option + `<letter>` and allow fast language tagging.
 
-### easylang_scan_document_on_load
+**Default:** `true`
 
-### easylang_show_current_language
+```js
+tinymce.init({
+  easylang_enable_keyboard_shortcuts: true
+});
+```
 
-### easylang_toolbar_icon
+- Only applies shortcuts to languages listed in the menu.
+- Skips letters listed in `easylang_reserved_shortcut_letters`.  
+- If insufficient letters remain, only some languages receive shortcuts.
 
-### easylang_use_dashicons
+---
+
+### easylang_shortcut_modifier_display: "text" | "symbols"
+
+### `easylang_menu_shortcut_modifier_display`: "text" | "symbols"
+
+Controls how keyboard shortcut modifiers are **displayed in the plugin's language selection menu**.  
+This setting affects *only the visual representation* of shortcuts in the UI — it does **not** change the actual keyboard shortcuts used by the editor.
+
+**Type:** `"text"` | `"symbols"`  
+**Default:** `"symbols"` (platform-appropriate symbols such as `⌃`, `⌥`, `⇧` on macOS)
+
+#### **Accepted Values**
+
+- **`"text"`**  
+  Displays modifier keys using text labels:  
+  - `Ctrl+Alt+E`  
+  - `Shift+Ctrl+S`
+
+- **`"symbols"`** *(default)*  
+  Displays modifier keys using platform-specific symbols when available (macOS):  
+  - `⌃⌥E`  
+  - `⇧⌃S`
+
+#### **Example**
+
+```js
+tinymce.init({
+  "selector": "textarea",
+  "plugins": "languageSelect",
+  "easylang_shortcut_modifier_display": "text"
+});
+```
+
+#### Notes
+
+- This option affects only the menu labels shown to the user.
+- The underlying shortcut logic and key bindings remain unchanged.
+- Useful if screen readers do not pronounce the symbols meaningfully.
+
+---
+
+### `easylang_reserved_shortcut_letters`
+
+Defines letters that cannot be used when generating keyboard shortcuts.
+
+**Default:** `""` or `"acdhjklmoqruwxz"` when WordPress is detected 
+
+```js
+tinymce.init({
+  easylang_enable_keyboard_shortcuts: true,
+  easylang_reserved_shortcut_letters: ['b','i','u']
+});
+```
+
+- Useful to avoid conflicts with LMS or CMS keyboard shortcuts.  
+- Excluded letters are skipped during shortcut assignment.
+
+---
+
+### `easylang_scan_document_on_load`
+
+Scans the editor's HTML content for existing `lang="..."` attributes on load and preloads those languages in the menu.
+
+**Default:** `true`
+
+```js
+tinymce.init({
+  easylang_scan_document_on_load: true
+});
+```
+
+- Detects languages already present in the document.  
+- Improves menu ordering by surfacing the most-used languages.  
+
+---
+### `easylang_shortcut_modifiers`
+
+Allows setting the modifiers for keyboard shortcuts used by the easylang plugin. 
+
+**Default:** `Ctrl+Alt`
+
+```js
+tinymce.init({
+  easylang_shortcut_modifiers: "Meta+Shift"
+});
+```
+
+The following modifiers can be used (case insensitive):
+
+| Modifier | PC           | macOS           |
+|----------|--------------|------------------|
+| `Meta`   | Ctrl         | Command          |
+| `Shift`  | Shift        | Shift            |
+| `Ctrl`   | Ctrl         | Control          |
+| `Alt`    | Alt          | Option           |
+| `Access` | Shift+Alt    | Control+Option   |
+
+See [Custom Keyboard Shortcuts in tiny docs](https://www.tiny.cloud/docs/tinymce/latest/shortcuts/) for more information.
+
+### `easylang_show_current_language`
+
+Displays the current language code (e.g., `EN`, `ES`, `FR-CA`) directly in the toolbar button.
+
+**Default:** `false`
+
+```js
+tinymce.init({
+  easylang_show_current_language: true
+});
+```
+
+- Updates dynamically as the cursor moves.  
+- Overrides the toolbar icon, even if `easylang_toolbar_icon` is set.  
+- Useful for multilingual editors who frequently check active language context.
+- Experimental feature as no update control text functionality is provided in the tinyMCE API.
+
+---
+
+### `easylang_toolbar_icon`
+
+Overrides the default toolbar icon used for the toolbar button.
+
+**Default:** plugin’s built‑in SVG icon (TinyMCE 5+). TinyMCE 4 defaults to text: "Language".
+
+```js
+tinymce.init({
+  easylang_toolbar_icon: 'my-custom-icon'
+});
+```
+
+- Custom icons can be registered in tinyMCE 5+ with `editor.ui.registry.addIcon()`.  
+- Ignored if `easylang_show_current_language` is enabled.  
+- Works in TinyMCE 5+.
+
+---
+
+### `easylang_use_dashicons`
+
+Forces or blocks the use of **WordPress Dashicons**
+
+**Default:** `auto`
+
+```js
+tinymce.init({
+  easylang_use_dashicons: true
+});
+```
+
+- If `true`, requires Dashicons to be loaded by the host CMS/theme.
+- If `false`, blocks use of Dashicons regardless of other settings.
+- If `"auto"` or not set, plugin may use Dashicons if WP and the Dashicons css are detected.
+
+---
 
 ## TinyMCE API Features Used
 
