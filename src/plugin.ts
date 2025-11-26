@@ -261,6 +261,12 @@ class LanguageSelect {
    */  
   public translate(key: string): string {
     const self: LanguageSelect = this;
+    const pb = (window as any).PB_LanguageSelectorToken;
+
+    if (pb && typeof pb[key] === 'string') {
+      return pb[key];
+    }
+    
     if(self.editor && self.editor.translate) {
       return self.editor.translate(key) || key;
     }
@@ -2550,10 +2556,6 @@ class LanguageSelect {
         });
       }
     });
-
-    if (self.enableKeyboardShortcuts) {
-      self.addKeyboardShortcuts();
-    }
 
     if (self.editor.addMenuItem) {
       self.editor.addMenuItem('easyLangMenu', {

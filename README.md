@@ -172,6 +172,10 @@ This plugin utilizes the following TinyMCE APIs:
 ## Internationalization (i18n) Notes
 
 All of the translation keys are discoverable by searching `./src/plugin.ts` for `.translate(key)`.
+All of the keys are the en-US text. The `translate(key)` function returns the key if no match
+was found in a localization file. So, localization to `en-US` is the default and if no further
+localization is needed then the `langs` folder does not need to be installed.
+
 See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
 
 ## License
