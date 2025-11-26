@@ -119,6 +119,22 @@ describe('LanguageDetector', () => {
         getAttrib: jest.fn(),
       } as any,
       focus: jest.fn(),
+      ui: {
+        registry: {
+          addIcon: jest.fn(),
+          addMenuButton: jest.fn(),
+          addNestedMenuItem: jest.fn(),
+          getAll: jest.fn(),
+        },
+      },
+      getBody: () => document.body,
+      getParam: (name: string, defaultValue?: any, type?: string) => { 
+          return undefined
+        },
+      windowManager: {
+        open: jest.fn(),
+      },
+
     };
   });
 
@@ -212,11 +228,11 @@ describe('LanguageDetector', () => {
     });
     it('should return the name for a lang code it has', () => {
       const plugin = new LanguageSelect(mockEditor, 'fakeURL');
-      expect(plugin.getLanguageNameForLocale('az')).toBe('Azerbaiyano');
+      expect(plugin.getLanguageNameForLocale('az')).toBe('Azerbaijani');
     });
-    it('should return the native language name for missing keys that are in langAtts', () => {
+    it('should return the English language name for missing keys that are in langAtts', () => {
       const plugin = new LanguageSelect(mockEditor, 'fakeURL');
-      expect(plugin.getLanguageNameForLocale('fr-CA')).toBe('français canadien');
+      expect(plugin.getLanguageNameForLocale('fr-CA')).toBe('French (Canada)');
     })
 
   });

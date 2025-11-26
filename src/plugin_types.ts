@@ -153,6 +153,20 @@ export interface TinyMCEEditorBase {
     cmdOrCallback?: string | (() => void)
   ): void;
 
+  dom?: {
+    getAttrib(el: Element, name: string, defaultValue?: string): string | null;
+    setAttrib(el: Element, name: string, value: string): void;
+    removeAttrib(el: Element, name: string): void;
+  };
+
+  shortcuts?: {
+    add(
+      pattern: string,
+      desc: string,
+      cmd: string
+    ): void;
+  };
+
   addMenuItem?(name: string, settings: any): void;
   addButton?(name: string, settings: any): void;
 
@@ -165,6 +179,8 @@ export interface TinyMCEEditorBase {
   // Various property bags used in plugin.ts
   formatter?: any;
   undoManager?: any;
+  iframeElement?: HTMLIFrameElement;
+  container?: HTMLElement;
 
   options?: {
     get(name: string): any;

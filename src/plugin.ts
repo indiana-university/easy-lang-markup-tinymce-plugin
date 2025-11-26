@@ -1097,21 +1097,21 @@ class LanguageSelect {
   getLanguageNameForLocale(langCode: string | null): string {
 
     if (!LanguageSelect.isNotBlank(langCode)) return '';
-    langCode = langCode.toLowerCase().trim();
+    let normalizedLangCode = langCode.toLowerCase().trim();
 
     // Try the full language code first (e.g., 'es-MX')
-    let languageName = this.getTranslatedLanguageName(langCode);
-    if ((!LanguageSelect.isNotBlank(languageName) || languageName === langCode) && langCode.includes('-')) {
+    let languageName = this.getTranslatedLanguageName(normalizedLangCode);
+    if ((!LanguageSelect.isNotBlank(languageName) || languageName === normalizedLangCode) && normalizedLangCode.includes('-')) {
       // If not found and there's a hyphen, try the primary language code (e.g., 'es')
-      langCode = LanguageSelect.baseLanguage(langCode);
-      languageName = this.getTranslatedLanguageName(langCode);
-      if (languageName === langCode || !LanguageSelect.isNotBlank(languageName)) {
-        if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode)) {
-          languageName = LanguageSelect.languageTags[langCode];
-        } else if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, LanguageSelect.baseLanguage(langCode))) {
-          languageName = LanguageSelect.languageTags[LanguageSelect.baseLanguage(langCode)];
+      normalizedLangCode = LanguageSelect.baseLanguage(normalizedLangCode);
+      languageName = this.getTranslatedLanguageName(normalizedLangCode);
+      if (languageName === normalizedLangCode || !LanguageSelect.isNotBlank(languageName)) {
+        if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, normalizedLangCode)) {
+          languageName = LanguageSelect.languageTags[normalizedLangCode];
+        } else if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, LanguageSelect.baseLanguage(normalizedLangCode))) {
+          languageName = LanguageSelect.languageTags[LanguageSelect.baseLanguage(normalizedLangCode)];
         } else {
-          languageName = LanguageSelect.cleanLangAttr(langCode);
+          languageName = LanguageSelect.cleanLangAttr(langCode) || '';
         }
       }
     }

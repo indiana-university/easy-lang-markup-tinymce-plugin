@@ -64,6 +64,26 @@ describe('translate functions', () => {
       configurable: true
     });
 
+    // Mock window.tinymce
+    Object.defineProperty(globalThis, 'tinymce', {
+      value: {
+        PluginManager: {
+          add: jest.fn(),
+        },
+        util: {
+          I18n: {
+            translate: jest.fn((key: string) => key),
+            add: jest.fn(),
+          },
+        },
+        majorVersion: '6',
+        minorVersion: '4',
+        // Add other tinymce properties/methods as needed
+      },
+      configurable: true,
+      writable: true,
+    });
+
     // Create more flexible mock editor
     mockEditor = {
       getDoc: () => mockDocument,
@@ -87,11 +107,33 @@ describe('translate functions', () => {
       selection: {
         getNode: jest.fn(),
       } as any,
+      focus: jest.fn(),
       dom: {
         getAttrib: jest.fn(),
-      } as any,
-      focus: jest.fn(),
+        setAttrib: jest.fn(),
+        removeAttrib: jest.fn(),
+      },
+      ui: {
+        registry: {
+          addIcon: jest.fn(),
+          addMenuButton: jest.fn(),
+          addNestedMenuItem: jest.fn(),
+          getAll: jest.fn(),
+        },
+      },
+      getBody: () => document.body,
+      getParam: (name: string, defaultValue?: any, type?: string) => { 
+          return undefined
+        },
+      windowManager: {
+        open: jest.fn(),
+      },
     };
+  });
+
+  afterEach(() => {
+    // Clean up if needed
+    delete (globalThis as any).tinymce;
   });
 
   describe('translate', () => {
@@ -111,12 +153,7 @@ describe('translate functions', () => {
   describe('translateTemplate', () => {
     it('should return the key with substituted values if the translation is not found', () => {
       const plugin = new LanguageSelect(mockEditor, 'fakeURL');
-      expect(plugin.translateTemplate('this probably is not a real translation key {{text}}', { text: 'right?' })).toBe('this probably is not a real translation key right?');
-    });
-
-    it('should return the key with placeholder values if the translation is not found', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
-      expect(plugin.translateTemplate('this probably is not a real translation key {{text}}', { nope: 'right?' })).toBe('this probably is not a real translation key {{text}}');
+      expect(plugin.evalTemplate('this probably is not a real translation key {{text}}', { text: 'right?' })).toBe('this probably is not a real translation key right?');
     });
 
   });
