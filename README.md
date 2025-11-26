@@ -137,12 +137,90 @@ tinymce.init({
   easylang_show_current_language: true,  // Show language text instead of icon
   easylang_enable_keyboard_shortcuts: true,  // Enable keyboard shortcuts
   easylang_default_document_language: 'en-US',  // Set default document language
-  content_langs: [  // Define available languages
+  content_langs: [  // Define initial languages in menu
     { code: 'en-US', title: 'English (US)' },
     { code: 'es', title: 'Spanish' }
   ]
 });
 ```
+
+### easylang_langs (or content_langs)
+
+The `easylang_langs` option allows you to specify which languages appear in the language selector menu. This is useful for providing the language choices relevant to your content or audience.
+
+The plugin will prioritize languages in this order:
+
+- Current editor language
+- Languages detected in the document (by frequency of use)
+- The default languages (to fill up to 6 menu items)
+
+```javascript
+tinymce.init({
+  // ... other options ...
+  easylang_langs: [
+    { title: "English (US)", code: "en-US" },
+    { title: "Hindi (India)", code: "hi-IN" },
+    { title: "Chinese (Simplified, PRC)", code: "zh-Hans-CN" },
+    { title: "Korean (South Korea)", code: "ko-KR" },
+    { title: "Arabic (MSA)", code: "ar" }
+  ],
+  // ... other options ...
+});
+```
+
+#### Properties
+
+- `code` (string, required): A valid BCP 47 language tag (e.g., 'en-US', 'es', 'fr-CA')
+- `title` (string, required): The display name for the language in the selector menu
+
+#### Default languages
+
+- en - English
+- es - Spanish (español)
+- fr - French (français)
+- it - Italian (italiano)
+- de - German (Deutsch)
+
+#### Note
+
+The `content_langs` option can also be used for the same purpose. Both options are supported for compatibility.
+
+### easylang_add_to_v4menu
+
+The `easylang_add_to_v4menu` option controls whether the language selector menu is added to TinyMCE 4's main menu bar and specifies which menu context it should appear in.
+
+#### Default behavior
+
+When not specified, the language menu is not automatically added to the TinyMCE 4 menu bar.
+
+**Usage**:
+
+```javascript
+tinymce.init({
+  selector: 'textarea',
+  plugins: 'languageSelect',
+  
+  // Enable the menu (adds to "format" menu by default)
+  easylang_add_to_v4menu: true,
+  
+  // Or specify a custom menu context
+  easylang_add_to_v4menu: 'insert'  // Adds to the "insert" menu
+});
+```
+
+
+
+### easylang_enable_keyboard_shortcuts
+
+### easylang_reserved_shortcut_letters
+
+### easylang_scan_document_on_load
+
+### easylang_show_current_language
+
+### easylang_toolbar_icon
+
+### easylang_use_dashicons
 
 ## TinyMCE API Features Used
 
