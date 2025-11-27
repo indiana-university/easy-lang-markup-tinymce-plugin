@@ -110,7 +110,6 @@ class EasyLangMarkup {
    *   - Windows/Linux: "Ctrl+Shift+1"
    */
   private formatShortcutForDisplay(shortcut: string): string | undefined {
-    console.log('Formatting shortcut for display:', shortcut);
     const self: EasyLangMarkup = this;
 
     if (!shortcut) return undefined;
@@ -151,7 +150,6 @@ class EasyLangMarkup {
 
     // On macOS shortcuts usually omit plus signs, on others OSs keep "Ctrl+Shift+1"
     const displayShortcut = isMac && !self.displayShortcutsAsText  ? mapped.join('') : mapped.join('+');
-    console.log('Display shortcut:', displayShortcut);
     return displayShortcut;
   }
 
