@@ -2872,7 +2872,6 @@ class EasyLangMarkup {
       const lower = cleaned.toLowerCase();
       freq[lower] = (freq[lower] || 0) + 1;
     });
-
     // No valid langs found
     const cleanedUnique = Object.keys(freq);
     if (!cleanedUnique.length) return [];
@@ -2904,21 +2903,15 @@ class EasyLangMarkup {
         finalLangs.push(lower);
       }
     });
-/*
-    // Move langColors from base → region if needed (bookmarklet behavior)
-    finalLangs.forEach((code) => {
-      if (code.includes('-')) {
-        const base = code.split('-')[0];
-        const baseLower = base.toLowerCase();
-        const codeLower = code.toLowerCase();
 
-        if (self.langColors[baseLower] && !self.langColors[codeLower]) {
-          self.langColors[codeLower] = self.langColors[baseLower];
-          delete self.langColors[baseLower];
-        }
+    // Add original defautltLanguages at the end, if not already present
+    self.defaultLanguages.forEach((code) => {
+      const lower = code.toLowerCase();
+      if (!finalLangs.includes(lower)) {
+        finalLangs.push(lower);
       }
     });
-*/
+
     return finalLangs;
   } catch (err) {
     console.warn('LanguageSelect: error scanning editor document languages', err);
