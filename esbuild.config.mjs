@@ -16,7 +16,7 @@ const createTestFiles = () => {
 // Function to copy language files
 const copyLangFiles = () => {
   const srcLangsDir = 'src/langs';
-  const destLangsDir = 'dist/plugins/languageSelect/langs';
+  const destLangsDir = 'dist/plugins/easylang/langs';
   
   try {
     // Create destination directory if it doesn't exist
@@ -67,7 +67,7 @@ const bannerText = `/*!
 const builds = [
   // Build for TinyMCE plugin
   {
-    outfile: 'dist/plugins/languageSelect/plugin.min.js',
+    outfile: 'dist/plugins/easylang/plugin.min.js',
     format: 'cjs',
     minify: false,
     treeShaking: false,
