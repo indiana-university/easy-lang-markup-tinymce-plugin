@@ -211,7 +211,7 @@ class LanguageSelect {
     self.usedShortcutLetters = {};
     self.shortcutLetterForLang = {};
     self.langForShortcutLetter = {};
-    
+
     let reservedLetters = self.reservedShortcutLetters || "";
      if (self.isWordPress) {
       reservedLetters += self.reservedShortcutLettersInWordPress;
@@ -221,7 +221,7 @@ class LanguageSelect {
     for (const letter of reservedLetters) {
       self.usedShortcutLetters[letter] = true;
     }
-    
+
     // Rebuild shortcut data from current langMenuItems
     self.langMenuItems.forEach((langValue) => {
       const shortcut = self.determineShortCut(langValue); // "ctrl+alt+<letter>" or ""
@@ -272,11 +272,11 @@ class LanguageSelect {
   }
 
   /**
-   * Translates a given key using the TinyMCE editor's translation function if available. 
+   * Translates a given key using the TinyMCE editor's translation function if available.
    * Falls back to returning the key itself if no translation function is present.
    * @param key - The translation key
    * @returns The translated string or the original key if no translation is found
-   */  
+   */
   public translate(key: string): string {
     const self: LanguageSelect = this;
     const pb = (window as any).PB_LanguageSelectorToken;
@@ -284,7 +284,7 @@ class LanguageSelect {
     if (pb && typeof pb[key] === 'string') {
       return pb[key];
     }
-    
+
     if(self.editor && self.editor.translate) {
       return self.editor.translate(key) || key;
     }
@@ -313,11 +313,11 @@ class LanguageSelect {
   /**
    * Parses a BCP 47 language tag into its component parts: language, script, and region.
    * Uses Intl.Locale if available, with a manual fallback for older environments.
-   * 
-   * The HTML spec states that language tags in the lang attribute should follow BCP 47, 
-   * but it doesn't enforce strict casing. The spec treats language tags as case-insensitive 
+   *
+   * The HTML spec states that language tags in the lang attribute should follow BCP 47,
+   * but it doesn't enforce strict casing. The spec treats language tags as case-insensitive
    * for matching purposes.
-   * 
+   *
    * The returned values are normalized: language and script are lowercased; region is uppercased.
    *
    * @param {string} lang - The BCP 47 language tag (e.g., 'ku-Arab-IQ').
@@ -873,7 +873,7 @@ class LanguageSelect {
    * Get localized language name for a given language code.
    * The localized name will be translated to the user's current locale.
    * English names serve as both translation keys and default fallback values.
-   * 
+   *
    * @param code - The language code (e.g., "az", "ja", "de")
    * @returns String with the localized language name, or the code itself if not found
    */
@@ -1092,7 +1092,7 @@ class LanguageSelect {
   /* Get the native language name for a given language code.
    * The native name is the name of the language in that language itself.
    * E.g., "Deutsch" for "de", "Español" for "es", "日本語" for "ja".
-   * 
+   *
    * @param langCode - The language code (e.g., "de", "es", "ja")
    * @returns String with the native language name, or empty string if not found
    */
@@ -1445,7 +1445,7 @@ class LanguageSelect {
 
       body.push(
         {
-          type: "listbox", 
+          type: "listbox",
           name: selectName,
           label: self.evalTemplate(self.translate("Select language {{number}}:"), { number: i }),
           values: languages,           // v4 uses "values" not "items"
@@ -1717,20 +1717,19 @@ class LanguageSelect {
 
     styleSheet.appendChild(
       doc.createTextNode(`
-        /* Elements with a dir attribute but NO lang attribute */
         *[dir]:not([lang]) {
           padding: 3px;
           margin: 2px;
-          background-color: #f0f0f0 !important; /* light gray */
+          background-color: #f0f0f0 !important;
           border: thin solid #555;
         }
 
         *[dir]:not([lang]):before {
-          content: "[dir=" attr(dir) "]";
+          content: "[dir=" attr(dir) "]" !important;
         }
 
         *[dir]:not([lang]):after {
-          content: "[/dir]";
+          content: "[/dir]" !important;
         }
       `)
     );
@@ -1742,32 +1741,43 @@ class LanguageSelect {
             padding: 3px;
             margin: 2px;
             background-color: ${color} !important;
+            outline: inherit !important;
             border: thin solid black;
           }
 
-          /* Default label when no dir attribute is set */
           *[lang="${langCode}"]:before {
-            content: "[${langCode}]";
+            content: "[${langCode}]" !important;
+            background: inherit !important;
+            color:inherit !important;
+            font-size:90% !important;
+            font-weight:inherit !important;
+            padding-right: 0.3em !important;
+            margin-right:0 !important;
+            padding-left:0px !important;
           }
 
-          /* More specific rule: when dir *is* present, show it */
           *[lang="${langCode}"][dir]:before {
-            content: "[${langCode} | dir=" attr(dir) "]";
+            content: "[${langCode} | dir=" attr(dir) "]" !important;
           }
 
           *[lang="${langCode}"]:after {
-            content: "[/${langCode}]";
+            content: "[/${langCode}]" !important;
+            background: inherit !important;
+            color:inherit !important;
+            font-size:90% !important;
+            font-weight:inherit !important;
+            padding-right: 0.3em !important;
+            margin-right:0 !important;
+            padding-left:0px !important;
           }
 
-          /* More specific rule: when dir *is* present, show it */
           *[lang="${langCode}"][dir="rtl"]:before {
-            content: "[${langCode}/]";
+            content: "[${langCode}/]" !important;
           }
 
           *[lang="${langCode}"][dir="rtl"]:after {
-            content: "[${langCode} | dir=" attr(dir) "]";
+            content: "[${langCode} | dir=" attr(dir) "]" !important;
           }
-          
         `)
       );
     });
@@ -2143,7 +2153,7 @@ class LanguageSelect {
 
     self.initializeLanguageMenuEntriesList();
     self.addKeyboardShortcuts()
-    
+
     // --- Language selection items -------------------------------------------
 
     // Per-language items (top level)
@@ -2232,12 +2242,12 @@ class LanguageSelect {
         } else {
           self.hideLangMarkUp();
         }
-        menuItem.active(self.tsViewMarkup); 
+        menuItem.active(self.tsViewMarkup);
         if (self?.editor?.focus) self.editor.focus();
       },
       onPostRender: function () {
         const menuItem = this as Types.TinyMCE4MenuItem;
-        menuItem.active(self.tsViewMarkup); 
+        menuItem.active(self.tsViewMarkup);
       }
     });
 
@@ -2258,7 +2268,7 @@ class LanguageSelect {
         },
         onPostRender: function () {
           const menuItem = this as Types.TinyMCE4MenuItem;
-          menuItem.active(self.showCurrentLanguage); 
+          menuItem.active(self.showCurrentLanguage);
         }
       });
     }
@@ -2271,7 +2281,7 @@ class LanguageSelect {
 
     self.initializeLanguageMenuEntriesList();
     self.addKeyboardShortcuts()
-    
+
     // Create menu items for each language in langMenuItems
     self.langMenuItems.forEach((lang: string, index: number) => {
       const label =
@@ -2514,7 +2524,7 @@ class LanguageSelect {
             let lastCurrentLang = '';
             [lastCurrentLang] = self.getDocumentElementLang(currentNode);
 
-            // Update the visible label if you support “show current language” 
+            // Update the visible label if you support “show current language”
             if (self.showCurrentLanguage) {
               self.updateLanguageSelector(lastCurrentLang);
             }
@@ -2742,9 +2752,9 @@ class LanguageSelect {
 
     self.shortcutModifiers = shortcutModifiers;
 
-    self.displayShortcutsAsText = 
+    self.displayShortcutsAsText =
       self.getEditorConfigParameter('easylang_shortcut_modifier_display', "symbols").toLowerCase() === "text";
-    
+
     // --- Add to TinyMCE 4 "Format" menu (or other menu) ---
     const addToV4MenuRaw = self.getEditorConfigParameter(
       'easylang_add_to_v4menu',
@@ -2786,7 +2796,7 @@ class LanguageSelect {
       self.iconName = null;
     }
 
-     // --- Scan document on load for languages 
+     // --- Scan document on load for languages
     self.scanDocumentOnLoad = !!self.getEditorConfigParameter('easylang_scan_document_on_load', true);
 
     // --- content_langs override for defaultLanguages ---
@@ -2956,7 +2966,7 @@ class LanguageSelect {
     }
   }
 
-  /* Common init for all TinyMCE versions 
+  /* Common init for all TinyMCE versions
    */
   public init() {
     const self: LanguageSelect = this;
@@ -2991,7 +3001,7 @@ class LanguageSelect {
         self.updateDefaultLanguagesFromDocument();
       }, 50);
     }
-  
+
     if (self.isTinyMCE4) {
       self.initV4();
     } else {
