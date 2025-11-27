@@ -282,6 +282,7 @@ tinymce.init({
 - Improves menu ordering by surfacing the most-used languages.  
 
 ---
+
 ### `easylang_shortcut_modifiers`
 
 Allows setting the modifiers for keyboard shortcuts used by the easylang plugin. 
