@@ -6,7 +6,7 @@ import { join, extname } from 'path';
 // Function to create test-friendly TypeScript file
 const createTestFiles = () => {
   const sourceContent = readFileSync('src/plugin.ts', 'utf8');
-  const testContent = sourceContent + '\nexport { LanguageSelect };\n';
+  const testContent = sourceContent + '\nexport { EasyLangMarkup };\n';
   writeFileSync('dist/plugin_for_tests/plugin-for-tests.ts', testContent);
 
   const sourceContent2 = readFileSync('src/plugin_types.ts', 'utf8');
@@ -45,7 +45,7 @@ const copyLangFiles = () => {
 // Common settings
 const entryFile = 'src/plugin.ts';
 const bannerText = `/*! 
-* langSelect plugin.js
+* easy-lang-markup-tinymce-plugin
 * SPDX-License-Identifier: GPL-3.0-only
 * 
 * Copyright (c) 2018 The Trustees of Indiana University
@@ -76,19 +76,19 @@ const builds = [
     },
     footer: {
       js: `
-tinymce.PluginManager.add('languageSelect', function (editor, url) {
+tinymce.PluginManager.add('easylang', function (editor, url) {
   const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
   const script = document.createElement('script');
-  script.src = url+'/langs/'+locale+'.js';
+  script.src = url+'/langs/'+locale.trim().replace(/-/g, '_')+'.js';
   script.async = false;
   document.head.appendChild(script);
 
-  const plugin = new LanguageSelect(editor, url);
+  const plugin = new EasyLangMarkup(editor, url);
   plugin.init();
-  tinymce.PluginManager.requireLangPack('languageSelect', locale);
+  tinymce.PluginManager.requireLangPack('easylang', locale);
 
   return {
-    name: 'languageSelect',
+    name: 'easylang',
   };
 });
 `

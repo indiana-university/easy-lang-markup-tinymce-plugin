@@ -1,76 +1,76 @@
-import { LanguageSelect } from '../dist/plugin_for_tests/plugin-for-tests';
+import { EasyLangMarkup } from '../dist/plugin_for_tests/plugin-for-tests';
 
 describe('isValidLang', () => {
   test('returns true for valid language codes', () => {
-    expect(LanguageSelect.isValidLang('arq')).toBe(true);
-    expect(LanguageSelect.isValidLang('ar-u-nu-latn')).toBe(true);
-    expect(LanguageSelect.isValidLang('de-CH-1901')).toBe(true);
-    expect(LanguageSelect.isValidLang('de-DE-u-co-phonebk')).toBe(true);
-    expect(LanguageSelect.isValidLang('en')).toBe(true);
-    expect(LanguageSelect.isValidLang('en-t-jp')).toBe(true);
-    expect(LanguageSelect.isValidLang('en-US-x-twain')).toBe(true);
-    expect(LanguageSelect.isValidLang('es')).toBe(true);
-    expect(LanguageSelect.isValidLang('es-419')).toBe(true);
-    expect(LanguageSelect.isValidLang('fr')).toBe(true);
-    expect(LanguageSelect.isValidLang('fr-CA')).toBe(true);
-    expect(LanguageSelect.isValidLang('gsw-u-sd-chzh')).toBe(true);
-    expect(LanguageSelect.isValidLang('he-IL-u-ca-hebrew-tz-jeruslm')).toBe(true);
-    expect(LanguageSelect.isValidLang('nan-Hant-TW')).toBe(true);
-    expect(LanguageSelect.isValidLang('pt-BR')).toBe(true);
-    expect(LanguageSelect.isValidLang('rm-sursilv')).toBe(true);
-    expect(LanguageSelect.isValidLang('sr-Cyrl')).toBe(true);
-    expect(LanguageSelect.isValidLang('yue-Hant-HK')).toBe(true);
-    expect(LanguageSelect.isValidLang('zh-CN')).toBe(true);
-    expect(LanguageSelect.isValidLang('zh-Hans')).toBe(true);
-    expect(LanguageSelect.isValidLang('zh-hans')).toBe(true);
-    expect(LanguageSelect.isValidLang('zh-Hans-SG')).toBe(true);
-    expect(LanguageSelect.isValidLang('zh-yue')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('arq')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('ar-u-nu-latn')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('de-CH-1901')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('de-DE-u-co-phonebk')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('en')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('en-t-jp')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('en-US-x-twain')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('es')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('es-419')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('fr')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('fr-CA')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('gsw-u-sd-chzh')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('he-IL-u-ca-hebrew-tz-jeruslm')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('nan-Hant-TW')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('pt-BR')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('rm-sursilv')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('sr-Cyrl')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('yue-Hant-HK')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('zh-CN')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('zh-Hans')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('zh-hans')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('zh-Hans-SG')).toBe(true);
+    expect(EasyLangMarkup.isValidLang('zh-yue')).toBe(true);
   });
 
   test('returns false for invalid language codes', () => {
-    expect(LanguageSelect.isValidLang('')).toBe(false);
-    expect(LanguageSelect.isValidLang(null)).toBe(false);
-    expect(LanguageSelect.isValidLang('123')).toBe(false);
-    expect(LanguageSelect.isValidLang('en-')).toBe(false);
-    expect(LanguageSelect.isValidLang('-US')).toBe(false);
-    expect(LanguageSelect.isValidLang('_US')).toBe(false);
-    expect(LanguageSelect.isValidLang('en_US')).toBe(false);
-    expect(LanguageSelect.isValidLang('en US')).toBe(false);
-    expect(LanguageSelect.isValidLang(undefined as unknown as string)).toBe(false);
+    expect(EasyLangMarkup.isValidLang('')).toBe(false);
+    expect(EasyLangMarkup.isValidLang(null)).toBe(false);
+    expect(EasyLangMarkup.isValidLang('123')).toBe(false);
+    expect(EasyLangMarkup.isValidLang('en-')).toBe(false);
+    expect(EasyLangMarkup.isValidLang('-US')).toBe(false);
+    expect(EasyLangMarkup.isValidLang('_US')).toBe(false);
+    expect(EasyLangMarkup.isValidLang('en_US')).toBe(false);
+    expect(EasyLangMarkup.isValidLang('en US')).toBe(false);
+    expect(EasyLangMarkup.isValidLang(undefined as unknown as string)).toBe(false);
   });
 });
 
 describe('cleanLangAttr', () => {
   test('returns correct language names for valid codes', () => {
-    expect(LanguageSelect.cleanLangAttr('en')).toBe('en');
-    expect(LanguageSelect.cleanLangAttr(' en ')).toBe('en');
-    expect(LanguageSelect.cleanLangAttr('en_us')).toBe('en-US');
-    expect(LanguageSelect.cleanLangAttr('en fr')).toBe('en');
-    expect(LanguageSelect.cleanLangAttr('es-es')).toBe('es-ES');
-    expect(LanguageSelect.cleanLangAttr(' es-es ')).toBe('es-ES');
-    expect(LanguageSelect.cleanLangAttr(' es-mx ')).toBe('es-MX');
-    expect(LanguageSelect.cleanLangAttr('zh-hans-sg')).toBe('zh-Hans-SG');
-    expect(LanguageSelect.cleanLangAttr('sgn-be-fr')).toBe('sgn-BE-FR');
-    expect(LanguageSelect.cleanLangAttr('kok-deva-in')).toBe('kok-Deva-IN');
-    expect(LanguageSelect.cleanLangAttr('x-pig-latin')).toBe('x-pig-latin');
-    expect(LanguageSelect.cleanLangAttr('x-klingon')).toBe('x-klingon');
+    expect(EasyLangMarkup.cleanLangAttr('en')).toBe('en');
+    expect(EasyLangMarkup.cleanLangAttr(' en ')).toBe('en');
+    expect(EasyLangMarkup.cleanLangAttr('en_us')).toBe('en-US');
+    expect(EasyLangMarkup.cleanLangAttr('en fr')).toBe('en');
+    expect(EasyLangMarkup.cleanLangAttr('es-es')).toBe('es-ES');
+    expect(EasyLangMarkup.cleanLangAttr(' es-es ')).toBe('es-ES');
+    expect(EasyLangMarkup.cleanLangAttr(' es-mx ')).toBe('es-MX');
+    expect(EasyLangMarkup.cleanLangAttr('zh-hans-sg')).toBe('zh-Hans-SG');
+    expect(EasyLangMarkup.cleanLangAttr('sgn-be-fr')).toBe('sgn-BE-FR');
+    expect(EasyLangMarkup.cleanLangAttr('kok-deva-in')).toBe('kok-Deva-IN');
+    expect(EasyLangMarkup.cleanLangAttr('x-pig-latin')).toBe('x-pig-latin');
+    expect(EasyLangMarkup.cleanLangAttr('x-klingon')).toBe('x-klingon');
   });
 });
 
 describe('baseLanguage', () => {
   test('returns correct base language for valid codes', () => {
-    expect(LanguageSelect.baseLanguage('en')).toBe('en');
-    expect(LanguageSelect.baseLanguage(' en ')).toBe('en');
-    expect(LanguageSelect.baseLanguage('en_us')).toBe('en');
-    expect(LanguageSelect.baseLanguage('en fr')).toBe('en');
-    expect(LanguageSelect.baseLanguage('es-es')).toBe('es');
-    expect(LanguageSelect.baseLanguage(' es-es ')).toBe('es');
-    expect(LanguageSelect.baseLanguage(' es-mx ')).toBe('es');
-    expect(LanguageSelect.baseLanguage('zh-hans-sg')).toBe('zh');
-    expect(LanguageSelect.baseLanguage('sgn-be-fr')).toBe('sgn');
-    expect(LanguageSelect.baseLanguage('kok-deva-in')).toBe('kok');
-    expect(LanguageSelect.baseLanguage('x-pig-latin')).toBe('x');
-    expect(LanguageSelect.baseLanguage('x-klingon')).toBe('x');
+    expect(EasyLangMarkup.baseLanguage('en')).toBe('en');
+    expect(EasyLangMarkup.baseLanguage(' en ')).toBe('en');
+    expect(EasyLangMarkup.baseLanguage('en_us')).toBe('en');
+    expect(EasyLangMarkup.baseLanguage('en fr')).toBe('en');
+    expect(EasyLangMarkup.baseLanguage('es-es')).toBe('es');
+    expect(EasyLangMarkup.baseLanguage(' es-es ')).toBe('es');
+    expect(EasyLangMarkup.baseLanguage(' es-mx ')).toBe('es');
+    expect(EasyLangMarkup.baseLanguage('zh-hans-sg')).toBe('zh');
+    expect(EasyLangMarkup.baseLanguage('sgn-be-fr')).toBe('sgn');
+    expect(EasyLangMarkup.baseLanguage('kok-deva-in')).toBe('kok');
+    expect(EasyLangMarkup.baseLanguage('x-pig-latin')).toBe('x');
+    expect(EasyLangMarkup.baseLanguage('x-klingon')).toBe('x');
   });
 });
 
@@ -92,11 +92,11 @@ describe('getLocaleParts', () => {
     ['en-GB-oed',        { language: 'en', region: 'GB' }], // extension ignored
     ['fr-CA-u-ca-gregory', { language: 'fr', region: 'CA' }], // Unicode extension ignored
   ])('getLocaleParts("%s") should return %j', (input, expected) => {
-    expect(LanguageSelect.getLocaleParts(input)).toEqual(expected);
+    expect(EasyLangMarkup.getLocaleParts(input)).toEqual(expected);
   });
 
   test('returns language only for empty string', () => {
-    expect(LanguageSelect.getLocaleParts('')).toEqual({ language: '' });
+    expect(EasyLangMarkup.getLocaleParts('')).toEqual({ language: '' });
   });
 });
 
@@ -124,7 +124,7 @@ describe('getTextDirection', () => {
       'az-Arab',
       'az-Arab-IR',
     ])('getTextDirection("%s") should return "rtl"', (lang) => {
-      expect(LanguageSelect.getTextDirection(lang)).toBe('rtl');
+      expect(EasyLangMarkup.getTextDirection(lang)).toBe('rtl');
     });
   });
 
@@ -158,7 +158,7 @@ describe('getTextDirection', () => {
       ' en ',       // allows whitespace
       '\nen\n'      // allows whitespace
     ])('getTextDirection("%s") should return "ltr"', (lang) => {
-      expect(LanguageSelect.getTextDirection(lang)).toBe('ltr');
+      expect(EasyLangMarkup.getTextDirection(lang)).toBe('ltr');
     });
   });
 
@@ -170,7 +170,7 @@ describe('getTextDirection', () => {
       'az',
       'ug'
     ])('getTextDirection("%s") should return "auto"', (lang) => {
-      expect(LanguageSelect.getTextDirection(lang)).toBe('auto');
+      expect(EasyLangMarkup.getTextDirection(lang)).toBe('auto');
     });
   });
 });

@@ -57,7 +57,7 @@ phpLines.push(' * Paste this into namespace.php inside admin_enqueue_scripts()')
 phpLines.push(' * --------------------------------------------------------------');
 phpLines.push(' */');
 phpLines.push('');
-phpLines.push("wp_localize_script('editor', 'PB_LanguageSelectorToken', [");
+phpLines.push("wp_localize_script('editor', 'PB_EasyLangToken', [");
 
 orderedKeys.forEach((key, i) => {
   const escaped = phpEscape(key);

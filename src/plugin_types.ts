@@ -6,7 +6,7 @@
 declare global {
   interface Window {
     wp?: any; // WordPress global object (if present)
-    PB_LanguageSelectorToken?: Record<string, string>; // Pressbooks language selector token map
+    PB_EasyLangToken?: Record<string, string>; // Pressbooks language selector token map
   }
 }
 

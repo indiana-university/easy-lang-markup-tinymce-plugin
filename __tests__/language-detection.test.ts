@@ -1,4 +1,4 @@
-import { LanguageSelect } from '../dist/plugin_for_tests/plugin-for-tests';
+import { EasyLangMarkup } from '../dist/plugin_for_tests/plugin-for-tests';
 import * as Types from '../src/plugin_types';
 
 // Mock the document
@@ -140,13 +140,13 @@ describe('LanguageDetector', () => {
 
   describe('detectEditorLanguage', () => {
     it('should detect language from editor document body', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toBe('de');
     });
 
     it('should detect language from editor document element (html)', () => {
       mockDocument.body = document.createElement('div');
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toBe('es-419');
     });
 
@@ -157,7 +157,7 @@ describe('LanguageDetector', () => {
         ...mockEditor,
         getDoc: () => mockDocumentNoLang,
       };
-      const plugin = new LanguageSelect(editorWithEmptySettings, 'fakeURL');
+      const plugin = new EasyLangMarkup(editorWithEmptySettings, 'fakeURL');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toBe('it');
     });
 
@@ -169,7 +169,7 @@ describe('LanguageDetector', () => {
         settings: {} as any,
       };
 
-      const plugin = new LanguageSelect(editorWithEmptySettings, 'fakeURL');
+      const plugin = new EasyLangMarkup(editorWithEmptySettings, 'fakeURL');
       expect(plugin.getLanguageFromTopDocument()).toBe('zh');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toBe('zh');
     });
@@ -187,7 +187,7 @@ describe('LanguageDetector', () => {
         return null;
       });
 
-      const plugin = new LanguageSelect(editorWithEmptySettings, 'fakeURL');
+      const plugin = new EasyLangMarkup(editorWithEmptySettings, 'fakeURL');
       expect(plugin.getLanguageFromTopDocument()).toBe('zz');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toBe('zz');
     });
@@ -203,35 +203,35 @@ describe('LanguageDetector', () => {
         settings: {} as any,
       };
 
-      const plugin = new LanguageSelect(editorWithEmptySettings, 'fakeURL');
+      const plugin = new EasyLangMarkup(editorWithEmptySettings, 'fakeURL');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toEqual('jp');
     });
   });
 
   describe('getNativeLanguageName', () => {
     it('should return the native spelling a language name', () => {
-      expect(LanguageSelect.getNativeLanguageName('en')).toBe('English');
-      expect(LanguageSelect.getNativeLanguageName(' en ')).toBe('English');
-      expect(LanguageSelect.getNativeLanguageName('fr-CA')).toBe('français canadien');
+      expect(EasyLangMarkup.getNativeLanguageName('en')).toBe('English');
+      expect(EasyLangMarkup.getNativeLanguageName(' en ')).toBe('English');
+      expect(EasyLangMarkup.getNativeLanguageName('fr-CA')).toBe('français canadien');
     });
     it('should return the lang code when not found', () => {
-      expect(LanguageSelect.getNativeLanguageName('en')).toBe('English');
-      expect(LanguageSelect.getNativeLanguageName(' en ')).toBe('English');
-      expect(LanguageSelect.getNativeLanguageName('x-klingon')).toBe('x-klingon');
+      expect(EasyLangMarkup.getNativeLanguageName('en')).toBe('English');
+      expect(EasyLangMarkup.getNativeLanguageName(' en ')).toBe('English');
+      expect(EasyLangMarkup.getNativeLanguageName('x-klingon')).toBe('x-klingon');
     });
   });
 
   describe('getLanguageNameForLocale', () => {
     it('should return the key for a lang code not found', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.getLanguageNameForLocale('x-klingon')).toBe('x-klingon');
     });
     it('should return the name for a lang code it has', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.getLanguageNameForLocale('az')).toBe('Azerbaijani');
     });
     it('should return the English language name for missing keys that are in langAtts', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.getLanguageNameForLocale('fr-CA')).toBe('French (Canada)');
     })
 

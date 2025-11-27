@@ -1,4 +1,4 @@
-import { LanguageSelect } from '../dist/plugin_for_tests/plugin-for-tests';
+import { EasyLangMarkup } from '../dist/plugin_for_tests/plugin-for-tests';
 import * as Types from '../src/plugin_types';
 
 // Mock the document
@@ -18,18 +18,18 @@ const mockDocument = {
 
 describe('isNullOrWhitespace', () => {
   test('isNullOrWhitespace should return true for vars with no content', () => {
-    expect(LanguageSelect.isNotBlank(null)).toBe(false);
-    expect(LanguageSelect.isNotBlank('')).toBe(false);
-    expect(LanguageSelect.isNotBlank(' ')).toBe(false);
-    expect(LanguageSelect.isNotBlank('    ')).toBe(false);
-    expect(LanguageSelect.isNotBlank("\t\n\r")).toBe(false);
+    expect(EasyLangMarkup.isNotBlank(null)).toBe(false);
+    expect(EasyLangMarkup.isNotBlank('')).toBe(false);
+    expect(EasyLangMarkup.isNotBlank(' ')).toBe(false);
+    expect(EasyLangMarkup.isNotBlank('    ')).toBe(false);
+    expect(EasyLangMarkup.isNotBlank("\t\n\r")).toBe(false);
   });
 
   test('isNullOrWhitespace should return false for vars with content', () => {
-    expect(LanguageSelect.isNotBlank('a')).toBe(true);
-    expect(LanguageSelect.isNotBlank('1')).toBe(true);
-    expect(LanguageSelect.isNotBlank('A')).toBe(true);
-    expect(LanguageSelect.isNotBlank('@')).toBe(true);
+    expect(EasyLangMarkup.isNotBlank('a')).toBe(true);
+    expect(EasyLangMarkup.isNotBlank('1')).toBe(true);
+    expect(EasyLangMarkup.isNotBlank('A')).toBe(true);
+    expect(EasyLangMarkup.isNotBlank('@')).toBe(true);
   });
 
 });
@@ -138,13 +138,13 @@ describe('translate functions', () => {
 
   describe('translate', () => {
     it('should return the key if the translation is not found', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.translate('this probably is not a real translation key')).toBe('this probably is not a real translation key');
     });
 
     it('should detect language from editor document element (html)', () => {
       mockDocument.body = document.createElement('div');
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.getTinymceDefaultDocumentLanguage()).toBe('es-419');
     });
 
@@ -152,7 +152,7 @@ describe('translate functions', () => {
 
   describe('translateTemplate', () => {
     it('should return the key with substituted values if the translation is not found', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(plugin.evalTemplate('this probably is not a real translation key {{text}}', { text: 'right?' })).toBe('this probably is not a real translation key right?');
     });
 
@@ -160,7 +160,7 @@ describe('translate functions', () => {
 
   describe('plugin integration', () => {
     it('should initialize without errors', () => {
-      const plugin = new LanguageSelect(mockEditor, 'fakeURL');
+      const plugin = new EasyLangMarkup(mockEditor, 'fakeURL');
       expect(() => plugin.init()).not.toThrow();
     });
   });

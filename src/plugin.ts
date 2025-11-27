@@ -8,7 +8,7 @@
 
 import * as Types from './plugin_types';
 
-class LanguageSelect {
+class EasyLangMarkup {
   constructor(private editor: Types.TinyMCEEditor, private url: string) { }
 
   private static readonly CONFIG = {
@@ -31,7 +31,7 @@ class LanguageSelect {
   private updatedLanguageDefaultsUsed: boolean = false;
 
   private cssHasDashIcons: boolean = false;
-  private iconName: string | null = LanguageSelect.CONFIG.DEFAULT_TOOLBAR_ICON;
+  private iconName: string | null = EasyLangMarkup.CONFIG.DEFAULT_TOOLBAR_ICON;
   private useDashIcons: boolean = false;
   private blockDashIconUsage: boolean = false;
 
@@ -41,8 +41,8 @@ class LanguageSelect {
   private addToV4Menu: boolean = true;
   private addToV4MenuContext: string = "format"
 
-  private shortcutModifiers: string = LanguageSelect.CONFIG.DEFAULT_SHORTCUT_MODIFIERS;
-  private displayShortcutsAsText: boolean = LanguageSelect.CONFIG.SHOW_SHORTCUTS_AS_TEXT;
+  private shortcutModifiers: string = EasyLangMarkup.CONFIG.DEFAULT_SHORTCUT_MODIFIERS;
+  private displayShortcutsAsText: boolean = EasyLangMarkup.CONFIG.SHOW_SHORTCUTS_AS_TEXT;
   private reservedShortcutLettersInWordPress: string = "acdhjklmoqruwxz";
   private reservedShortcutLetters:  string = "";
   private enableKeyboardShortcuts: boolean = true;
@@ -74,7 +74,7 @@ class LanguageSelect {
   ];
 
   private readonly langFormatsRegistered: Record<string, boolean> = {};
-  private editorLanguage: string = LanguageSelect.CONFIG.DEFAULT_LANG;
+  private editorLanguage: string = EasyLangMarkup.CONFIG.DEFAULT_LANG;
   private tsViewMarkup: boolean = false;
   private langMenuItems: string[] = [];
   private myButtonTextPtr: HTMLElement | null = null;
@@ -111,7 +111,7 @@ class LanguageSelect {
    */
   private formatShortcutForDisplay(shortcut: string): string | undefined {
     console.log('Formatting shortcut for display:', shortcut);
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     if (!shortcut) return undefined;
 
@@ -197,7 +197,7 @@ class LanguageSelect {
   }
 
   private determineShortCut(langValue: string, preferredShortCutLetter: string | null = null): string {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     const letter = self.determineShortCutLetter(langValue, preferredShortCutLetter);
 
@@ -205,7 +205,7 @@ class LanguageSelect {
   }
 
   private rebuildKeyboardShortcutsFromLangMenu(): void {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     // Reset maps
     self.usedShortcutLetters = {};
@@ -278,8 +278,8 @@ class LanguageSelect {
    * @returns The translated string or the original key if no translation is found
    */
   public translate(key: string): string {
-    const self: LanguageSelect = this;
-    const pb = (window as any).PB_LanguageSelectorToken;
+    const self: EasyLangMarkup = this;
+    const pb = (window as any).PB_EasyLangToken;
 
     if (pb && typeof pb[key] === 'string') {
       return pb[key];
@@ -380,9 +380,9 @@ class LanguageSelect {
       'ku', 'pa', 'ha', 'az', 'ms', 'tg', 'ug', 'sd', 'ks', 'rhg', 'bft'
     ]);
 
-    const locale: Types.LocaleParts = LanguageSelect.getLocaleParts(lang);
+    const locale: Types.LocaleParts = EasyLangMarkup.getLocaleParts(lang);
 
-    if (LanguageSelect.isNotBlank(locale.script)) {
+    if (EasyLangMarkup.isNotBlank(locale.script)) {
       if (rtlScripts.has(locale.script)) {
         return 'rtl';
       } else {
@@ -498,7 +498,7 @@ class LanguageSelect {
   private static getValidLangAttribute(element: Element | null): string | null {
     if (!element || !(element.getAttribute)) return null;
     const lang: string | null = (element as Element).getAttribute("lang");
-    return lang && LanguageSelect.isValidLang(lang) ? lang.trim() : null;
+    return lang && EasyLangMarkup.isValidLang(lang) ? lang.trim() : null;
   }
 
   /**
@@ -518,27 +518,27 @@ class LanguageSelect {
     for (const strategy of strategies) {
       try {
         const lang = strategy();
-        if (lang && LanguageSelect.isValidLang(lang)) { return lang; }
+        if (lang && EasyLangMarkup.isValidLang(lang)) { return lang; }
       } catch (error) {
         // Continue to next strategy
         console.debug('Language detection strategy failed:', error);
       }
     }
 
-    return LanguageSelect.CONFIG.DEFAULT_LANG; // Final fallback
+    return EasyLangMarkup.CONFIG.DEFAULT_LANG; // Final fallback
   }
 
   private getLanguageFromSingleChild(): string | null {
     if (this.editor && this.editor.getBody) {
       const editorBody = this.editor.getBody();
       if (editorBody?.children?.length === 1) {
-        return LanguageSelect.getValidLangAttribute(editorBody.children[0]);
+        return EasyLangMarkup.getValidLangAttribute(editorBody.children[0]);
       }
     }
     if (this.editor && this.editor.getDoc) {
       const editorDoc = this.editor.getDoc();
       if (editorDoc?.body?.children.length === 1) {
-        return LanguageSelect.getValidLangAttribute(editorDoc.body.children[0]);
+        return EasyLangMarkup.getValidLangAttribute(editorDoc.body.children[0]);
       }
     }
     return null;
@@ -548,7 +548,7 @@ class LanguageSelect {
     if (this.editor && this.editor.getDoc) {
       const editorDoc = this.editor.getDoc();
       if (editorDoc) {
-        return LanguageSelect.getValidLangAttribute(editorDoc.body);
+        return EasyLangMarkup.getValidLangAttribute(editorDoc.body);
       }
     }
     return null;
@@ -558,7 +558,7 @@ class LanguageSelect {
     if (this.editor && this.editor.getDoc) {
       const editorDoc = this.editor.getDoc();
       if (editorDoc) {
-        return LanguageSelect.getValidLangAttribute(editorDoc.documentElement);
+        return EasyLangMarkup.getValidLangAttribute(editorDoc.documentElement);
       }
     }
     return null;
@@ -567,13 +567,13 @@ class LanguageSelect {
   private getLanguageFromEditorSettings(): string | null {
     let settingsLang = null;
 
-    if (this.editor && this.editor.settings?.language && LanguageSelect.isNotBlank(this.editor.settings.language)) {
-      settingsLang = LanguageSelect.cleanLangAttr(this.editor.settings.language);
+    if (this.editor && this.editor.settings?.language && EasyLangMarkup.isNotBlank(this.editor.settings.language)) {
+      settingsLang = EasyLangMarkup.cleanLangAttr(this.editor.settings.language);
     }
-    if (!LanguageSelect.isValidLang(settingsLang) && this.editor?.options?.get && LanguageSelect.isNotBlank(this.editor.options.get('language'))) {
-      settingsLang = LanguageSelect.cleanLangAttr(this.editor.options.get('language'));
+    if (!EasyLangMarkup.isValidLang(settingsLang) && this.editor?.options?.get && EasyLangMarkup.isNotBlank(this.editor.options.get('language'))) {
+      settingsLang = EasyLangMarkup.cleanLangAttr(this.editor.options.get('language'));
     }
-    if (LanguageSelect.isValidLang(settingsLang)) return settingsLang;
+    if (EasyLangMarkup.isValidLang(settingsLang)) return settingsLang;
 
     return null;
   }
@@ -584,13 +584,13 @@ class LanguageSelect {
     }
 
     if (window.top.document.body) {
-      const bodyLang = LanguageSelect.getValidLangAttribute(window.top.document.body);
-      if (LanguageSelect.isValidLang(bodyLang)) return bodyLang;
+      const bodyLang = EasyLangMarkup.getValidLangAttribute(window.top.document.body);
+      if (EasyLangMarkup.isValidLang(bodyLang)) return bodyLang;
     }
 
     if (window.top.document.documentElement) {
-      const docLang = LanguageSelect.getValidLangAttribute(window.top.document.documentElement);
-      if (LanguageSelect.isValidLang(docLang)) return docLang;
+      const docLang = EasyLangMarkup.getValidLangAttribute(window.top.document.documentElement);
+      if (EasyLangMarkup.isValidLang(docLang)) return docLang;
     }
 
     return null;
@@ -600,7 +600,7 @@ class LanguageSelect {
     const metaLang = document.querySelector('meta[http-equiv="content-language"]');
     if (metaLang) {
       const content = metaLang.getAttribute('content');
-      return LanguageSelect.isValidLang(content) ? content!.trim() : null;
+      return EasyLangMarkup.isValidLang(content) ? content!.trim() : null;
     }
     return null;
   }
@@ -608,7 +608,7 @@ class LanguageSelect {
   private getLanguageFromBrowser(): string | null {
     if (navigator) {
       const browserLang = navigator.language || (navigator as any).userLanguage;
-      return LanguageSelect.isValidLang(browserLang) ? browserLang.trim() : null;
+      return EasyLangMarkup.isValidLang(browserLang) ? browserLang.trim() : null;
     }
     return null;
   }
@@ -664,7 +664,7 @@ class LanguageSelect {
   private checkSingleDivChild(parent: Element | null): string | null {
     if (parent?.children?.length === 1 &&
       parent.children[0]?.tagName === "DIV") {
-      return LanguageSelect.getValidLangAttribute(parent.children[0]);
+      return EasyLangMarkup.getValidLangAttribute(parent.children[0]);
     }
     return null;
   }
@@ -686,7 +686,7 @@ class LanguageSelect {
     // Traverse up the DOM tree to find the first ancestor with a `lang` attribute
     while (el && !elLang && el.nodeName !== "BODY") {
       if (el.hasAttribute("lang")) {
-        elLang = LanguageSelect.cleanLangAttr(el.getAttribute("lang"));
+        elLang = EasyLangMarkup.cleanLangAttr(el.getAttribute("lang"));
         currentLangIsDefault = el.parentElement ? el.parentElement.nodeName === "BODY" && el.parentElement.children.length == 1 : false;
       }
       el = el.parentElement;
@@ -878,9 +878,9 @@ class LanguageSelect {
    * @returns String with the localized language name, or the code itself if not found
    */
   public getTranslatedLanguageName(code: string): string {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
-    if (!code || !LanguageSelect.isNotBlank(code) || !self.editor || !self.editor.translate) {
+    if (!code || !EasyLangMarkup.isNotBlank(code) || !self.editor || !self.editor.translate) {
       return "";
     }
 
@@ -1066,22 +1066,22 @@ class LanguageSelect {
   // Get translation string with fallback hierarchy
   getLanguageNameForLocale(langCode: string | null): string {
 
-    if (!LanguageSelect.isNotBlank(langCode)) return '';
+    if (!EasyLangMarkup.isNotBlank(langCode)) return '';
     let normalizedLangCode = langCode.toLowerCase().trim();
 
     // Try the full language code first (e.g., 'es-MX')
     let languageName = this.getTranslatedLanguageName(normalizedLangCode);
-    if ((!LanguageSelect.isNotBlank(languageName) || languageName === normalizedLangCode) && normalizedLangCode.includes('-')) {
+    if ((!EasyLangMarkup.isNotBlank(languageName) || languageName === normalizedLangCode) && normalizedLangCode.includes('-')) {
       // If not found and there's a hyphen, try the primary language code (e.g., 'es')
-      normalizedLangCode = LanguageSelect.baseLanguage(normalizedLangCode);
+      normalizedLangCode = EasyLangMarkup.baseLanguage(normalizedLangCode);
       languageName = this.getTranslatedLanguageName(normalizedLangCode);
-      if (languageName === normalizedLangCode || !LanguageSelect.isNotBlank(languageName)) {
-        if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, normalizedLangCode)) {
-          languageName = LanguageSelect.languageTags[normalizedLangCode];
-        } else if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, LanguageSelect.baseLanguage(normalizedLangCode))) {
-          languageName = LanguageSelect.languageTags[LanguageSelect.baseLanguage(normalizedLangCode)];
+      if (languageName === normalizedLangCode || !EasyLangMarkup.isNotBlank(languageName)) {
+        if (Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, normalizedLangCode)) {
+          languageName = EasyLangMarkup.languageTags[normalizedLangCode];
+        } else if (Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, EasyLangMarkup.baseLanguage(normalizedLangCode))) {
+          languageName = EasyLangMarkup.languageTags[EasyLangMarkup.baseLanguage(normalizedLangCode)];
         } else {
-          languageName = LanguageSelect.cleanLangAttr(langCode) || '';
+          languageName = EasyLangMarkup.cleanLangAttr(langCode) || '';
         }
       }
     }
@@ -1097,18 +1097,18 @@ class LanguageSelect {
    * @returns String with the native language name, or empty string if not found
    */
   public static getNativeLanguageName(langCode: string | null): string {
-    if (!LanguageSelect.isNotBlank(langCode)) return '';
+    if (!EasyLangMarkup.isNotBlank(langCode)) return '';
     langCode = langCode.trim().toLowerCase();
-    const nativeLangName: string = Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, langCode) ? LanguageSelect.languageTags[langCode] : langCode;
+    const nativeLangName: string = Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, langCode) ? EasyLangMarkup.languageTags[langCode] : langCode;
     return nativeLangName;
   }
 
   // Used for selector lists
   private getLanguageCodeDescription(langCode: string | null): string | null {
-    if (!LanguageSelect.isNotBlank(langCode)) return null;
+    if (!EasyLangMarkup.isNotBlank(langCode)) return null;
 
     let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
-    let nativeLangName = LanguageSelect.getNativeLanguageName(langCode);
+    let nativeLangName = EasyLangMarkup.getNativeLanguageName(langCode);
 
     if (langCodeLanguageNameForLocale && langCodeLanguageNameForLocale !== nativeLangName) {
       return `${langCodeLanguageNameForLocale} (${nativeLangName})`;
@@ -1121,7 +1121,7 @@ class LanguageSelect {
   // Used for menu entries
   private getShortLanguageCodeDescription(langCode: string): string {
     let langCodeLanguageNameForLocale = this.getLanguageNameForLocale(langCode);
-    let nativeLangName = LanguageSelect.getNativeLanguageName(langCode);
+    let nativeLangName = EasyLangMarkup.getNativeLanguageName(langCode);
 
     if (langCodeLanguageNameForLocale && langCodeLanguageNameForLocale !== nativeLangName) {
       return langCodeLanguageNameForLocale;
@@ -1142,7 +1142,7 @@ class LanguageSelect {
     const languages: Array<{ value: string; text: string }> = [];
 
     // Iterate through all language tags
-    for (const [langCode, nativeName] of Object.entries(LanguageSelect.languageTags)) {
+    for (const [langCode, nativeName] of Object.entries(EasyLangMarkup.languageTags)) {
       // Get the localized name for this language in the current editor locale
       const localizedName = this.getLanguageNameForLocale(langCode);
 
@@ -1187,7 +1187,7 @@ class LanguageSelect {
    * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
    */
   private readonly openChooseDefaultLangDialog = (callback: (newLang: string) => any) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     if(!self.isTinyMCE4) {
       self.openChooseDefaultLangDialogV5Plus(callback);
     } else {
@@ -1201,10 +1201,10 @@ class LanguageSelect {
    * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
    */
   private readonly openChooseDefaultLangDialogV4 = (callback: (newLang: string) => any) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     const initialLanguageValue =
-      self.getTinymceDefaultDocumentLanguage?.() || this.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
+      self.getTinymceDefaultDocumentLanguage?.() || this.editorLanguage || EasyLangMarkup.CONFIG.DEFAULT_LANG;
     const currentDefaultDocLang = self.getDocumentDefaultLanguage();
 
     const languages = this.getSortedLanguagesList(); // [{ value, text }]
@@ -1257,7 +1257,7 @@ class LanguageSelect {
         }
 
         // Validate & normalise
-        if (!LanguageSelect.isValidLang(newLang)) {
+        if (!EasyLangMarkup.isValidLang(newLang)) {
           if (self.editor?.windowManager?.alert) self.editor.windowManager.alert(
             self.translate('The language code you entered is not valid. Please enter a valid BCP 47 language tag.')
           );
@@ -1268,7 +1268,7 @@ class LanguageSelect {
           return false;
         }
 
-        newLang = LanguageSelect.cleanLangAttr(newLang);
+        newLang = EasyLangMarkup.cleanLangAttr(newLang);
 
         if (self?.editor?.focus) {
           self.editor.focus();
@@ -1288,9 +1288,9 @@ class LanguageSelect {
    * @param {Function} callback - A callback function that is invoked with the new language code selected by the user.
    */
   private readonly openChooseDefaultLangDialogV5Plus = (callback: (newLang: string) => any) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
-    const initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || self.editorLanguage || LanguageSelect.CONFIG.DEFAULT_LANG;
+    const initialLanguageValue = self.getTinymceDefaultDocumentLanguage() || self.editorLanguage || EasyLangMarkup.CONFIG.DEFAULT_LANG;
     const currentDefaultDocLang = self.getDocumentDefaultLanguage();
 
     // Keep track of the currently active tab
@@ -1367,8 +1367,8 @@ class LanguageSelect {
           currentTab === "listTab2" ? data.manualLanguage : data.language;
 
         // Validate the new language code using a regex pattern
-        if (LanguageSelect.isValidLang(newLang.trim())) {
-          newLang = LanguageSelect.cleanLangAttr(newLang); // Clean the language code for consistency
+        if (EasyLangMarkup.isValidLang(newLang.trim())) {
+          newLang = EasyLangMarkup.cleanLangAttr(newLang); // Clean the language code for consistency
           if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
           callback(newLang); // Invoke the callback with the new language
           api.close(); // Close the dialog
@@ -1391,7 +1391,7 @@ class LanguageSelect {
     langMenuItems: string[] = [],
     callback: ((langs: string[]) => void)
 ) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     if(!self.isTinyMCE4) {
       self.openConfigureLanguagesOnSelectboxV5Plus(langMenuItems, callback);
     } else {
@@ -1403,7 +1403,7 @@ class LanguageSelect {
     langMenuItems: string[] = [],
     callback: ((langs: string[]) => void)
   ) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     // Build list of languages for the listbox
     const languages = self.getSortedLanguagesList().slice(); // [{ value, text }]
@@ -1411,7 +1411,7 @@ class LanguageSelect {
     languages.unshift({ value: "-o-", text: self.translate("Other - Enter manually") });
     languages.unshift({ value: "-n-", text: self.translate("None") });
 
-    const maxItems = LanguageSelect.CONFIG.MAX_MENU_ITEMS;
+    const maxItems = EasyLangMarkup.CONFIG.MAX_MENU_ITEMS;
 
     // Pre-fill selections based on langMenuItems
     const initialSelect: Record<number, string> = {};
@@ -1423,11 +1423,11 @@ class LanguageSelect {
         return;
       }
 
-      if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang)) {
+      if (Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, lang)) {
         initialSelect[slot] = lang.toLowerCase();
       } else {
         initialSelect[slot] = "-o-";
-        initialInput[slot] = LanguageSelect.cleanLangAttr(lang);
+        initialInput[slot] = EasyLangMarkup.cleanLangAttr(lang);
       }
     });
 
@@ -1470,7 +1470,7 @@ class LanguageSelect {
         const data = e.data || {};
         const selectedLangs: string[] = [];
 
-        for (let i = 1; i <= LanguageSelect.CONFIG.MAX_MENU_ITEMS; i++) {
+        for (let i = 1; i <= EasyLangMarkup.CONFIG.MAX_MENU_ITEMS; i++) {
           const selectName = `langSelect_${i}`;
           const inputName = `langInput_${i}`;
 
@@ -1488,7 +1488,7 @@ class LanguageSelect {
 
           // Manual entry path ("Other")
           if (selected === "-o-") {
-            if (!LanguageSelect.isValidLang(manual)) {
+            if (!EasyLangMarkup.isValidLang(manual)) {
               alert(
                 self.translate(
                   "Enter a valid language code with no spaces. Or, press cancel."
@@ -1500,13 +1500,13 @@ class LanguageSelect {
               }
               return false;
             }
-            selectedLangs.push(LanguageSelect.cleanLangAttr(manual));
+            selectedLangs.push(EasyLangMarkup.cleanLangAttr(manual));
             continue;
           }
 
           // Normal list selection
-          if (LanguageSelect.isValidLang(selected)) {
-            selectedLangs.push(LanguageSelect.cleanLangAttr(selected));
+          if (EasyLangMarkup.isValidLang(selected)) {
+            selectedLangs.push(EasyLangMarkup.cleanLangAttr(selected));
           }
         }
 
@@ -1527,7 +1527,7 @@ class LanguageSelect {
    * @param {Function} callback - A callback function that is invoked with the updated list of languages after submission.
    */
   private readonly openConfigureLanguagesOnSelectboxV5Plus = (langMenuItems: string[] = [], callback: ((langs: string[]) => void)) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     // Create an array for select box items, with "None" and "Other" options.
     const languages = self.getSortedLanguagesList();
@@ -1560,15 +1560,15 @@ class LanguageSelect {
             type: "input",
             name: `langInput_${langCounter}`,
             label: `${self.evalTemplate(self.translate('Manually enter language {{number}}:'), { number: langCounter })}`,
-            disabled: Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined (pre v7)
-            enabled: !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang), // Disable input if language is predefined
+            disabled: Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, lang), // Disable input if language is predefined (pre v7)
+            enabled: !Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, lang), // Disable input if language is predefined
           },
         ],
       });
     });
 
     // Add additional empty language selectors up to the maximum
-    for (langCounter++; langCounter <= LanguageSelect.CONFIG.MAX_MENU_ITEMS; langCounter++) {
+    for (langCounter++; langCounter <= EasyLangMarkup.CONFIG.MAX_MENU_ITEMS; langCounter++) {
       languageChoiceItems.push({
         type: "bar",
         items: [
@@ -1593,11 +1593,11 @@ class LanguageSelect {
     const initData: Record<string, string> = {};
     langMenuItems.forEach((lang: string, index: number) => {
       const counter = index + 1;
-      if (Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, lang)) {
+      if (Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, lang)) {
         initData[`langSelect_${counter}`] = lang.toLowerCase();
       } else {
         initData[`langSelect_${counter}`] = "-o-"; // Mark as manual entry
-        initData[`langInput_${counter}`] = LanguageSelect.cleanLangAttr(lang); // Pre-fill with cleaned manual language
+        initData[`langInput_${counter}`] = EasyLangMarkup.cleanLangAttr(lang); // Pre-fill with cleaned manual language
       }
     });
 
@@ -1619,7 +1619,7 @@ class LanguageSelect {
       onChange(dialogApi: any, details: any) {
         const data = dialogApi.getData(); // Get the current dialog data
         // Enable or disable manual input fields based on "Other" selection
-        for (let i = 1; i <= LanguageSelect.CONFIG.MAX_MENU_ITEMS; i++) {
+        for (let i = 1; i <= EasyLangMarkup.CONFIG.MAX_MENU_ITEMS; i++) {
           if (data[`langSelect_${i}`] === "-o-") {
             if (dialogApi.setEnabled) {
               dialogApi.setEnabled(`langInput_${i}`, true);
@@ -1649,11 +1649,11 @@ class LanguageSelect {
         const selectedLangs = [];
 
         // Validate language selections and manual entries
-        for (let i = 1; i <= LanguageSelect.CONFIG.MAX_MENU_ITEMS; i++) {
+        for (let i = 1; i <= EasyLangMarkup.CONFIG.MAX_MENU_ITEMS; i++) {
           const selectedLang = data[`langSelect_${i}`];
           const manualLang = data[`langInput_${i}`]?.trim();
 
-          if (selectedLang === "-o-" && !LanguageSelect.isValidLang(manualLang)) {
+          if (selectedLang === "-o-" && !EasyLangMarkup.isValidLang(manualLang)) {
             alert(
               self.translate('Enter a valid language code with no spaces. Or, press cancel.')
             );
@@ -1661,11 +1661,11 @@ class LanguageSelect {
           }
 
           // Collect valid languages
-          if (LanguageSelect.isValidLang(selectedLang)) {
+          if (EasyLangMarkup.isValidLang(selectedLang)) {
             selectedLangs.push(selectedLang);
           } else if (
             selectedLang === "-o-" &&
-            LanguageSelect.isValidLang(manualLang)
+            EasyLangMarkup.isValidLang(manualLang)
           ) {
             selectedLangs.push(manualLang);
           }
@@ -1684,12 +1684,12 @@ class LanguageSelect {
    * Applies different background colors and border styles to indicate language markup.
    */
   private revealLangMarkUp() {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     const doc = self.getEditorDoc() || window.document;
     const languagesFound: Record<string, string> = {};
 
     // Remove any existing stylesheet for viewing lang markup
-    const existingStyle = doc.getElementById(LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
+    const existingStyle = doc.getElementById(EasyLangMarkup.CONFIG.LANG_ATTR_QA_ID);
     if (existingStyle?.parentElement) existingStyle.parentElement.removeChild(existingStyle);
 
     // Initialize available colors for highlighting
@@ -1699,7 +1699,7 @@ class LanguageSelect {
     // Collect unique languages found in the document and assign colors
     const langElements = doc.querySelectorAll("*[lang]");
     langElements.forEach((el: Element) => {
-      const langFound: string = LanguageSelect.cleanLangAttr(el.getAttribute("lang"));
+      const langFound: string = EasyLangMarkup.cleanLangAttr(el.getAttribute("lang"));
       if (langFound && !languagesFound.hasOwnProperty(langFound)) {
         languagesFound[langFound] =
           (availableColors.length > 0 ? availableColors.shift() : defaultColor) || defaultColor;
@@ -1708,12 +1708,12 @@ class LanguageSelect {
 
     // Merge predefined language colors into the found languages
     Object.keys(self.langColors).forEach((langCode) => {
-      languagesFound[LanguageSelect.cleanLangAttr(langCode)] = self.langColors[langCode];
+      languagesFound[EasyLangMarkup.cleanLangAttr(langCode)] = self.langColors[langCode];
     });
 
     // Create and append a new stylesheet for language markup visualization
     const styleSheet = doc.createElement("style");
-    styleSheet.setAttribute("id", LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
+    styleSheet.setAttribute("id", EasyLangMarkup.CONFIG.LANG_ATTR_QA_ID);
 
     styleSheet.appendChild(
       doc.createTextNode(`
@@ -1791,8 +1791,8 @@ class LanguageSelect {
    * Re-applies the styles if the LanguageSelect.CONFIG.LANG_ATTR_QA_ID stylesheet is present.
    */
   private refreshQaStyles() {
-    const self: LanguageSelect = this;
-    const qaStyleElement = (self.getEditorDoc() || window.document).getElementById(LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
+    const self: EasyLangMarkup = this;
+    const qaStyleElement = (self.getEditorDoc() || window.document).getElementById(EasyLangMarkup.CONFIG.LANG_ATTR_QA_ID);
     if (qaStyleElement) {
       self.revealLangMarkUp();
     }
@@ -1802,11 +1802,11 @@ class LanguageSelect {
    * Removes the language markup stylesheet from the TinyMCE editor document.
    */
   private hideLangMarkUp() {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     const doc = self.getEditorDoc() || window.document;
 
     // Remove the stylesheet for viewing lang markup if it exists
-    const styleElement = doc.getElementById(LanguageSelect.CONFIG.LANG_ATTR_QA_ID);
+    const styleElement = doc.getElementById(EasyLangMarkup.CONFIG.LANG_ATTR_QA_ID);
     if (styleElement?.parentElement) {
       styleElement.parentElement.removeChild(styleElement);
     }
@@ -1820,27 +1820,27 @@ class LanguageSelect {
    * @param {string} langValue - The language code to set as the default document language.
    */
   private setDefaultDocumentLanguage(langValue: string) {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     const editorDoc = self.getEditorDoc();
 
-    if (editorDoc && LanguageSelect.isNotBlank(langValue)) {
+    if (editorDoc && EasyLangMarkup.isNotBlank(langValue)) {
 
       if (self.editor?.undoManager?.transact) {
         self.editor.undoManager.transact(() => {
 
-          const dir = LanguageSelect.getTextDirection(langValue);
-          langValue = LanguageSelect.cleanLangAttr(langValue);
-          let defaultLangDiv = editorDoc.getElementById(LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID);
+          const dir = EasyLangMarkup.getTextDirection(langValue);
+          langValue = EasyLangMarkup.cleanLangAttr(langValue);
+          let defaultLangDiv = editorDoc.getElementById(EasyLangMarkup.CONFIG.DEFAULT_LANG_HOLDER_ID);
 
           // Create or update the language holder div
           if (defaultLangDiv) {
             defaultLangDiv.setAttribute("lang", langValue);
-            if (LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
+            if (EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
           } else {
             defaultLangDiv = editorDoc.createElement("div");
-            defaultLangDiv.id = LanguageSelect.CONFIG.DEFAULT_LANG_HOLDER_ID;
+            defaultLangDiv.id = EasyLangMarkup.CONFIG.DEFAULT_LANG_HOLDER_ID;
             defaultLangDiv.setAttribute("lang", langValue);
-            if (LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
+            if (EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
             editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
           }
 
@@ -1880,7 +1880,7 @@ class LanguageSelect {
    * Also removes any empty `span` elements with only the class `langMarkUp`.
    */
   private removeLangMarkupAtCursor(): void {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     const doc: Document | null = self.getEditorDoc();
     if (!doc) return;
 
@@ -1959,7 +1959,7 @@ class LanguageSelect {
    * Unwraps and removes any `span` elements with only the `langMarkUp` class.
    */
   private removeAllLangSpans(): void {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     if (!confirm(self.translate('Really remove all language markup from the document?')))
       return;
 
@@ -1999,14 +1999,14 @@ class LanguageSelect {
     if (!langValue || typeof langValue != 'string') return;
 
     // Clean and standardize the language attribute value
-    langValue = LanguageSelect.cleanLangAttr(langValue);
+    langValue = EasyLangMarkup.cleanLangAttr(langValue);
 
     // Define a unique format name based on the language code
     const formatToApply: string = "setLangTo_" + langValue;
-    const dir = LanguageSelect.getTextDirection(langValue);
+    const dir = EasyLangMarkup.getTextDirection(langValue);
 
     // Register the new format with TinyMCE
-    if (LanguageSelect.CONFIG.SET_DIR_WHEN_SETTING_LANG) {
+    if (EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG) {
       this.editor.formatter.register(formatToApply, {
         inline: "span",
         attributes: {
@@ -2036,7 +2036,7 @@ class LanguageSelect {
    * @param {string} langValue - The language code to apply to the document.
    */
   private setDocLangTo(langValue: string): void {
-    langValue = LanguageSelect.cleanLangAttr(langValue);
+    langValue = EasyLangMarkup.cleanLangAttr(langValue);
     const formatToApply = `setLangTo_${langValue}`;
 
 
@@ -2064,8 +2064,8 @@ class LanguageSelect {
    *
    * @param {string} newLang - The new language code to display on the button.
    */
-  private updateLanguageSelector(newLang: string | null = null) {
-    const self: LanguageSelect = this;
+  private updateToolbarButtonText(newLang: string | null = null) {
+    const self: EasyLangMarkup = this;
     try {
       // If the button pointer is not yet set, search for the language button in the DOM
       if (!this.myButtonTextPtr) {
@@ -2097,13 +2097,13 @@ class LanguageSelect {
       // If the button was found, update its text with the new language or fallback to the default
       if (this.myButtonTextPtr) {
         if (this.showCurrentLangCodeOnly) {
-          if (LanguageSelect.isNotBlank(newLang)) {
+          if (EasyLangMarkup.isNotBlank(newLang)) {
             this.myButtonTextPtr.innerText = newLang;
           } else {
             this.myButtonTextPtr.innerHTML = this.myButtonTextPtr.dataset.originalHTML || '';
           }
         } else {
-          if (LanguageSelect.isNotBlank(newLang)) {
+          if (EasyLangMarkup.isNotBlank(newLang)) {
             this.myButtonTextPtr.innerText =
               this.getShortLanguageCodeDescription(newLang.toLowerCase()) || newLang || self.translate('-Language Not Set-');
           } else {
@@ -2117,7 +2117,7 @@ class LanguageSelect {
   }
 
   private readonly initializeLanguageMenuEntriesList = () => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     // Initialize language menu items if they are not already populated
     if (self.langMenuItems.length > 0 && self.updatedLanguageDefaultsUsed) {
       return;
@@ -2132,7 +2132,7 @@ class LanguageSelect {
     self.defaultLanguages.forEach((lang: string) => {
       const lower = lang.toLowerCase();
       if (
-        self.langMenuItems.length < LanguageSelect.CONFIG.MAX_MENU_ITEMS &&
+        self.langMenuItems.length < EasyLangMarkup.CONFIG.MAX_MENU_ITEMS &&
         !self.langMenuItems.includes(lower)
       ) {
         self.langMenuItems.push(lower);
@@ -2148,7 +2148,7 @@ class LanguageSelect {
   };
 
   private readonly buildEasyLangMenuItemsV4 = (): any[] => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     const items: any[] = [];
 
     self.initializeLanguageMenuEntriesList();
@@ -2161,7 +2161,7 @@ class LanguageSelect {
       const label =
         self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
         `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${lang})` :
-        LanguageSelect.cleanLangAttr(lang);
+        EasyLangMarkup.cleanLangAttr(lang);
 
       const shortCutLetter = self.shortcutLetterForLang[lang] || '';
       const shortcutLabel =  shortCutLetter ? self.formatShortcutForDisplay(`${self.shortcutModifiers}${shortCutLetter.toUpperCase()}`) : undefined;
@@ -2261,7 +2261,7 @@ class LanguageSelect {
           self.showCurrentLanguage = !self.showCurrentLanguage;
           self.showCurrentLangCodeOnly = true;
           if (self.showCurrentLanguage) {
-            self.updateLanguageSelector();
+            self.updateToolbarButtonText();
           }
           menuItem.active(self.showCurrentLanguage);
           if (self?.editor?.focus) self.editor.focus();
@@ -2276,7 +2276,7 @@ class LanguageSelect {
   };
 
   private readonly buildEasyLangMenuItemsPostV4 = (callback: Function | null = null) => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     const items: Types.LanguageMenuItem[] = []; // Array to hold menu items
 
     self.initializeLanguageMenuEntriesList();
@@ -2287,7 +2287,7 @@ class LanguageSelect {
       const label =
         self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
         `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${lang})` :
-        LanguageSelect.cleanLangAttr(lang);
+        EasyLangMarkup.cleanLangAttr(lang);
 
       const shortCutLetter = self.shortcutLetterForLang[lang] || '';
       const shortcutLabel: string | undefined =  shortCutLetter ? self.formatShortcutForDisplay(`${self.shortcutModifiers}${shortCutLetter.toUpperCase()}`) : undefined;
@@ -2391,9 +2391,9 @@ class LanguageSelect {
           self.showCurrentLanguage = !self.showCurrentLanguage;
           self.showCurrentLangCodeOnly = true; // Not enough room to show language name
           if (self.showCurrentLanguage) {
-            self.updateLanguageSelector(); // Show current language in toolbar
+            self.updateToolbarButtonText(); // Show current language in toolbar
           } else {
-            // self.updateLanguageSelector('');
+            // self.updateToolbarButtonText('');
           }
           if (self?.editor?.focus) self.editor.focus(); // Bring focus back to the editor
         },
@@ -2412,7 +2412,7 @@ class LanguageSelect {
   };
 
   private readonly addKeyboardShortcuts = () => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     if (!self.enableKeyboardShortcuts) return;
     if (!self.editor || !self.editor.addCommand || !self.editor.addShortcut) return;
 
@@ -2449,11 +2449,12 @@ class LanguageSelect {
 
   // Initialize settings specific to TinyMCE version 4 as needed by WP/Pressbooks
   private initV4() {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     if (!self.editor || !self.editor.getParam || !self.editor.addButton) throw new Error('No supported editor instance found');
 
-    self.editor.addButton('languageSelector', {
+    // Create toolbar button
+    self.editor.addButton('easylang_toolbar', {
       type: 'menubutton',
       text: self.iconName ? null : 'Language',
       icon: self.iconName ? self.iconName : null,
@@ -2526,11 +2527,11 @@ class LanguageSelect {
 
             // Update the visible label if you support “show current language”
             if (self.showCurrentLanguage) {
-              self.updateLanguageSelector(lastCurrentLang);
+              self.updateToolbarButtonText(lastCurrentLang);
             }
 
             // Set the active state when a lang is present
-            ctrl.active(LanguageSelect.isNotBlank(lastCurrentLang));
+            ctrl.active(EasyLangMarkup.isNotBlank(lastCurrentLang));
           }
         };
 
@@ -2570,12 +2571,12 @@ class LanguageSelect {
         context: self.addToV4MenuContext || "format",
         menu: self.buildEasyLangMenuItemsV4()
       };
-      self.editor.addMenuItem('easyLangMenu', menuItem);
+      self.editor.addMenuItem('easylang_menu', menuItem);
     }
   }
 
   private initPostV4() {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     if (!self.editor || !self.editor.getParam || !self.editor.ui?.registry?.addIcon) throw new Error('No supported editor instance found');
 
@@ -2596,15 +2597,15 @@ class LanguageSelect {
       self.addKeyboardShortcuts();
     }
 
-    self.editor.ui.registry.addNestedMenuItem("easyLangMenu", {
+    self.editor.ui.registry.addNestedMenuItem("easylang_menu", {
       text: "Language",
       getSubmenuItems: function () {
         return self.buildEasyLangMenuItemsPostV4();
       },
     });
 
-    // Register a new menu button for selecting language in the TinyMCE editor
-    self.editor.ui.registry.addMenuButton("languageSelector", {
+    // Create toolbar button
+    self.editor.ui.registry.addMenuButton("easylang_toolbar", {
       text: self.showCurrentLanguage ? self.translate('-Language Not Set-') : null, // Default text for the button when no language is set
       icon: self.showCurrentLanguage ? null : (self.iconName || "easyLangIcon"),
       tooltip: self.translate('Set text language'), // Tooltip for the button
@@ -2620,7 +2621,7 @@ class LanguageSelect {
             currentNode = self.editor.selection.getNode();
             let lastCurrentLang: string = '';
             [lastCurrentLang] = self.getDocumentElementLang(currentNode); // Get current document language
-            if (self.showCurrentLanguage) self.updateLanguageSelector(lastCurrentLang); // Update button text based on the current language
+            if (self.showCurrentLanguage) self.updateToolbarButtonText(lastCurrentLang); // Update button text based on the current language
             buttonApi.setActive(lastCurrentLang > "");
           }
         };
@@ -2695,14 +2696,14 @@ class LanguageSelect {
 
 
   private readonly processEditorConfigParameters = (): void => {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
 
     // --- Language detection for content ---
     // Same behavior as your current init() line, but centralized here.
     self.editorLanguage =
       self.getLanguageFromEditorSettings() ||
       self.getLanguageFromTopDocument() ||
-      LanguageSelect.CONFIG.DEFAULT_LANG;
+      EasyLangMarkup.CONFIG.DEFAULT_LANG;
 
     // --- Show current language in toolbar label ---
     // Truthy value means "show"; default is false.
@@ -2737,10 +2738,10 @@ class LanguageSelect {
     let shortcutModifiers: string =
       self.getEditorConfigParameter(
         'easylang_shortcut_modifiers',
-        LanguageSelect.CONFIG.DEFAULT_SHORTCUT_MODIFIERS
+        EasyLangMarkup.CONFIG.DEFAULT_SHORTCUT_MODIFIERS
       ) || '';
 
-    if (LanguageSelect.isNotBlank(shortcutModifiers)) {
+    if (EasyLangMarkup.isNotBlank(shortcutModifiers)) {
       // Normalize: always end in "+" and scrub to allowed characters.
       if (shortcutModifiers.slice(-1) !== '+') {
         shortcutModifiers += '+';
@@ -2782,7 +2783,7 @@ class LanguageSelect {
       null
     );
 
-    if (LanguageSelect.isNotBlank(toolbarIconRaw)) {
+    if (EasyLangMarkup.isNotBlank(toolbarIconRaw)) {
       self.iconName = String(toolbarIconRaw).trim();
     } else if (
       (self.isWordPress || self.useDashIcons) &&
@@ -2810,16 +2811,16 @@ class LanguageSelect {
       const newDefaultLanguages: string[] = [];
 
       contentLangs.forEach((language: Types.ContentLanguage) => {
-        if (LanguageSelect.isValidLang(language.code)) {
+        if (EasyLangMarkup.isValidLang(language.code)) {
           const newCode = language.code.toLowerCase();
           newDefaultLanguages.push(newCode);
 
           const newLanguageTitle = (language.title || '').trim();
           if (
             newLanguageTitle &&
-            !Object.prototype.hasOwnProperty.call(LanguageSelect.languageTags, newCode)
+            !Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, newCode)
           ) {
-            LanguageSelect.languageTags[newCode] = newLanguageTitle || newCode;
+            EasyLangMarkup.languageTags[newCode] = newLanguageTitle || newCode;
           }
         }
       });
@@ -2841,7 +2842,7 @@ class LanguageSelect {
    *   "es-MX" and drop plain "es" (also moves any base color to the region code)
    */
   private getEditorDocumentLanguages(): string[] {
-  const self: LanguageSelect = this;
+  const self: EasyLangMarkup = this;
   if (!(self.editor && (self.editor as any).getDoc)) {
     console.warn('LanguageSelect: no editor.getDoc available');
     return [];
@@ -2856,19 +2857,19 @@ class LanguageSelect {
 
     elementsWithLang.forEach((el: Element) => {
       const v = (el.getAttribute('lang') || '').trim();
-      if (LanguageSelect.isValidLang(v)) rawLangs.push(v);
+      if (EasyLangMarkup.isValidLang(v)) rawLangs.push(v);
     });
 
     // Also include the editor's default document language if valid
-    if (LanguageSelect.isValidLang(self.editorLanguage)) {
+    if (EasyLangMarkup.isValidLang(self.editorLanguage)) {
       rawLangs.push(self.editorLanguage);
     }
 
     // Build frequency map of cleaned, valid lang codes
     const freq: Record<string, number> = {};
     rawLangs.forEach((v) => {
-      const cleaned = LanguageSelect.cleanLangAttr(v);
-      if (!LanguageSelect.isValidLang(cleaned)) return;
+      const cleaned = EasyLangMarkup.cleanLangAttr(v);
+      if (!EasyLangMarkup.isValidLang(cleaned)) return;
 
       const lower = cleaned.toLowerCase();
       freq[lower] = (freq[lower] || 0) + 1;
@@ -2934,7 +2935,7 @@ class LanguageSelect {
    * the generic defaults.
    */
   private updateDefaultLanguagesFromDocument(): void {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     if(self.documentHasBeenScanned) {
       return;
     }
@@ -2946,16 +2947,16 @@ class LanguageSelect {
       return;
     }
 
-    const max = LanguageSelect.CONFIG.MAX_MENU_ITEMS;
+    const max = EasyLangMarkup.CONFIG.MAX_MENU_ITEMS;
     self.defaultLanguages = langs.slice(0, max);
 
-    if(LanguageSelect.isValidLang(self.editorLanguage)) {
+    if(EasyLangMarkup.isValidLang(self.editorLanguage)) {
       // Make sure editor language is included (or a region variant)
       const editorLangBase = self.editorLanguage.split('-')[0].toLowerCase();
       const hasEditorLang = self.defaultLanguages.some((code) => {
         return code.split('-')[0] === editorLangBase;
       });
-      if (!hasEditorLang && LanguageSelect.isValidLang(self.editorLanguage)) {
+      if (!hasEditorLang && EasyLangMarkup.isValidLang(self.editorLanguage)) {
         if (self.defaultLanguages.length < max) {
           self.defaultLanguages.push(self.editorLanguage.toLowerCase());
         } else {
@@ -2969,7 +2970,7 @@ class LanguageSelect {
   /* Common init for all TinyMCE versions
    */
   public init() {
-    const self: LanguageSelect = this;
+    const self: EasyLangMarkup = this;
     if (!self.editor) throw new Error('No supported editor instance found');
 
     this.isTinyMCE4 = /^4/.test(String((tinymce && (tinymce.majorVersion || tinymce.version)) || ''));

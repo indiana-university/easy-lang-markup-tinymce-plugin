@@ -16,7 +16,7 @@ document language and language changes within content.
 - Support for WordPerfect
   - Autodetection of dashicons
   - Support for tinyMCE 4
-  - Support for WP translation services via [wp_localize_script](https://developer.wordpress.org/reference/functions/wp_localize_script/) and PB_LanguageSelectorToken object
+  - Support for WP translation services via [wp_localize_script](https://developer.wordpress.org/reference/functions/wp_localize_script/) and PB_EasyLangToken object
   - ./utils/build_wp_localize_script_block.js will auto-build wp_localize_script call
 - All translation keys are literal strings that go through .translate(key) to support auto-localization tools
 
