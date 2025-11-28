@@ -2825,10 +2825,21 @@ class EasyLangMarkup {
     //   1. explicit easylang_toolbar_icon (string)
     //   2. Dashicons translation icon (if WP or forced & available)
     //   3. null (no icon class; rely on default SVG icon registered elsewhere)
-    const toolbarIconRaw = self.getEditorConfigParameter(
+    let toolbarIconRaw = self.getEditorConfigParameter(
       'easylang_toolbar_icon',
       null
     );
+
+    if (typeof toolbarIconRaw !== "string") {
+      toolbarIconRaw = null;
+    } else {
+      toolbarIconRaw = toolbarIconRaw.trim();
+      if(toolbarIconRaw.length === 0 || toolbarIconRaw.length > 50) {
+        toolbarIconRaw = null;
+      } else if (/[^a-zA-Z0-9_\-\s]/.test(toolbarIconRaw)) {
+        toolbarIconRaw = null;
+      }
+    }
 
     if (EasyLangMarkup.isNotBlank(toolbarIconRaw)) {
       self.iconName = String(toolbarIconRaw).trim();
@@ -2840,6 +2851,8 @@ class EasyLangMarkup {
       // WordPress-style icon class
       self.iconName = 'icon dashicons dashicons-translation';
       self.useDashIcons = true;
+    } else if (!self.isTinyMCE4) {
+      self.iconName = 'easyLangIcon';
     } else {
       self.iconName = null;
     }
