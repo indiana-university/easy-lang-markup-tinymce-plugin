@@ -578,19 +578,21 @@ class EasyLangMarkup {
   }
 
   getLanguageFromTopDocument(): string | null {
-    if (!window || !window.top?.document) {
-      return null;
-    }
+    try {
+      if (!window || !window.top?.document) {
+        return null;
+      }
 
-    if (window.top.document.body) {
-      const bodyLang = EasyLangMarkup.getValidLangAttribute(window.top.document.body);
-      if (EasyLangMarkup.isValidLang(bodyLang)) return bodyLang;
-    }
+      if (window.top.document.body) {
+        const bodyLang = EasyLangMarkup.getValidLangAttribute(window.top.document.body);
+        if (EasyLangMarkup.isValidLang(bodyLang)) return bodyLang;
+      }
 
-    if (window.top.document.documentElement) {
-      const docLang = EasyLangMarkup.getValidLangAttribute(window.top.document.documentElement);
-      if (EasyLangMarkup.isValidLang(docLang)) return docLang;
-    }
+      if (window.top.document.documentElement) {
+        const docLang = EasyLangMarkup.getValidLangAttribute(window.top.document.documentElement);
+        if (EasyLangMarkup.isValidLang(docLang)) return docLang;
+      }
+    } catch (_) {}
 
     return null;
   }
