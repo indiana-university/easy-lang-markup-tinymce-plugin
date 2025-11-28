@@ -20,6 +20,7 @@ class EasyLangMarkup {
     DEFAULT_TOOLBAR_ICON: 'easyLangIcon',
     DEFAULT_SHORTCUT_MODIFIERS: 'ctrl+alt+',
     SHOW_SHORTCUTS_AS_TEXT: false,
+    MAX_TRANSLATION_LENGTH: 200,
   } as const;
 
   private isTinyMCE4: boolean = false;
@@ -270,6 +271,23 @@ class EasyLangMarkup {
     return bcp47Regex.test(trimmedLang);
   }
 
+  private sanitizeTranslation(raw: unknown): string {
+    if (typeof raw !== 'string') return '';
+
+    // Trim, collapse whitespace
+    let s = raw.trim().replace(/\s+/g, ' ');
+
+    // Optional: strip angle brackets to avoid any accidental HTML
+    s = s.replace(/[<>]/g, '');
+
+    // Optional: cap length to something sane
+    if (s.length > EasyLangMarkup.CONFIG.MAX_TRANSLATION_LENGTH) {
+      s = s.slice(0, EasyLangMarkup.CONFIG.MAX_TRANSLATION_LENGTH) + '…';
+    }
+
+    return s;
+  }
+
   /**
    * Translates a given key using the TinyMCE editor's translation function if available.
    * Falls back to returning the key itself if no translation function is present.
@@ -277,17 +295,19 @@ class EasyLangMarkup {
    * @returns The translated string or the original key if no translation is found
    */
   public translate(key: string): string {
-    const self: EasyLangMarkup = this;
+    const self = this;
     const pb = (window as any).PB_EasyLangToken;
 
+    let raw: unknown = key;
+
     if (pb && typeof pb[key] === 'string') {
-      return pb[key];
+      raw = pb[key];
+    } else if (self.editor && self.editor.translate) {
+      const t = self.editor.translate(key);
+      raw = t || key;
     }
 
-    if(self.editor && self.editor.translate) {
-      return self.editor.translate(key) || key;
-    }
-    return key;
+    return self.sanitizeTranslation(raw);
   }
 
   /**
