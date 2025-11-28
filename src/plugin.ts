@@ -2743,19 +2743,19 @@ class EasyLangMarkup {
   private readonly processEditorConfigParameters = (): void => {
     const self: EasyLangMarkup = this;
 
-    // --- Language detection for content ---
-    // Same behavior as your current init() line, but centralized here.
     self.editorLanguage =
       self.getLanguageFromEditorSettings() ||
       self.getLanguageFromTopDocument() ||
       EasyLangMarkup.CONFIG.DEFAULT_LANG;
+    if (!EasyLangMarkup.isValidLang(self.editorLanguage)) {
+      self.editorLanguage = EasyLangMarkup.CONFIG.DEFAULT_LANG;
+    }
 
-    // --- Show current language in toolbar label ---
-    // Truthy value means "show"; default is false.
     self.showCurrentLanguage = !!self.getEditorConfigParameter(
       'easylang_show_current_language',
       false
     );
+    self.showCurrentLanguage = self.showCurrentLanguage === true && !self.isTinyMCE4;
 
     // --- Keyboard shortcuts on/off ---
     // Default is true; explicitly setting `false` disables shortcuts.
@@ -2768,7 +2768,11 @@ class EasyLangMarkup {
     // --- Reserved shortcut letters (plugin-specific) ---
     const reservedLettersRaw =
       self.getEditorConfigParameter('easylang_reserved_shortcut_letters', '') || '';
-    self.reservedShortcutLetters = String(reservedLettersRaw).toLowerCase().replace(/[^a-z]/g, '');
+    if (typeof reservedLettersRaw !== 'string' || reservedLettersRaw.length> 26) {
+      self.reservedShortcutLetters = '';
+    } else {
+      self.reservedShortcutLetters = String(reservedLettersRaw).toLowerCase().replace(/[^a-z]/g, '');
+    }
 
     // --- Dashicons usage flags ---
     // Single option `easylang_use_dashicons`:
@@ -2793,28 +2797,20 @@ class EasyLangMarkup {
       }
       shortcutModifiers = shortcutModifiers
         .toLowerCase()
-        .replace(/[^a-z+\-]/g, '');
+        .replace(/[^a-z+]/g, '');
     }
 
     self.shortcutModifiers = shortcutModifiers;
 
-    self.displayShortcutsAsText =
-      self.getEditorConfigParameter('easylang_shortcut_modifier_display', "symbols").toLowerCase() === "text";
+    self.setDirWhenSettingLang = !!self.getEditorConfigParameter('easylang_set_dir_when_setting_lang', EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG);
 
-      self.setDirWhenSettingLang = !!self.getEditorConfigParameter('easylang_set_dir_when_setting_lang', EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG);
-
-    // --- Add to TinyMCE 4 "Format" menu (or other menu) ---
-    const addToV4MenuRaw = self.getEditorConfigParameter(
-      'easylang_add_to_v4menu',
-      true
-    );
-
-    // Default: true unless explicitly set to false.
+    // --- Add to TinyMCE 4 "Format" menu (or other menu) true unless explicitly set to false ---
+    const addToV4MenuRaw = self.getEditorConfigParameter('easylang_add_to_v4menu', true);
     self.addToV4Menu = (addToV4MenuRaw !== false);
 
     // If a string is given, treat it as the menu context ("format", "tools", etc.)
     if (typeof addToV4MenuRaw === 'string') {
-      self.addToV4MenuContext = addToV4MenuRaw.trim() || 'format';
+      self.addToV4MenuContext = addToV4MenuRaw.trim().replace(/[^a-z_\-]/g, '') || 'format';
     } else {
       // Default context if not provided as a string
       self.addToV4MenuContext = 'format';
@@ -2863,9 +2859,8 @@ class EasyLangMarkup {
     // --- content_langs override for defaultLanguages ---
     const contentLangs = self.getEditorConfigParameter(
       'content_langs',
-      null
+      self.getEditorConfigParameter('easylang_langs', null)
     ) as Types.ContentLanguage[] | null;
-
 
     if (Array.isArray(contentLangs) && contentLangs.length > 0) {
       const newDefaultLanguages: string[] = [];
@@ -2875,12 +2870,14 @@ class EasyLangMarkup {
           const newCode = language.code.toLowerCase();
           newDefaultLanguages.push(newCode);
 
-          const newLanguageTitle = (language.title || '').trim();
-          if (
-            newLanguageTitle &&
-            !Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, newCode)
-          ) {
-            EasyLangMarkup.languageTags[newCode] = newLanguageTitle || newCode;
+          if(typeof language.title === 'string' && language.title.length < 50) {
+            const newLanguageTitle = (language.title || '').replace(/[\r\n\t\s<>]+/g, ' ').trim();
+            if (
+              newLanguageTitle &&
+              !Object.prototype.hasOwnProperty.call(EasyLangMarkup.languageTags, newCode)
+            ) {
+              EasyLangMarkup.languageTags[newCode] = newLanguageTitle;
+            }
           }
         }
       });
@@ -2989,7 +2986,7 @@ class EasyLangMarkup {
    */
   private updateDefaultLanguagesFromDocument(): void {
     const self: EasyLangMarkup = this;
-    if(self.documentHasBeenScanned) {
+    if(self.documentHasBeenScanned || !self.scanDocumentOnLoad) {
       return;
     }
     self.documentHasBeenScanned = true;
