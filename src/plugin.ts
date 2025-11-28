@@ -29,6 +29,7 @@ class EasyLangMarkup {
   private scanDocumentOnLoad: boolean = true;
   private documentHasBeenScanned: boolean = false;
   private updatedLanguageDefaultsUsed: boolean = false;
+  private setDirWhenSettingLang: boolean = EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG;
 
   private cssHasDashIcons: boolean = false;
   private iconName: string | null = EasyLangMarkup.CONFIG.DEFAULT_TOOLBAR_ICON;
@@ -1833,12 +1834,12 @@ class EasyLangMarkup {
           // Create or update the language holder div
           if (defaultLangDiv) {
             defaultLangDiv.setAttribute("lang", langValue);
-            if (EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
+            if ( self.setDirWhenSettingLang ) defaultLangDiv.setAttribute("dir", dir);
           } else {
             defaultLangDiv = editorDoc.createElement("div");
             defaultLangDiv.id = EasyLangMarkup.CONFIG.DEFAULT_LANG_HOLDER_ID;
             defaultLangDiv.setAttribute("lang", langValue);
-            if (EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG) defaultLangDiv.setAttribute("dir", dir);
+            if ( self.setDirWhenSettingLang ) defaultLangDiv.setAttribute("dir", dir);
             editorDoc.body.insertBefore(defaultLangDiv, editorDoc.body.firstChild);
           }
 
@@ -1997,7 +1998,9 @@ class EasyLangMarkup {
    * @param {string} lang - The language code to be applied to the selected text.
    */
   private registerFormat(langValue: string) {
-    if (!(this.editor && this.editor.formatter && this.editor.formatter.register)) {
+    const self: EasyLangMarkup = this;
+
+    if (!(self.editor && self.editor.formatter && self.editor.formatter.register)) {
       console.warn('No editor');
       return;
     }
@@ -2011,8 +2014,8 @@ class EasyLangMarkup {
     const dir = EasyLangMarkup.getTextDirection(langValue);
 
     // Register the new format with TinyMCE
-    if (EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG) {
-      this.editor.formatter.register(formatToApply, {
+    if (self.setDirWhenSettingLang) {
+      self.editor.formatter.register(formatToApply, {
         inline: "span",
         attributes: {
           lang: langValue,
@@ -2021,7 +2024,7 @@ class EasyLangMarkup {
         },
       });
     } else {
-      this.editor.formatter.register(formatToApply, {
+      self.editor.formatter.register(formatToApply, {
         inline: "span",
         attributes: {
           lang: langValue,
@@ -2031,7 +2034,7 @@ class EasyLangMarkup {
     }
 
     // Track the registered format to avoid duplicate registrations
-    this.langFormatsRegistered[formatToApply] = true;
+    self.langFormatsRegistered[formatToApply] = true;
   }
 
   /**
@@ -2041,25 +2044,26 @@ class EasyLangMarkup {
    * @param {string} langValue - The language code to apply to the document.
    */
   private setDocLangTo(langValue: string): void {
+    const self: EasyLangMarkup = this;
+
     langValue = EasyLangMarkup.cleanLangAttr(langValue);
     const formatToApply = `setLangTo_${langValue}`;
 
-
     // Ensure the format is registered before applying
-    if (!this.langFormatsRegistered.hasOwnProperty(formatToApply)) {
-      this.registerFormat(langValue);
+    if (!self.langFormatsRegistered.hasOwnProperty(formatToApply)) {
+      self.registerFormat(langValue);
     }
 
     // Apply the format within an undo transaction
-    if (this.editor?.undoManager?.transact) {
-      this.editor.undoManager.transact(() => {
-        if (this.editor?.formatter?.apply) this.editor.formatter.apply(formatToApply);
+    if (self.editor?.undoManager?.transact) {
+      self.editor.undoManager.transact(() => {
+        if (self.editor?.formatter?.apply) self.editor.formatter.apply(formatToApply);
       });
     }
 
     // Refresh the QA styles to reflect the new language format
-    this.refreshQaStyles();
-    if (this.editor?.focus) this.editor.focus();
+    self.refreshQaStyles();
+    if (self.editor?.focus) self.editor.focus();
   }
 
   /**
@@ -2740,6 +2744,8 @@ class EasyLangMarkup {
 
     self.displayShortcutsAsText =
       self.getEditorConfigParameter('easylang_shortcut_modifier_display', "symbols").toLowerCase() === "text";
+
+      self.setDirWhenSettingLang = !!self.getEditorConfigParameter('easylang_set_dir_when_setting_lang', EasyLangMarkup.CONFIG.SET_DIR_WHEN_SETTING_LANG);
 
     // --- Add to TinyMCE 4 "Format" menu (or other menu) ---
     const addToV4MenuRaw = self.getEditorConfigParameter(

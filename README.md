@@ -283,6 +283,14 @@ tinymce.init({
 
 ---
 
+### `easylang_set_dir_when_setting_lang`
+
+Enables automatically adding dir attribute when setting a lang attribute.
+
+**Default:** `true`
+
+---
+
 ### `easylang_shortcut_modifiers`
 
 Allows setting the modifiers for keyboard shortcuts used by the easylang plugin. 
