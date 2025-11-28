@@ -92,6 +92,14 @@ class EasyLangMarkup {
     return typeof value === 'string' && value.trim().length > 0;
   }
 
+
+  static stripAccents(str: any): string | null {
+    if (typeof str !== 'string') return null;
+    return str
+      .normalize("NFD")             // split letters and accents
+      .replace(/[\u0300-\u036f]/g, "");  // remove accent marks
+  }
+
   /**
    * Detect whether we're running on macOS / iOS.
    */
@@ -171,7 +179,9 @@ class EasyLangMarkup {
     if (!this.usedShortcutLetters) this.usedShortcutLetters = {};
 
     const tryLetter = (ch: string | null | undefined): string | null => {
+      ch = EasyLangMarkup.stripAccents(ch);
       if (!ch) return null;
+
       const letter = ch.toLowerCase();
       if (!/^[a-z]$/.test(letter)) return null;
       if (this.usedShortcutLetters[letter]) return null;
@@ -184,7 +194,7 @@ class EasyLangMarkup {
     if (preferred) return preferred;
 
     // 2) Try letters from the language *name* (e.g., “French”, “Spanish”)
-    const languageName = this.getLanguageNameForLocale(langValue)?.toLowerCase().trim();
+    const languageName = (this.getLanguageNameForLocale(langValue)+langValue)?.toLowerCase().trim();
     if (languageName) {
       for (const char of [...languageName]) {
         const candidate = tryLetter(char);
