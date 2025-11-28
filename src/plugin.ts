@@ -2064,6 +2064,7 @@ class EasyLangMarkup {
    */
   private updateToolbarButtonText(newLang: string | null = null) {
     const self: EasyLangMarkup = this;
+    if (self.isTinyMCE4) return; // This function is only for TinyMCE 5+)
     try {
       // If the button pointer is not yet set, search for the language button in the DOM
       if (!this.myButtonTextPtr) {
@@ -2249,27 +2250,6 @@ class EasyLangMarkup {
       }
     });
 
-    // --- Toggle: Indicate current language -----------------------------------
-    if (!self.showCurrentLanguage) {
-      items.push({
-        text: self.translate('Indicate current language'),
-        icon: self.useDashIcons ? 'icon dashicons dashicons-admin-site-alt3' : 'language',
-        onclick: function () {
-          const menuItem = this as Types.TinyMCE4MenuItem;
-          self.showCurrentLanguage = !self.showCurrentLanguage;
-          self.showCurrentLangCodeOnly = true;
-          if (self.showCurrentLanguage) {
-            self.updateToolbarButtonText();
-          }
-          menuItem.active(self.showCurrentLanguage);
-          if (self?.editor?.focus) self.editor.focus();
-        },
-        onPostRender: function () {
-          const menuItem = this as Types.TinyMCE4MenuItem;
-          menuItem.active(self.showCurrentLanguage);
-        }
-      });
-    }
     return items;
   };
 
