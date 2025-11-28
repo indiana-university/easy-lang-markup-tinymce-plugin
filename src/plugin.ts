@@ -271,6 +271,28 @@ class EasyLangMarkup {
     return bcp47Regex.test(trimmedLang);
   }
 
+  /**
+   * Safely normalizes and sanitizes a translation string so it can be used
+   * as plain text in TinyMCE UI elements (e.g., button labels, menu text,
+   * dialog titles, tooltips).
+   *
+   * This function ensures that translation values cannot accidentally
+   * introduce HTML, break component layouts, or produce unexpected UI
+   * behavior. It enforces the plugin’s invariant that all translations
+   * are *text-only*, not markup.
+   *
+   * Sanitization steps:
+   *   • Coerces non-string values to an empty string.
+   *   • Trims surrounding whitespace.
+   *   • Collapses internal whitespace to a single space.
+   *   • Removes `<` and `>` characters to prevent accidental HTML injection.
+   *   • Caps the string length to a safe maximum (default 200 characters)
+   *     to avoid layout-breaking translations.
+   *
+   * @param {unknown} raw - The incoming translation value. May be a string,
+   *                        or any type if supplied by external systems.
+   * @returns {string} A safe, normalized, plain-text translation string.
+   */
   private sanitizeTranslation(raw: unknown): string {
     if (typeof raw !== 'string') return '';
 
@@ -291,6 +313,13 @@ class EasyLangMarkup {
   /**
    * Translates a given key using the TinyMCE editor's translation function if available.
    * Falls back to returning the key itself if no translation function is present.
+   * 
+   * Translation strings (from PB_EasyLangToken or editor.translate) are only used as 
+   * labels (button text, menu text, dialog titles, tooltips).
+   * 
+   * They’re passed to TinyMCE in places like text, title, tooltip, not as innerHTML.
+   * Make sure translations are only ever used as text, not HTML) for security reasons.
+   * 
    * @param key - The translation key
    * @returns The translated string or the original key if no translation is found
    */
@@ -1851,6 +1880,8 @@ class EasyLangMarkup {
 
           const dir = EasyLangMarkup.getTextDirection(langValue);
           langValue = EasyLangMarkup.cleanLangAttr(langValue);
+          if ( !EasyLangMarkup.isValidLang(langValue) ) return;
+
           let defaultLangDiv = editorDoc.getElementById(EasyLangMarkup.CONFIG.DEFAULT_LANG_HOLDER_ID);
 
           // Create or update the language holder div
@@ -2030,6 +2061,7 @@ class EasyLangMarkup {
 
     // Clean and standardize the language attribute value
     langValue = EasyLangMarkup.cleanLangAttr(langValue);
+    if ( !EasyLangMarkup.isValidLang(langValue) ) return;
 
     // Define a unique format name based on the language code
     const formatToApply: string = "setLangTo_" + langValue;
@@ -2069,6 +2101,8 @@ class EasyLangMarkup {
     const self: EasyLangMarkup = this;
 
     langValue = EasyLangMarkup.cleanLangAttr(langValue);
+    if ( !EasyLangMarkup.isValidLang(langValue) ) return;
+
     const formatToApply = `setLangTo_${langValue}`;
 
     // Ensure the format is registered before applying
