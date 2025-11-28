@@ -20,11 +20,6 @@ document language and language changes within content.
   - ./utils/build_wp_localize_script_block.js will auto-build wp_localize_script call
 - All translation keys are literal strings that go through .translate(key) to support auto-localization tools
 
-## Security
-
-- The plugin code does not have any external dependencies beyond a supported tinyMCE instance and optionally WP
-- The only user inputs are to be a BCP 47 language tag and are santized by the bcp47Regex in isValidLang(lang: string)
-
 ## AI Utilization
 
 - Plugin code is AI code free. No code was directly copied from AI.
@@ -421,6 +416,83 @@ was found in a localization file. So, localization to `en-US` is the default and
 localization is needed then the `langs` folder does not need to be installed.
 
 See [./docs/i18n_notes.md](./docs/i18n_notes.md) for details.
+
+## Security
+
+### Overview
+
+The Easy Language Markup plugin is a client-side TinyMCE plugin that helps authors apply correct `lang` and (optionally) `dir` attributes to selected text. It does **not** send content to any external service, does not store data on its own, and does not modify server-side security or sanitization behavior.
+
+The plugin runs **entirely in the browser** inside the host editor (TinyMCE 4+ / WordPress / Pressbooks / Canvas, etc.). All existing security controls provided by the host platform (e.g., HTML sanitization, role and capability checks, CSP, iframe sandboxing) remain in effect and must continue to be used.
+
+### Data Handling
+
+- The plugin:
+  - Reads and writes only HTML attributes such as `lang` and `dir` on elements inside the editor.
+  - May create or remove inline `<span>` elements (or use existing ones) to apply language markup.
+  - Uses configuration values and localized UI strings that are passed into TinyMCE (e.g., via `editor.getParam`, `wp_localize_script`, or similar mechanisms).
+
+- The plugin:
+  - Does **not** perform network requests.
+  - Does **not** log or transmit document content outside the page.
+  - Does **not** persist any data beyond the editor document and in-memory plugin state.
+  - Does **not** have any external dependencies beyond a supported tinyMCE instance and optionally WP
+  - The only user inputs are to be a BCP 47 language tag and are santized by the bcp47Regex in `isValidLang(lang: string): boolean`
+
+### XSS and Content Sanitization
+
+This plugin is designed to operate within a **trusted editor environment** and assumes that:
+
+- The HTML content in the editor continues to be sanitized by the host application.
+  - Example (WordPress): using `wp_kses_post()` or a similar allow-list-based filter on save.
+  - Example (other apps): using a server-side HTML sanitizer to remove scripts and unsafe attributes.
+
+The plugin itself:
+
+- Never calls `eval`, `Function`, or similar dynamic code-execution APIs.
+- Does not intentionally inject raw HTML that contains `<script>` tags, event handlers, or inline JavaScript.
+- Uses DOM APIs to create and modify elements; any strings that are written into the DOM as attributes are sanitized.
+- Sanitizes configuration inputs to expected values in `processEditorConfigParameters()`
+- Sanitizes user inputs to valid BCP 47 language tags by the bcp47Regex in `isValidLang(lang: string): boolean`
+- Performs light sanitization of received translation strings. See Translation Strings and Localization below.
+
+> **Important:** This plugin does **not** replace server-side sanitization. You must continue to sanitize user content on save, just as you would for any other TinyMCE content.
+
+### Translation Strings and Localization
+
+The plugin uses translation strings that are passed in by the host environment, for example via:
+
+- TinyMCE’s `editor.translate()` or `addI18n` mechanisms.
+- WordPress’s `wp_localize_script()` or similar localization utilities.
+- Other host-specific translation systems.
+
+Security recommendations:
+
+- Only use **static, developer-supplied translation strings** in your localization files.
+- Do **not** feed user-generated content (e.g., form input, comments, or arbitrary text supplied by authors) into translation tables or plugin configuration values.
+- Translation keys and values must never contain HTML tags or JavaScript. They should be treated as plain text UI labels.
+
+### Configuration Options
+
+Configuration options are processed by `processEditorConfigParameters()` and are sanitized to their expected values. 
+However, these should be set to **trusted, static values** in your TinyMCE configuration or WordPress/Pressbooks integration code and **must not** be populated with arbitrary user input.
+
+### Integration Guidance
+
+When integrating this plugin with WordPress, Pressbooks, Canvas, or another platform:
+
+**Continue to sanitize saved content** using your existing HTML sanitization pipeline.
+
+### Reporting Security Issues
+
+If you believe you have found a security vulnerability in this plugin:
+
+1. **Do not** open a public issue with full details.
+2. Instead, please contact the maintainer via the email listed in the README file.
+3. Provide a clear, minimal example that demonstrates the issue, along with:
+   - The platform (e.g., WordPress, Pressbooks, Canvas),
+   - The TinyMCE version, and
+   - Any relevant configuration values.
 
 ## License
 
