@@ -1899,9 +1899,13 @@ class EasyLangMarkup {
           element = element.parentElement;
         }
 
-        // If a `lang` attribute is found, remove it and clean up the element if necessary
+        // If a `lang` attribute is found, remove it, any dir attribute, and clean up the element if necessary
         if (element?.removeAttribute) {
           element.removeAttribute("lang");
+        
+          if (element?.hasAttribute && element.hasAttribute("dir")) {
+            element.removeAttribute("dir");
+          }
 
           // If the element is a span with only the `langMarkUp` class and no other attributes, unwrap it
           if (
@@ -1968,6 +1972,9 @@ class EasyLangMarkup {
       const langElements = doc.querySelectorAll("*[lang]");
       langElements.forEach((langEl: Element) => {
         langEl.removeAttribute("lang");
+        if (langEl.hasAttribute("dir")) {
+          langEl.removeAttribute("dir");
+        }
         if (self.spanIsRemovable(langEl)) {
           self.unwrapElement(langEl);
         }
