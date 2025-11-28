@@ -2230,9 +2230,7 @@ class EasyLangMarkup {
     self.initializeLanguageMenuEntriesList();
     self.addKeyboardShortcuts()
 
-    // --- Language selection items -------------------------------------------
-
-    // Per-language items (top level)
+    // Create menu items for each language in langMenuItems
     self.langMenuItems.forEach((lang: string, index: number) => {
       const label =
         self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
@@ -2254,7 +2252,7 @@ class EasyLangMarkup {
       });
     });
 
-    // --- Remove language markup submenu --------------------------------------
+    // Add nested menu item for removing language markup
     items.push({
       text: self.translate('Remove Language Markup'),
       icon: self.useDashIcons ? 'icon dashicons dashicons-editor-removeformatting' : 'remove',
@@ -2278,7 +2276,7 @@ class EasyLangMarkup {
       ]
     });
 
-    // --- Configure languages --------------------------------------------------
+    // Add item to configure languages
     items.push({
       text: self.translate('Configure languages'),
       icon: self.useDashIcons ? 'icon dashicons dashicons-admin-generic' : 'preferences',
@@ -2293,7 +2291,7 @@ class EasyLangMarkup {
       }
     });
 
-    // --- Set default document language ---------------------------------------
+    // Add item to set default document language
     items.push({
       text: self.translate('Set default document language'),
       icon: self.useDashIcons ? 'icon dashicons dashicons-media-default' : 'document-properties',
@@ -2306,10 +2304,10 @@ class EasyLangMarkup {
       }
     });
 
-    // --- Toggle: Reveal lang markup ------------------------------------------
+    // Toggle item for revealing/hiding language markup
     items.push({
       text: self.translate('Reveal lang markup'),
-      icon: self.useDashIcons ? 'icon dashicons dashicons-visibility' : 'preview',
+      icon: self.useDashIcons ? 'icon dashicons dashicons-visibility' : 'Language',
       onclick: function () {
         const menuItem = this as Types.TinyMCE4MenuItem;
         self.tsViewMarkup = !self.tsViewMarkup;
@@ -2361,14 +2359,14 @@ class EasyLangMarkup {
     items.push({
       type: "nestedmenuitem",
       text: self.translate('Remove Language Markup'),
-      icon: "remove",
+      icon: self.useDashIcons ? 'dashicons-editor-removeformatting' : 'remove',
       disabled: false,
       getSubmenuItems: () => {
         return [
           {
             type: "menuitem",
             text: self.translate('Remove current lang value'),
-            icon: "remove",
+            icon: self.useDashIcons ? 'dashicons-editor-removeformatting' : 'remove',
             onAction: () => {
               self.removeLangMarkupAtCursor(); // Remove language markup at cursor
               if (self?.editor?.focus) self.editor.focus();
@@ -2377,7 +2375,7 @@ class EasyLangMarkup {
           {
             type: "menuitem",
             text: self.translate('Remove All lang markup'),
-            icon: "warning",
+            icon: self.useDashIcons ? 'dashicons-warning' : 'warning',
             onAction: () => {
               self.removeAllLangSpans(); // Remove all language markup in the document
               if (self?.editor?.focus) self.editor.focus();
@@ -2390,7 +2388,7 @@ class EasyLangMarkup {
     // Add item to configure languages
     items.push({
       type: "menuitem",
-      icon: "preferences",
+      icon: self.useDashIcons ? 'dashicons-admin-generic' : 'preferences',
       text: self.translate('Configure languages'),
       onAction: () => {
         // Open the configuration dialog for languages
@@ -2404,7 +2402,7 @@ class EasyLangMarkup {
     // Add item to set default document language
     items.push({
       type: "menuitem",
-      icon: "document-properties",
+      icon: self.useDashIcons ? 'dashicons-media-default' : 'document-properties',
       text: self.translate('Set default document language'),
       onAction: () => {
         // Open the default language dialog
@@ -2420,7 +2418,7 @@ class EasyLangMarkup {
     items.push({
       type: "togglemenuitem",
       text: self.translate('Reveal lang markup'),
-      icon: "preview",
+      icon: self.useDashIcons ? 'dashicons-visibility' : 'preview',
       onAction: () => {
         self.tsViewMarkup = !self.tsViewMarkup;
         if (self.tsViewMarkup) {
@@ -2441,7 +2439,7 @@ class EasyLangMarkup {
       items.push({
         type: "togglemenuitem",
         text: self.translate('Indicate current language'),
-        icon: "language",
+        icon: self.useDashIcons ? 'dashicons-translation' : 'Language',        
         onAction: (event2: Event) => {
           self.showCurrentLanguage = !self.showCurrentLanguage;
           self.showCurrentLangCodeOnly = true; // Not enough room to show language name
@@ -2506,7 +2504,14 @@ class EasyLangMarkup {
   private initV4() {
     const self: EasyLangMarkup = this;
 
-    if (!self.editor || !self.editor.getParam || !self.editor.addButton) throw new Error('No supported editor instance found');
+    if (!self.editor || !self.editor.addButton) throw new Error('No supported editor instance found');
+
+    if (((self.isWordPress && self.cssHasDashIcons) || self.useDashIcons) && !self.blockDashIconUsage) {
+      self.iconName = 'icon dashicons dashicons-translation';
+      self.useDashIcons = true;
+    } else {
+      self.iconName = null;
+    }
 
     // Create toolbar button
     self.editor.addButton('easylang_toolbar', {
@@ -2633,20 +2638,53 @@ class EasyLangMarkup {
   private initPostV4() {
     const self: EasyLangMarkup = this;
 
-    if (!self.editor || !self.editor.getParam || !self.editor.ui?.registry?.addIcon) throw new Error('No supported editor instance found');
-
-    const new_icon_name = self.editor.getParam("easylang_icon");
-    if (new_icon_name) {
-      const icons = self.editor.ui.registry.getAll().icons;
-      if (icons.hasOwnProperty(new_icon_name)) {
-        self.iconName = new_icon_name;
-      }
-    }
+    if (!self.editor || !self.editor.ui?.registry?.addIcon) throw new Error('No supported editor instance found');
 
     self.editor.ui.registry.addIcon(
       "easyLangIcon",
       '<svg width="24" height="24"><g><path d="M10.9,8.1v1.7L5.1,7.2V5.8l5.9-2.6v1.7L6.8,6.5L10.9,8.1z"/><path d="M18.9,7.2l-5.9,2.6V8.2l4.1-1.6l-4.1-1.6V3.3l5.9,2.5V7.2z"/></g><g><path d="M0.2,19.8v-6.9c0-0.3,0.1-0.6,0.2-0.7s0.3-0.2,0.6-0.2s0.4,0.1,0.6,0.2s0.2,0.4,0.2,0.7v6.9c0,0.3-0.1,0.6-0.2,0.7 S1.3,20.8,1,20.8c-0.2,0-0.4-0.1-0.6-0.3S0.2,20.2,0.2,19.8z"/><path d="M7.5,19.9c-0.4,0.3-0.8,0.5-1.1,0.7s-0.8,0.2-1.2,0.2c-0.4,0-0.8-0.1-1.1-0.2s-0.5-0.4-0.7-0.7S3.1,19.3,3.1,19 c0-0.4,0.1-0.8,0.4-1.1s0.7-0.5,1.1-0.6c0.1,0,0.4-0.1,0.8-0.2s0.7-0.2,1-0.2s0.6-0.2,0.9-0.2c0-0.4-0.1-0.7-0.3-0.9 s-0.5-0.3-0.9-0.3c-0.4,0-0.7,0.1-0.9,0.2s-0.4,0.3-0.5,0.5s-0.2,0.4-0.3,0.4s-0.2,0.1-0.4,0.1c-0.2,0-0.3-0.1-0.5-0.2 S3.4,16.2,3.4,16c0-0.3,0.1-0.6,0.3-0.8s0.5-0.5,0.9-0.7s0.9-0.3,1.6-0.3c0.7,0,1.3,0.1,1.7,0.2s0.7,0.4,0.9,0.8S9,16.2,9,16.8 c0,0.4,0,0.7,0,1s0,0.6,0,0.9c0,0.3,0,0.6,0.1,0.9s0.1,0.5,0.1,0.6c0,0.2-0.1,0.3-0.2,0.4s-0.3,0.2-0.5,0.2c-0.2,0-0.3-0.1-0.5-0.2 S7.7,20.2,7.5,19.9z M7.4,17.6c-0.2,0.1-0.6,0.2-1,0.3S5.7,18,5.5,18.1S5.1,18.2,5,18.3s-0.2,0.3-0.2,0.5c0,0.2,0.1,0.4,0.3,0.6 s0.4,0.3,0.7,0.3c0.3,0,0.6-0.1,0.9-0.2s0.5-0.3,0.6-0.5c0.1-0.2,0.2-0.6,0.2-1.2V17.6z"/><path d="M12.1,15.2v0.2c0.3-0.4,0.6-0.6,0.9-0.8s0.7-0.3,1.2-0.3c0.4,0,0.8,0.1,1.1,0.3s0.6,0.4,0.7,0.8c0.1,0.2,0.2,0.4,0.2,0.6 s0,0.5,0,0.9v3c0,0.3-0.1,0.6-0.2,0.7s-0.3,0.2-0.6,0.2c-0.2,0-0.4-0.1-0.6-0.3s-0.2-0.4-0.2-0.7v-2.7c0-0.5-0.1-0.9-0.2-1.2 s-0.4-0.4-0.9-0.4c-0.3,0-0.5,0.1-0.8,0.3s-0.4,0.4-0.5,0.7c-0.1,0.2-0.1,0.7-0.1,1.3v2c0,0.3-0.1,0.6-0.2,0.7s-0.3,0.2-0.6,0.2 c-0.2,0-0.4-0.1-0.6-0.3s-0.2-0.4-0.2-0.7v-4.6c0-0.3,0.1-0.5,0.2-0.7s0.3-0.2,0.5-0.2c0.1,0,0.3,0,0.4,0.1s0.2,0.2,0.3,0.3 S12.1,15,12.1,15.2z"/><path d="M23.8,15.5v4.6c0,0.5-0.1,1-0.2,1.4s-0.3,0.7-0.5,0.9s-0.6,0.4-1,0.6s-0.9,0.2-1.5,0.2c-0.6,0-1-0.1-1.5-0.2 s-0.8-0.4-1-0.6s-0.4-0.5-0.4-0.8c0-0.2,0.1-0.4,0.2-0.5s0.3-0.2,0.5-0.2c0.2,0,0.4,0.1,0.6,0.3c0.1,0.1,0.2,0.2,0.3,0.3 s0.2,0.2,0.3,0.3S19.8,22,20,22s0.3,0.1,0.5,0.1c0.4,0,0.7-0.1,1-0.2s0.4-0.3,0.5-0.5s0.1-0.4,0.2-0.7s0-0.6,0-1.1 c-0.2,0.3-0.5,0.6-0.9,0.8s-0.7,0.3-1.2,0.3c-0.5,0-1-0.1-1.4-0.4s-0.7-0.7-0.9-1.1s-0.3-1.1-0.3-1.7c0-0.5,0.1-0.9,0.2-1.3 s0.3-0.7,0.6-1s0.5-0.5,0.8-0.6s0.7-0.2,1-0.2c0.5,0,0.8,0.1,1.2,0.3s0.6,0.4,0.9,0.8v-0.2c0-0.3,0.1-0.5,0.2-0.6s0.3-0.2,0.5-0.2 c0.3,0,0.5,0.1,0.6,0.3S23.8,15.1,23.8,15.5z M19.1,17.5c0,0.6,0.1,1.1,0.4,1.5s0.6,0.5,1.1,0.5c0.3,0,0.5-0.1,0.8-0.2 s0.4-0.4,0.6-0.6s0.2-0.6,0.2-1c0-0.7-0.1-1.2-0.4-1.5s-0.7-0.5-1.1-0.5c-0.5,0-0.8,0.2-1.1,0.5S19.1,16.9,19.1,17.5z"/></g></svg>'
     );
+
+    self.editor.ui.registry.addIcon(
+      "dashicons-translation",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><g><path d="M11 7H9.49c-.63 0-1.25.3-1.59.7L7 5H4.13l-2.39 7h1.69l.74-2H7v4H2c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h7c1.1 0 2 .9 2 2v2zM6.51 9H4.49l1-2.93zM10 8h7c1.1 0 2 .9 2 2v7c0 1.1-.9 2-2 2h-7c-1.1 0-2-.9-2-2v-7c0-1.1.9-2 2-2zm7.25 5v-1.08h-3.17V9.75h-1.16v2.17H9.75V13h1.28c.11.85.56 1.85 1.28 2.62-.87.36-1.89.62-2.31.62-.01.02.22.97.2 1.46.84 0 2.21-.5 3.28-1.15 1.09.65 2.48 1.15 3.34 1.15-.02-.49.2-1.44.2-1.46-.43 0-1.49-.27-2.38-.63.7-.77 1.14-1.77 1.25-2.61h1.36zm-3.81 1.93c-.5-.46-.85-1.13-1.01-1.93h2.09c-.17.8-.51 1.47-1 1.93l-.04.03s-.03-.02-.04-.03z"/></g></svg>'
+    );
+    self.editor.ui.registry.addIcon(
+      "dashicons-editor-removeformatting",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><g><path d="M14.29 4.59l1.1 1.11c.41.4.61.94.61 1.47v2.12c0 .53-.2 1.07-.61 1.47l-6.63 6.63c-.4.41-.94.61-1.47.61s-1.07-.2-1.47-.61l-1.11-1.1-1.1-1.11c-.41-.4-.61-.94-.61-1.47v-2.12c0-.54.2-1.07.61-1.48l6.63-6.62c.4-.41.94-.61 1.47-.61s1.06.2 1.47.61zm-6.21 9.7l6.42-6.42c.39-.39.39-1.03 0-1.43L12.36 4.3c-.19-.19-.45-.29-.72-.29s-.52.1-.71.29l-6.42 6.42c-.39.4-.39 1.04 0 1.43l2.14 2.14c.38.38 1.04.38 1.43 0z"/></g></svg>'
+    );
+    self.editor.ui.registry.addIcon(
+      "dashicons-warning",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><g><path d="M10 2c4.42 0 8 3.58 8 8s-3.58 8-8 8-8-3.58-8-8 3.58-8 8-8zm1.13 9.38l.35-6.46H8.52l.35 6.46h2.26zm-.09 3.36c.24-.23.37-.55.37-.96 0-.42-.12-.74-.36-.97s-.59-.35-1.06-.35-.82.12-1.07.35-.37.55-.37.97c0 .41.13.73.38.96.26.23.61.34 1.06.34s.8-.11 1.05-.34z"/></g></svg>'
+    );
+    self.editor.ui.registry.addIcon(
+      "dashicons-admin-generic",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><g><path d="M18 12h-2.18c-.17.7-.44 1.35-.81 1.93l1.54 1.54-2.1 2.1-1.54-1.54c-.58.36-1.23.63-1.91.79V19H8v-2.18c-.68-.16-1.33-.43-1.91-.79l-1.54 1.54-2.12-2.12 1.54-1.54c-.36-.58-.63-1.23-.79-1.91H1V9.03h2.17c.16-.7.44-1.35.8-1.94L2.43 5.55l2.1-2.1 1.54 1.54c.58-.37 1.24-.64 1.93-.81V2h3v2.18c.68.16 1.33.43 1.91.79l1.54-1.54 2.12 2.12-1.54 1.54c.36.59.64 1.24.8 1.94H18V12zm-8.5 1.5c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/></g></svg>'
+    );
+    self.editor.ui.registry.addIcon(
+      "dashicons-media-default",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><g><path d="M12 2l4 4v12H4V2h8zm0 4h3l-3-3v3z"/></g></svg>'
+    );
+    self.editor.ui.registry.addIcon(
+      "dashicons-visibility",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><g><path d="M18.3 9.5C15 4.9 8.5 3.8 3.9 7.2c-1.2.9-2.2 2.1-3 3.4.2.4.5.8.8 1.2 3.3 4.6 9.6 5.6 14.2 2.4.9-.7 1.7-1.4 2.4-2.4.3-.4.5-.8.8-1.2-.3-.4-.5-.8-.8-1.1zm-8.2-2.3c.5-.5 1.3-.5 1.8 0s.5 1.3 0 1.8-1.3.5-1.8 0-.5-1.3 0-1.8zm-.1 7.7c-3.1 0-6-1.6-7.7-4.2C3.5 9 5.1 7.8 7 7.2c-.7.8-1 1.7-1 2.7 0 2.2 1.7 4.1 4 4.1 2.2 0 4.1-1.7 4.1-4v-.1c0-1-.4-2-1.1-2.7 1.9.6 3.5 1.8 4.7 3.5-1.7 2.6-4.6 4.2-7.7 4.2z"/></g></svg>'
+    );
+  
+
+    console.log('before logic icon name:', self.iconName);
+    // TODO: Check this code in the getEditorConfic params area
+    if (self.useDashIcons && !self.blockDashIconUsage) {
+        self.iconName = "dashicons-translation";
+    } else if (self.iconName) {
+      if(self.editor && self.editor.ui && self.editor.ui.registry && self.editor.ui.registry.getAll) {
+        const icons = self.editor.ui.registry.getAll().icons;
+        if (icons && !icons.hasOwnProperty(self.iconName)) {
+          self.iconName = 'easyLangIcon';
+        }
+      }
+    } else {
+      self.iconName = null;
+    }
 
     if (self.enableKeyboardShortcuts) {
       self.addKeyboardShortcuts();
@@ -2659,6 +2697,7 @@ class EasyLangMarkup {
       },
     });
 
+    console.log('toolbar button icon name:', self.iconName);
     // Create toolbar button
     self.editor.ui.registry.addMenuButton("easylang_toolbar", {
       text: self.showCurrentLanguage ? self.translate('-Language Not Set-') : null, // Default text for the button when no language is set
@@ -2792,6 +2831,9 @@ class EasyLangMarkup {
     const dashiconsOpt = self.getEditorConfigParameter('easylang_use_dashicons', null);
     self.useDashIcons = (dashiconsOpt === true);
     self.blockDashIconUsage = (dashiconsOpt === false);
+    if (self.blockDashIconUsage) {
+      self.useDashIcons = false;
+    }
 
     // --- Shortcut modifiers (e.g. "ctrl+alt+") ---
     let shortcutModifiers: string =
@@ -2831,11 +2873,8 @@ class EasyLangMarkup {
     //   1. explicit easylang_toolbar_icon (string)
     //   2. Dashicons translation icon (if WP or forced & available)
     //   3. null (no icon class; rely on default SVG icon registered elsewhere)
-    let toolbarIconRaw = self.getEditorConfigParameter(
-      'easylang_toolbar_icon',
-      null
-    );
-
+    let toolbarIconRaw = self.getEditorConfigParameter('easylang_toolbar_icon', null);
+    console.log('raw toolbar icon from config:', toolbarIconRaw);
     if (typeof toolbarIconRaw !== "string") {
       toolbarIconRaw = null;
     } else {
@@ -2846,22 +2885,8 @@ class EasyLangMarkup {
         toolbarIconRaw = null;
       }
     }
-
-    if (EasyLangMarkup.isNotBlank(toolbarIconRaw)) {
-      self.iconName = String(toolbarIconRaw).trim();
-    } else if (
-      (self.isWordPress || self.useDashIcons) &&
-      self.cssHasDashIcons &&
-      !self.blockDashIconUsage
-    ) {
-      // WordPress-style icon class
-      self.iconName = 'icon dashicons dashicons-translation';
-      self.useDashIcons = true;
-    } else if (!self.isTinyMCE4) {
-      self.iconName = 'easyLangIcon';
-    } else {
-      self.iconName = null;
-    }
+    self.iconName = toolbarIconRaw;
+    console.log('processed toolbar icon name from config:', self.iconName);
 
      // --- Scan document on load for languages
     self.scanDocumentOnLoad = !!self.getEditorConfigParameter('easylang_scan_document_on_load', true);
