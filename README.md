@@ -110,9 +110,9 @@ your-project/
 
 ```javascript
 tinymce.init({
-  selector: 'textarea',  // change to match your selector
-  plugins: 'languageSelect',
-  toolbar: 'languageSelector',
+  "selector": 'textarea',  // change to match your selector
+  "plugins": 'languageSelect',
+  "toolbar": 'languageSelector',
   "menu": {
     // ... other menu options ...
     "format": {
@@ -133,13 +133,13 @@ The plugin supports several initialization options:
 ```javascript
 tinymce.init({
   // ... other options ...
-  easylang_icon: 'custom-icon-name',  // Use a custom icon
-  easylang_show_current_language: true,  // Show language text instead of icon
-  easylang_enable_keyboard_shortcuts: true,  // Enable keyboard shortcuts
-  easylang_default_document_language: 'en-US',  // Set default document language
-  content_langs: [  // Define initial languages in menu
-    { code: 'en-US', title: 'English (US)' },
-    { code: 'es', title: 'Spanish' }
+  "easylang_icon": 'custom-icon-name',  // Use a custom icon
+  "easylang_show_current_language": true,  // Show language text instead of icon
+  "easylang_enable_keyboard_shortcuts": true,  // Enable keyboard shortcuts
+  "easylang_default_document_language": 'en-US',  // Set default document language
+  "content_langs": [  // Define initial languages in menu
+    { "code": 'en-US', "title": 'English (US)' },
+    { "code": 'es', "title": 'Spanish' }
   ]
 });
 ```
@@ -170,12 +170,12 @@ The plugin will prioritize languages in this order:
 ```javascript
 tinymce.init({
   // ... other options ...
-  easylang_langs: [
-    { title: "English (US)", code: "en-US" },
-    { title: "Hindi (India)", code: "hi-IN" },
-    { title: "Chinese (Simplified, PRC)", code: "zh-Hans-CN" },
-    { title: "Korean (South Korea)", code: "ko-KR" },
-    { title: "Arabic (MSA)", code: "ar" }
+  "easylang_langs": [
+    { "title": "English (US)", "code": "en-US" },
+    { "title": "Hindi (India)", "code": "hi-IN" },
+    { "title": "Chinese (Simplified, PRC)", "code": "zh-Hans-CN" },
+    { "title": "Korean (South Korea)", "code": "ko-KR" },
+    { "title": "Arabic (MSA)", "code": "ar" }
   ],
   // ... other options ...
 });
@@ -212,9 +212,9 @@ When not specified, the language selector menu will be added to the bottom of th
 
 ```javascript
 tinymce.init({
-  selector: 'textarea',
-  plugins: 'languageSelect',
-  easylang_add_to_v4menu: 'insert'  // Adds to the "insert" menu
+  "selector": 'textarea',
+  "plugins": 'languageSelect',
+  "easylang_add_to_v4menu": 'insert'  // Adds to the "insert" menu
 });
 ```
 
@@ -236,9 +236,9 @@ Shortcuts use Ctrl/^ + Alt/Option + `<letter>` and allow fast language tagging.
 
 **Default:** `true`
 
-```js
+```javascript
 tinymce.init({
-  easylang_enable_keyboard_shortcuts: true
+  "easylang_enable_keyboard_shortcuts": true
 });
 ```
 
@@ -254,10 +254,10 @@ Defines letters that cannot be used when generating keyboard shortcuts.
 
 **Default:** `""` or `"acdhjklmoqruwxz"` when WordPress is detected 
 
-```js
+```javascript
 tinymce.init({
-  easylang_enable_keyboard_shortcuts: true,
-  easylang_reserved_shortcut_letters: ['b','i','u']
+  "easylang_enable_keyboard_shortcuts": true,
+  "easylang_reserved_shortcut_letters": ['b','i','u']
 });
 ```
 
@@ -272,9 +272,9 @@ Scans the editor's HTML content for existing `lang="..."` attributes on load and
 
 **Default:** `true`
 
-```js
+```javascript
 tinymce.init({
-  easylang_scan_document_on_load: true
+  "easylang_scan_document_on_load": true
 });
 ```
 
@@ -289,9 +289,9 @@ Allows setting the modifiers for keyboard shortcuts used by the easylang plugin.
 
 **Default:** `Ctrl+Alt`
 
-```js
+```javascript
 tinymce.init({
-  easylang_shortcut_modifiers: "Meta+Shift"
+  "easylang_shortcut_modifiers": "Meta+Shift"
 });
 ```
 
@@ -313,9 +313,9 @@ Displays the current language code (e.g., `EN`, `ES`, `FR-CA`) directly in the t
 
 **Default:** `false`
 
-```js
+```javascript
 tinymce.init({
-  easylang_show_current_language: true
+  "easylang_show_current_language": true
 });
 ```
 
@@ -332,9 +332,9 @@ Overrides the default toolbar icon used for the toolbar button.
 
 **Default:** plugin’s built‑in SVG icon (TinyMCE 5+). TinyMCE 4 defaults to text: "Language".
 
-```js
+```javascript
 tinymce.init({
-  easylang_toolbar_icon: 'my-custom-icon'
+  "easylang_toolbar_icon": 'my-custom-icon'
 });
 ```
 
@@ -350,9 +350,9 @@ Forces or blocks the use of **WordPress Dashicons**
 
 **Default:** `auto`
 
-```js
+```javascript
 tinymce.init({
-  easylang_use_dashicons: true
+  "easylang_use_dashicons": true
 });
 ```
 
