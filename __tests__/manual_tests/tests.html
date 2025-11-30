@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Easy Language Markup Plugin – GPL TinyMCE Config Demo</title>
+
+  <!-- IMPORTANT: Use self-hosted GPL TinyMCE build -->
+  <!-- Example path: ./tinymce/tinymce.min.js -->
+  <script src="tinymce_8.0.0/tinymce.min.js"></script>
+
+
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    section { margin-bottom: 3rem; border-bottom: 1px solid #ddd; padding-bottom: 2rem; }
+    h2 { margin-top: 0; }
+    .editor-label { font-weight: bold; margin-bottom: 0.25rem; }
+    textarea { width: 100%; min-height: 120px; }
+  </style>
+</head>
+<body>
+  <main>
+  <h1 id="mainHeading">Easy Language Markup – GPL TinyMCE Config Test Page</h1>
+  <p>
+    This page uses self-hosted GPL TinyMCE with
+    <code>license_key: "gpl"</code>, so no API key is required and
+    editors are fully enabled.
+  </p>
+
+  <!-- 1. Baseline -->
+  <section>
+    <h2>1. Baseline configuration (plugin defaults)</h2>
+    <p><strong>Expected:</strong> EasyLang toolbar button, default behavior.</p>
+    <div class="editor-label">Editor: Baseline</div>
+    <textarea id="editor-baseline">
+<p>Editor using plugin defaults.</p>
+    </textarea>
+  </section>
+
+  <!-- 2. Show current language -->
+  <section>
+    <h2>2. Show current language in toolbar</h2>
+    <p><strong>Expected:</strong> Toolbar button label shows current caret language.</p>
+    <div class="editor-label">Editor: Show current language</div>
+    <textarea id="editor-show-lang">
+<p>English text. <span lang="es">Texto en español.</span></p>
+    </textarea>
+  </section>
+
+  <!-- 3a. Shortcuts disabled -->
+  <section>
+    <h2>3. Keyboard shortcuts</h2>
+    <h3>3a. Disabled</h3>
+    <p><strong>Expected:</strong> No language shortcuts should work.</p>
+    <div class="editor-label">Editor: No shortcuts</div>
+    <textarea id="editor-no-shortcuts"></textarea>
+
+    <h3>3b. Custom modifiers & reserved letters</h3>
+    <p><strong>Expected:</strong>
+      Modifiers: <code>ctrl+shift+</code>,  
+      Reserved: <code>definprts</code> (these letters must not be assigned).
+    </p>
+    <div class="editor-label">Editor: Custom modifiers</div>
+    <textarea id="editor-custom-shortcuts"></textarea>
+  </section>
+
+  <!-- 4. Scan document on load -->
+  <section>
+    <h2>4. Scan document on load</h2>
+
+    <h3>4a. Enabled (default)</h3>
+    <div class="editor-label">Editor: Scan document on load</div>
+    <textarea id="editor-scan-on">
+<p><span lang="fr">Bonjour!</span> <span lang="es">¡Hola!</span></p>
+<p>
+  <span lang="ha">
+    “Ina kwana?”
+  </span>
+  — Hausa (ha, LTR) morning greeting meaning “Good morning”.
+</p>
+
+<p>
+  <span lang="am">
+    “ሰላም እንዴት ነህ?”
+  </span>
+  — Amharic (am, LTR) greeting meaning “Hello, how are you?” (to a man).
+</p>
+
+<p dir="rtl">
+  <span lang="ug" dir="rtl">
+    «ياخشىمۇسىز؟»
+  </span>
+  — Uyghur (ug, RTL) greeting meaning “How are you?”.
+</p>
+
+<p dir="rtl">
+  <span lang="dv" dir="rtl">
+    «ހަމަ އަހަރެން؟»
+  </span>
+  — Divehi (dv, RTL, Maldives) greeting meaning roughly “How are you?”.
+</p>
+    </textarea>
+
+    <h3>4b. Disabled</h3>
+    <div class="editor-label">Editor: Document Scan onload off</div>
+    <textarea id="editor-scan-off"><p><span lang="fr">Bonjour!</span> <span lang="es">¡Hola!</span></p>
+<p>
+  <span lang="ha">
+    “Ina kwana?”
+  </span>
+  — Hausa (ha, LTR) morning greeting meaning “Good morning”.
+</p>
+
+<p>
+  <span lang="am">
+    “ሰላም እንዴት ነህ?”
+  </span>
+  — Amharic (am, LTR) greeting meaning “Hello, how are you?” (to a man).
+</p>
+
+<p dir="rtl">
+  <span lang="ug" dir="rtl">
+    «ياخشىمۇسىز؟»
+  </span>
+  — Uyghur (ug, RTL) greeting meaning “How are you?”.
+</p>
+
+<p dir="rtl">
+  <span lang="dv" dir="rtl">
+    «ހަމަ އަހަރެން؟»
+  </span>
+  — Divehi (dv, RTL, Maldives) greeting meaning roughly “How are you?”.
+</p></textarea>
+  </section>
+
+  <!-- 5. Toolbar icon -->
+  <section>
+    <h2>5. Toolbar icon</h2>
+
+    <h3>5a. TinyMCE Language Icon</h3>
+    <div class="editor-label">Editor: TinyMCE Language Icon</div>
+    <textarea id="editor-custom-icon"></textarea>
+
+    <h3>5b. Dashicons enabled</h3>
+    <div class="editor-label">Editor: Enable dashicons</div>
+    <textarea id="editor-dashicons"></textarea>
+  </section>
+
+  <!-- 6. Setting dir -->
+  <section>
+    <h2>6. Set <code>dir</code> with <code>lang</code></h2>
+    <h3>6a. Enabled</h3>
+    <div class="editor-label">Editor: set dir = true</div>
+    <textarea id="editor-set-dir-true"></textarea>
+
+    <h3>6b. Disabled</h3>
+    <div class="editor-label">Editor: set dir = false</div>
+    <textarea id="editor-set-dir-false"></textarea>
+  </section>
+
+  <!-- 7. content_langs vs easylang_langs -->
+  <section>
+    <h2>7. content_langs vs easylang_langs</h2>
+
+    <h3>7a. content_langs</h3>
+    <div class="editor-label">Editor: content_langs</div>
+    <textarea id="editor-content-langs"></textarea>
+
+    <h3>7b. easylang_langs</h3>
+    <div class="editor-label">Editor: easylang_langs</div>
+    <textarea id="editor-easylang-langs"></textarea>
+  </section>
+
+
+  <!-- Initialize all editors -->
+  <script>
+    function baseConfig(selector) {
+      return {
+        selector,
+        license_key: "gpl",
+        language_load: true,
+        promotion: false,
+        license_key: "gpl",
+        height: 400,
+        menu: {
+          file: { title: "File", items: "newdocument | preview | print" },
+          edit: {
+            title: "Edit",
+            items:
+              "undo redo | cut copy paste pastetext | selectall | searchreplace",
+          },
+          view: {
+            title: "View",
+            items:
+              "code | visualaid visualblocks | spellchecker | preview fullscreen | showcomments",
+          },
+          insert: {
+            title: "Insert",
+            items:
+              "image link media inserttable | charmap hr | anchor | insertdatetime",
+          },
+          format: {
+            title: "Format",
+            items:
+              "bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | easylang_menu | removeformat",
+          },
+          tools: { title: "Tools", items: "code wordcount" },
+          table: {
+            title: "Table",
+            items: "inserttable | cell row column | tableprops deletetable",
+          }
+        },
+        plugins: [
+          "easylang", "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor", "searchreplace",
+          "visualblocks", "code", "fullscreen", "insertdatetime", "media", "table", "code", "wordcount",
+        ],
+        toolbar:
+          "fontsize blocks | " +
+          "bold italic underline forecolor backcolor subscript superscript easylang_toolbar | " +
+          "link image | align bullist indent outdent | removeformat table",
+        content_style:
+          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }"
+      }
+    };
+
+    // 1 baseline
+    tinymce.init(baseConfig("#editor-baseline"));
+
+    // 2 show current language
+    (()=>{
+      const cfg = baseConfig("#editor-show-lang");
+      cfg.easylang_show_current_language = true;
+      tinymce.init(cfg);
+    })();
+
+    // 3a no shortcuts
+    (()=>{
+      const cfg = baseConfig("#editor-no-shortcuts");
+      cfg.easylang_enable_keyboard_shortcuts = false;
+      tinymce.init(cfg);
+    })();
+
+    // 3b custom shortcuts
+    (()=>{
+      const cfg = baseConfig("#editor-custom-shortcuts");
+      cfg.easylang_shortcut_modifiers = "ctrl+shift+";
+      cfg.easylang_reserved_shortcut_letters = "definprts";
+      tinymce.init(cfg);
+    })();
+
+    // 4a scan on
+    tinymce.init(baseConfig("#editor-scan-on"));
+
+    // 4b scan off
+    (()=>{
+      const cfg = baseConfig("#editor-scan-off");
+      cfg.easylang_scan_document_on_load = false;
+      tinymce.init(cfg);
+    })();
+
+    // 5a custom icon
+    (()=>{
+      const cfg = baseConfig("#editor-custom-icon");
+      cfg.easylang_toolbar_icon = "language";
+      tinymce.init(cfg);
+    })();
+
+    // 5b Enable Dashicons
+    (()=>{
+      const cfg = baseConfig("#editor-dashicons");
+      cfg.easylang_use_dashicons = true;
+      tinymce.init(cfg);
+    })();
+
+    // 6a set dir=true
+    (()=>{
+      const cfg = baseConfig("#editor-set-dir-true");
+      cfg.easylang_set_dir_when_setting_lang = true;
+      tinymce.init(cfg);
+    })();
+
+    // 6b set dir=false
+    (()=>{
+      const cfg = baseConfig("#editor-set-dir-false");
+      cfg.easylang_set_dir_when_setting_lang = false;
+      tinymce.init(cfg);
+    })();
+
+    // 7a content_langs
+    (()=>{
+      const cfg = baseConfig("#editor-content-langs");
+      cfg.content_langs = [
+        { code: "en", title: "English" },
+        { code: "es", title: "Español" },
+        { code: "smj", title: "Sami (Lule)" }
+      ];
+      tinymce.init(cfg);
+    })();
+
+    // 7b easylang_langs
+    (()=>{
+      const cfg = baseConfig("#editor-easylang-langs");
+      cfg.easylang_langs = [
+        { code: "en", title: "English" },
+        { code: "de", title: "Deutsch" },
+        { code: "ja", title: "日本語" }
+      ];
+      tinymce.init(cfg);
+    })();
+
+    const tinymceVersion = tinymce.majorVersion + "." + tinymce.minorVersion;
+    const mainHeading = document.getElementById("mainHeading");
+    if (mainHeading) {
+      mainHeading.textContent = `Easy Language Markup – GPL TinyMCE ${tinymceVersion} Config Test Page`;
+    }
+  </script>
+</main>
+</body>
+</html>

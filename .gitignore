@@ -38,6 +38,9 @@ dist/
 *.js.map
 *.d.ts
 
+# TinyMCE 
+tinymce*/
+
 # TypeScript cache
 *.tsbuildinfo
 
