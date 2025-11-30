@@ -143,14 +143,67 @@ tinymce.init({
 
 | Option | Type | Default | Purpose |
 |-------|------|---------|---------|
-| easylang_langs / content_langs | array | default set | Defines initial languages in menu |
-| easylang_add_to_v4menu | string | format | Adds easylang menu to specified TinyMCE 4 menu |
-| easylang_enable_keyboard_shortcuts | boolean | true | Enables keyboard shortcuts for languages |
-| easylang_reserved_shortcut_letters | array | [] | Letters excluded from shortcuts |
-| easylang_scan_document_on_load | boolean | true | Scan document on load for existing langs |
-| easylang_show_current_language | boolean | false | Show current lang in toolbar control |
-| easylang_toolbar_icon | string | plugin default | Force toolbar icon class name |
-| easylang_use_dashicons | boolean | false | Use WP Dashicons icons |
+| easylang_add_to_v4menu | string | `"format"` | Adds easylang menu to specified TinyMCE 4 menu |
+| easylang_enable_keyboard_shortcuts | boolean | `true` | Enables keyboard shortcuts for languages |
+| easylang_langs / content_langs | array | ["en", "es", "fr", "it", "de"] | Defines initial languages in menu |
+| easylang_reserved_shortcut_letters | string | `""` | Letters excluded from shortcuts |
+| easylang_scan_document_on_load | boolean | `true` | Scan document on load for existing langs |
+| easylang_set_dir_when_setting_lang | boolean | `true` | Set dir attribute with lang |
+| easylang_shortcut_modifiers | string | `"ctrl+alt"` | Set keyboard shortcut modifiers |
+| easylang_show_current_language | boolean | `false` | Show current lang in toolbar control |
+| easylang_toolbar_icon | string | varies | Force toolbar icon class name |
+| easylang_use_dashicons | boolean | `false` | Use WP Dashicons icons |
+
+### easylang_add_to_v4menu
+
+The `easylang_add_to_v4menu` option controls whether the language selector menu is added to TinyMCE 4's main menu bar and specifies which menu context it should appear in.
+
+#### Default behavior
+
+When not specified, the language selector menu will be added to the bottom of the Format menu.
+
+<img width="766" height="273" alt="" src="https://github.com/user-attachments/assets/746061c0-2cde-488b-ae19-3c3d2ee0620f" />
+
+#### Usage
+
+```javascript
+tinymce.init({
+  "selector": 'textarea',
+  "plugins": 'languageSelect',
+  "easylang_add_to_v4menu": 'insert'  // Adds to the "insert" menu
+});
+```
+
+#### Accepted values
+
+- true (boolean): Adds the language menu to the default "format" menu
+- false (boolean): Easy lang does not appear in any tinyMCE menu
+- A string value: Specifies the menu context where the language menu should appear (e.g., "format", "insert", "view", "table")
+
+#### Note
+
+This option is specifically for TinyMCE 4 compatibility. For TinyMCE 5+, use the menu configuration option with the easyLangMenu nested menu item.
+
+----
+
+### `easylang_enable_keyboard_shortcuts`
+
+Enables automatically generated keyboard shortcuts for applying language markup.
+Shortcuts use Ctrl/^ + Alt/Option + `<letter>` and allow fast language tagging.
+
+**Default:** `true`
+
+```javascript
+tinymce.init({
+  "easylang_enable_keyboard_shortcuts": true
+});
+```
+
+- Only applies shortcuts to languages listed in the menu.
+- Skips letters listed in `easylang_reserved_shortcut_letters`.
+- If insufficient letters remain, only some languages receive shortcuts.
+
+----
 
 ### easylang_langs (or content_langs)
 
@@ -193,61 +246,13 @@ tinymce.init({
 
 The `content_langs` option can also be used for the same purpose. Both options are supported for compatibility.
 
-### easylang_add_to_v4menu
-
-The `easylang_add_to_v4menu` option controls whether the language selector menu is added to TinyMCE 4's main menu bar and specifies which menu context it should appear in. 
-
-#### Default behavior
-
-When not specified, the language selector menu will be added to the bottom of the Format menu.
-
-<img width="766" height="273" alt="" src="https://github.com/user-attachments/assets/746061c0-2cde-488b-ae19-3c3d2ee0620f" />
-
-#### Usage
-
-```javascript
-tinymce.init({
-  "selector": 'textarea',
-  "plugins": 'languageSelect',
-  "easylang_add_to_v4menu": 'insert'  // Adds to the "insert" menu
-});
-```
-
-#### Accepted values
-
-- true (boolean): Adds the language menu to the default "format" menu
-- false (boolean): Easy lang does not appear in any tinyMCE menu
-- A string value: Specifies the menu context where the language menu should appear (e.g., "format", "insert", "view", "table")
-
-#### Note
-
-This option is specifically for TinyMCE 4 compatibility. For TinyMCE 5+, use the menu configuration option with the easyLangMenu nested menu item.
-
-
-### `easylang_enable_keyboard_shortcuts`
-
-Enables automatically generated keyboard shortcuts for applying language markup.  
-Shortcuts use Ctrl/^ + Alt/Option + `<letter>` and allow fast language tagging.
-
-**Default:** `true`
-
-```javascript
-tinymce.init({
-  "easylang_enable_keyboard_shortcuts": true
-});
-```
-
-- Only applies shortcuts to languages listed in the menu.
-- Skips letters listed in `easylang_reserved_shortcut_letters`.  
-- If insufficient letters remain, only some languages receive shortcuts.
-
----
+----
 
 ### `easylang_reserved_shortcut_letters`
 
 Defines letters that cannot be used when generating keyboard shortcuts.
 
-**Default:** `""` or `"acdhjklmoqruwxz"` when WordPress is detected 
+**Default:** `""` or `"acdhjklmoqruwxz"` when WordPress is detected
 
 ```javascript
 tinymce.init({
@@ -256,10 +261,10 @@ tinymce.init({
 });
 ```
 
-- Useful to avoid conflicts with LMS or CMS keyboard shortcuts.  
+- Useful to avoid conflicts with LMS or CMS keyboard shortcuts.
 - Excluded letters are skipped during shortcut assignment.
 
----
+----
 
 ### `easylang_scan_document_on_load`
 
@@ -273,10 +278,10 @@ tinymce.init({
 });
 ```
 
-- Detects languages already present in the document.  
-- Improves menu ordering by surfacing the most-used languages.  
+- Detects languages already present in the document.
+- Improves menu ordering by surfacing the most-used languages.
 
----
+----
 
 ### `easylang_set_dir_when_setting_lang`
 
@@ -284,11 +289,11 @@ Enables automatically adding dir attribute when setting a lang attribute.
 
 **Default:** `true`
 
----
+----
 
 ### `easylang_shortcut_modifiers`
 
-Allows setting the modifiers for keyboard shortcuts used by the easylang plugin. 
+Allows setting the modifiers for keyboard shortcuts used by the easylang plugin.
 
 **Default:** `Ctrl+Alt`
 
@@ -322,12 +327,12 @@ tinymce.init({
 });
 ```
 
-- Updates dynamically as the cursor moves.  
-- Overrides the toolbar icon, even if `easylang_toolbar_icon` is set.  
+- Updates dynamically as the cursor moves.
+- Overrides the toolbar icon, even if `easylang_toolbar_icon` is set.
 - Useful for multilingual editors who frequently check active language context.
 - Experimental feature as no update control text functionality is provided in the tinyMCE API.
 
----
+----
 
 ### `easylang_toolbar_icon`
 
@@ -341,11 +346,11 @@ tinymce.init({
 });
 ```
 
-- Custom icons can be registered in tinyMCE 5+ with `editor.ui.registry.addIcon()`.  
-- Ignored if `easylang_show_current_language` is enabled.  
+- Custom icons can be registered in tinyMCE 5+ with `editor.ui.registry.addIcon()`.
+- Ignored if `easylang_show_current_language` is enabled.
 - Works in TinyMCE 5+.
 
----
+----
 
 ### `easylang_use_dashicons`
 
@@ -363,7 +368,7 @@ tinymce.init({
 - If `false`, blocks use of Dashicons regardless of other settings.
 - If `"auto"` or not set, plugin may use Dashicons if WP and the Dashicons css are detected.
 
----
+----
 
 ## TinyMCE API Features Used
 
@@ -474,7 +479,7 @@ Security recommendations:
 
 ### Configuration Options
 
-Configuration options are processed by `processEditorConfigParameters()` and are sanitized to their expected values. 
+Configuration options are processed by `processEditorConfigParameters()` and are sanitized to their expected values.
 However, these should be set to **trusted, static values** in your TinyMCE configuration or WordPress/Pressbooks integration code and **must not** be populated with arbitrary user input.
 
 ### Integration Guidance
