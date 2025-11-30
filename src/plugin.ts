@@ -1209,12 +1209,12 @@ class EasyLangMarkup {
       if (!localizedName || localizedName === langCode || localizedName === nativeName) {
         languages.push({
           value: langCode.toLowerCase(),
-          text: `${nativeName} (${langCode.toLowerCase()})`
+          text: `${nativeName} (${EasyLangMarkup.cleanLangAttr(langCode)})`
         });
       } else {
         languages.push({
           value: langCode.toLowerCase(),
-          text: `${localizedName} - ${nativeName} (${langCode.toLowerCase()})`
+          text: `${localizedName} - ${nativeName} (${EasyLangMarkup.cleanLangAttr(langCode)})`
         });
       }
     }
@@ -2933,7 +2933,7 @@ class EasyLangMarkup {
    * - Applies "hyphenated override": if both "es" and "es-MX" exist, keep
    *   "es-MX" and drop plain "es" (also moves any base color to the region code)
    */
-  private getEditorDocumentLanguages(): string[] {
+private getEditorDocumentLanguages(): string[] {
   const self: EasyLangMarkup = this;
   if (!(self.editor && (self.editor as any).getDoc)) {
     console.warn('LanguageSelect: no editor.getDoc available');
@@ -2966,7 +2966,7 @@ class EasyLangMarkup {
       const lower = cleaned.toLowerCase();
       freq[lower] = (freq[lower] || 0) + 1;
     });
-    // No valid langs found
+
     const cleanedUnique = Object.keys(freq);
     if (!cleanedUnique.length) return [];
 
@@ -2976,20 +2976,29 @@ class EasyLangMarkup {
       return diff !== 0 ? diff : a.localeCompare(b);
     });
 
-    // Hyphenated override: prefer region/script-specific tags over bare base
     const finalLangs: string[] = [];
 
     cleanedUnique.forEach((code) => {
       const lower = code.toLowerCase();
       const base = lower.split('-')[0];
+      const hasHyphen = lower.includes('-');
 
-      // If this is a region/script variant, remove any existing bare base
-      if (lower.includes('-')) {
+      if (hasHyphen) {
+        // If this is a region/script variant, remove any existing bare base
         const idx = finalLangs.findIndex(
           (c) => c.split('-')[0] === base && !c.includes('-')
         );
         if (idx >= 0) {
           finalLangs.splice(idx, 1);
+        }
+      } else {
+        // If this is a bare base, and we *already* have a specific variant,
+        // skip adding the base.
+        const hasSpecific = finalLangs.some(
+          (c) => c.split('-')[0] === base && c.includes('-')
+        );
+        if (hasSpecific) {
+          return;
         }
       }
 
@@ -2998,12 +3007,35 @@ class EasyLangMarkup {
       }
     });
 
-    // Add original defautltLanguages at the end, if not already present
+    // Add original defaultLanguages at the end, if not already present
     self.defaultLanguages.forEach((code) => {
       const lower = code.toLowerCase();
-      if (!finalLangs.includes(lower)) {
-        finalLangs.push(lower);
+      const hasHyphen = lower.includes('-');
+      const base = lower.split('-')[0];
+
+      if (finalLangs.includes(lower)) {
+        return;
       }
+
+      if (hasHyphen) {
+        // Remove bare base if we’re adding a specific variant
+        const idx = finalLangs.findIndex(
+          (c) => c.split('-')[0] === base && !c.includes('-')
+        );
+        if (idx >= 0) {
+          finalLangs.splice(idx, 1);
+        }
+      } else {
+        // Skip adding bare base if a specific variant is already present
+        const hasSpecific = finalLangs.some(
+          (c) => c.split('-')[0] === base && c.includes('-')
+        );
+        if (hasSpecific) {
+          return;
+        }
+      }
+
+      finalLangs.push(lower);
     });
 
     return finalLangs;
@@ -3012,6 +3044,7 @@ class EasyLangMarkup {
     return [];
   }
 }
+
 
   /**
    * If the current document already uses language tags, replace the stock
