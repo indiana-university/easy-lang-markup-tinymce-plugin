@@ -2234,7 +2234,7 @@ class EasyLangMarkup {
     self.langMenuItems.forEach((lang: string, index: number) => {
       const label =
         self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
-        `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${lang})` :
+        `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${EasyLangMarkup.cleanLangAttr(lang)})` :
         EasyLangMarkup.cleanLangAttr(lang);
 
       const shortCutLetter = self.shortcutLetterForLang[lang] || '';
@@ -2339,7 +2339,7 @@ class EasyLangMarkup {
     self.langMenuItems.forEach((lang: string, index: number) => {
       const label =
         self.getShortLanguageCodeDescription(lang.toLowerCase()) ?
-        `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${lang})` :
+        `${self.getShortLanguageCodeDescription(lang.toLowerCase())} (${EasyLangMarkup.cleanLangAttr(lang)})` :
         EasyLangMarkup.cleanLangAttr(lang);
 
       const shortCutLetter = self.shortcutLetterForLang[lang] || '';
