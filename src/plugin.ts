@@ -3129,3 +3129,4 @@ private getEditorDocumentLanguages(): string[] {
   }
 
 }
+(globalThis as any).EasyLangMarkup = EasyLangMarkup;
