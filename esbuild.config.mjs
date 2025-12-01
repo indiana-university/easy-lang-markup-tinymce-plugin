@@ -83,8 +83,11 @@ tinymce.PluginManager.add('easylang', function (editor, url) {
     name: 'easylang',
   };
 });
-const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
-tinymce.PluginManager.requireLangPack('easylang', locale);
+const isWP = typeof window !== "undefined" && typeof window.wp !== 'undefined' && typeof window.wp.i18n !== 'undefined';
+if(!isWP) {
+  const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
+  tinymce.PluginManager.requireLangPack('easylang', locale);
+}
 
 `
     },
@@ -108,8 +111,11 @@ tinymce.PluginManager.add('easylang', function (editor, url) {
     name: 'easylang',
   };
 });
-const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
-tinymce.PluginManager.requireLangPack('easylang', locale);
+const isWP = typeof window !== "undefined" && typeof window.wp !== 'undefined' && typeof window.wp.i18n !== 'undefined';
+if(!isWP) {
+  const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
+  tinymce.PluginManager.requireLangPack('easylang', locale);
+}
 
 `
     },
