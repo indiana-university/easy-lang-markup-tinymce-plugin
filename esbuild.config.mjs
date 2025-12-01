@@ -65,9 +65,33 @@ const bannerText = `/*!
 */`;
 
 const builds = [
-  // Build for TinyMCE plugin
   {
     outfile: 'dist/plugins/easylang/plugin.min.js',
+    format: 'cjs',
+    minify: true,
+    treeShaking: false,
+    banner: {
+      js: `${bannerText}\n\n`
+    },
+    footer: {
+      js: `
+tinymce.PluginManager.add('easylang', function (editor, url) {
+  const plugin = new EasyLangMarkup(editor, url);
+  plugin.init();
+
+  return {
+    name: 'easylang',
+  };
+});
+const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
+tinymce.PluginManager.requireLangPack('easylang', locale);
+
+`
+    },
+    target: 'es2022'
+  },
+    {
+    outfile: 'dist/plugins/easylang/plugin.js',
     format: 'cjs',
     minify: false,
     treeShaking: false,
@@ -77,24 +101,21 @@ const builds = [
     footer: {
       js: `
 tinymce.PluginManager.add('easylang', function (editor, url) {
-  const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
-  const script = document.createElement('script');
-  script.src = url+'/langs/'+locale.trim().replace(/-/g, '_')+'.js';
-  script.async = false;
-  document.head.appendChild(script);
-
   const plugin = new EasyLangMarkup(editor, url);
   plugin.init();
-  tinymce.PluginManager.requireLangPack('easylang', locale);
 
   return {
     name: 'easylang',
   };
 });
+const locale = tinyMCE.activeEditor?.settings?.language || (tinyMCE.activeEditor?.options?.get ? tinyMCE.activeEditor.options.get('language') : 'en') || 'en';
+tinymce.PluginManager.requireLangPack('easylang', locale);
+
 `
     },
     target: 'es2022'
   }
+
 ];
 
 // Create test file first

@@ -1,4 +1,4 @@
-# TinyMCE Language Selector Plugin
+# Easy Lang Markup TinyMCE Plugin
 
 This plugin provides an easy-to-use interface for users to add/edit language attributes (`lang="[lang_code]"`)
 in TinyMCE editor content. It helps content authors meet WCAG accessibility requirements for indicating
@@ -31,7 +31,7 @@ To see the plugin in action, see the [TinyMCE Language Plugin Development (TinyM
 
 ## Build
 
-To build the TinyMCE Language Selector plugin from source:
+To build the Easy Lang Markup TinyMCE plugin from source:
 
 ### 1. Clone the repository
 
@@ -59,7 +59,7 @@ npm run build
 
 The build process makes two versions: one for production and one that exposes
 functions for the tests. Outputs appear under the ./dist folder. The
-production version of the plugin is in ./dist/plugins/languageSelect
+production version of the plugin is in ./dist/plugins/easylang
 
 ```txt
 ├── dist/
@@ -67,13 +67,14 @@ production version of the plugin is in ./dist/plugins/languageSelect
 │   ├── plugin_types.ts
 │   └── plugin-for-tests.ts
 ├── plugins
-│   └── languageSelect
+│   └── easylang
 │       ├── langs
 │       │   ├── ar_SA.js
 │       │   ├── ar.js
 ...
 │       │   ├── zh_TW.js
 │       │   └── zh.js
+│       ├── plugin.js
 │       └── plugin.min.js
 ```
 
@@ -83,21 +84,22 @@ production version of the plugin is in ./dist/plugins/languageSelect
 npm test
 ```
 
-## Installation
+## General Installation 
 
-1. Copy the `./dist/plugins/languageSelect` folder to your TinyMCE plugins directory:
+1. Copy the `./dist/plugins/easylang` folder to your TinyMCE plugins directory:
 
 ```txt
 your-project/
   tinymce/
     plugins/
-      languageSelect/
+      easylang/
         ├── langs
         │   ├── ar_SA.js
         │   ├── ar.js
 ...
         │   ├── zh_TW.js
         │   └── zh.js
+        ├── plugin.js (if desired)
         └── plugin.min.js
 ```
 
@@ -106,13 +108,13 @@ your-project/
 ```javascript
 tinymce.init({
   "selector": 'textarea',  // change to match your selector
-  "plugins": 'languageSelect',
-  "toolbar": 'languageSelector',
+  "plugins": 'easylang',
+  "toolbar": 'easylang_toolbar',
   "menu": {
     // ... other menu options ...
     "format": {
       "title": "Format",
-      "items": "bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | easyLangMenu | removeformat"
+      "items": "bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | easylang_menu | removeformat"
     },
     // ... other menu options ...
   }
@@ -132,7 +134,7 @@ tinymce.init({
   "easylang_show_current_language": true,  // Show language text instead of icon
   "easylang_enable_keyboard_shortcuts": true,  // Enable keyboard shortcuts
   "easylang_default_document_language": 'en-US',  // Set default document language
-  "content_langs": [  // Define initial languages in menu
+  "easylang_langs": [  // Define initial languages in menu
     { "code": 'en-US', "title": 'English (US)' },
     { "code": 'es', "title": 'Spanish' }
   ]
@@ -169,7 +171,7 @@ When not specified, the language selector menu will be added to the bottom of th
 ```javascript
 tinymce.init({
   "selector": 'textarea',
-  "plugins": 'languageSelect',
+  "plugins": 'easylang',
   "easylang_add_to_v4menu": 'insert'  // Adds to the "insert" menu
 });
 ```
@@ -256,8 +258,10 @@ Defines letters that cannot be used when generating keyboard shortcuts.
 
 ```javascript
 tinymce.init({
+  // ... other options ...
   "easylang_enable_keyboard_shortcuts": true,
   "easylang_reserved_shortcut_letters": ['b','i','u']
+  // ... other options ...
 });
 ```
 
@@ -274,7 +278,9 @@ Scans the editor's HTML content for existing `lang="..."` attributes on load and
 
 ```javascript
 tinymce.init({
+  // ... other options ...
   "easylang_scan_document_on_load": true
+  // ... other options ...
 });
 ```
 
@@ -299,7 +305,9 @@ Allows setting the modifiers for keyboard shortcuts used by the easylang plugin.
 
 ```javascript
 tinymce.init({
+  // ... other options ...
   "easylang_shortcut_modifiers": "Meta+Shift"
+  // ... other options ...
 });
 ```
 
@@ -323,7 +331,9 @@ Displays the current language code (e.g., `EN`, `ES`, `FR-CA`) directly in the t
 
 ```javascript
 tinymce.init({
+  // ... other options ...
   "easylang_show_current_language": true
+  // ... other options ...
 });
 ```
 
@@ -342,7 +352,9 @@ Overrides the default toolbar icon used for the toolbar button.
 
 ```javascript
 tinymce.init({
+  // ... other options ...
   "easylang_toolbar_icon": 'my-custom-icon'
+  // ... other options ...
 });
 ```
 
@@ -360,7 +372,9 @@ Forces or blocks the use of **WordPress Dashicons**
 
 ```javascript
 tinymce.init({
+  // ... other options ...
   "easylang_use_dashicons": true
+  // ... other options ...
 });
 ```
 
